@@ -1,0 +1,11 @@
+sudo: false
+language: node_js
+node_js:
+  - "0.10"
+  - "0.12"
+  - "4"
+  - "5"
+script:
+  - "npm run build && npm test"
+after_script:
+  - "istanbul cover --verbose --dir coverage node_modules/.bin/_mocha tests/tests.js -- -u exports -R spec && cat coverage/lcov.info | coveralls"
