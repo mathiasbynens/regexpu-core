@@ -1,9 +1,11 @@
-var fs = require('fs');
-var _ = require('lodash');
-var jsesc = require('jsesc');
+'use strict';
+
+const fs = require('fs');
+const _ = require('lodash');
+const jsesc = require('jsesc');
 
 function writeJSON(fileName, object) {
-	var json = jsesc(object, {
+	const json = jsesc(object, {
 		'compact': false,
 		'json': true
 	});
@@ -23,13 +25,13 @@ function extend(object, key, value, callback) {
 	if (key in object) {
 		// Note: a `hasOwnProperty` check is not needed as this build script only
 		// ever runs in clean environments.
-		var currentValue = object[key];
+		const currentValue = object[key];
 		if (Array.isArray(currentValue)) {
 			if (currentValue.indexOf(value) > -1) {
 				return;
 			}
 			if (callback) {
-				var skip = currentValue.some(function(codePoint) {
+				const skip = currentValue.some(function(codePoint) {
 					return callback(codePoint, value);
 				});
 				if (skip) {
@@ -73,14 +75,14 @@ function extend(object, key, value, callback) {
 //  A. To do a simple case folding, use the mappings with status C + S.
 //  B. To do a full case folding, use the mappings with status C + F.
 
-var commonMappings = require('unicode-8.0.0/case-folding/C/code-points');
-var simpleMappings = require('unicode-8.0.0/case-folding/S/code-points');
+const commonMappings = require('unicode-8.0.0/case-folding/C/code-points');
+const simpleMappings = require('unicode-8.0.0/case-folding/S/code-points');
 
 // We want the `C` mappings in both directions (i.e. `A` should fold to `a`
 // and `a` to `A`), and the `S` mappings in both directions (i.e. `ẞ` should
 // fold to `ß` and `ß` to `ẞ`). Let’s start with the simple case folding (in
 // one direction) first, then filter the set, and then deal with the inverse.
-var oneWayMappings = _.assign(
+const oneWayMappings = Object.assign(
 	{},
 	commonMappings,
 	simpleMappings
@@ -105,7 +107,7 @@ writeJSON('data/simple-case-folding-mappings.json', oneWayMappings);
 // Get the mappings that are unique to regular expressions that have both the
 // `i` and `u` flags set. In addition to the above, this includes all mappings
 // for astral code points.
-var filteredMappings = {};
+const filteredMappings = {};
 _.forEach(oneWayMappings, function(to, from) {
 	from = Number(from);
 	// Case folding is applied to both the pattern and the string being matched.
@@ -118,8 +120,8 @@ _.forEach(oneWayMappings, function(to, from) {
 	// 2. `oneWayMappings` already maps `ſ` to `s`. (383 → 115)
 	// 3. So, in the generated mappings, make sure `S` maps to `ſ`. (83 → 383)
 	// Check if there are any other code points that map to the same `to` value.
-	for (var otherFrom in oneWayMappings) {
-		var otherTo = oneWayMappings[otherFrom];
+	for (let otherFrom in oneWayMappings) {
+		const otherTo = oneWayMappings[otherFrom];
 		otherFrom = Number(otherFrom);
 		if (otherFrom != from && otherTo == to) {
 			// Note: we could use `extend` here, but it’s not necessary as there can
@@ -139,7 +141,7 @@ _.forEach(oneWayMappings, function(to, from) {
 });
 
 // Create a new object containing all `filteredMappings` and their inverse.
-var iuMappings = {};
+const iuMappings = {};
 _.forEach(filteredMappings, function(to, from) {
 	from = Number(from);
 	if (Array.isArray(to)) {
