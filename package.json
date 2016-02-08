@@ -55,8 +55,7 @@
 		"jsesc": "^0.5.0",
 		"lodash": "^3.6.0",
 		"mocha": "^2.2.1",
-		"regexpu-fixtures": "^1.0.0",
-		"unicode-5.1.0": "^0.1.5",
+		"regexpu-fixtures": "^2.0.0",
 		"unicode-8.0.0": "^0.1.5"
 	}
 }
