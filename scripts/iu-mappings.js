@@ -75,8 +75,8 @@ function extend(object, key, value, callback) {
 //  A. To do a simple case folding, use the mappings with status C + S.
 //  B. To do a full case folding, use the mappings with status C + F.
 
-const commonMappings = require('unicode-8.0.0/case-folding/C/code-points');
-const simpleMappings = require('unicode-8.0.0/case-folding/S/code-points');
+const commonMappings = require('unicode-8.0.0/Case_Folding/C/code-points');
+const simpleMappings = require('unicode-8.0.0/Case_Folding/S/code-points');
 
 // We want the `C` mappings in both directions (i.e. `A` should fold to `a`
 // and `a` to `A`), and the `S` mappings in both directions (i.e. `ẞ` should
