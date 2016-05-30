@@ -4,12 +4,16 @@ const fs = require('fs');
 const _ = require('lodash');
 const jsesc = require('jsesc');
 
-function writeJSON(fileName, object) {
-	const json = jsesc(object, {
-		'compact': false,
-		'json': true
-	});
-	fs.writeFileSync(fileName, json + '\n');
+function writeMap(fileName, map) {
+	// Sort map by key.
+	const sortedMap = new Map([...map].sort((a, b) => a[0] - b[0]));
+	fs.writeFileSync(
+		fileName,
+		`module.exports = ${ jsesc(sortedMap, {
+			'compact': false,
+			'numbers': 'hexadecimal'
+		}) };\n`
+	);
 }
 
 // Given two code points, check if both are in the ASCII ranges and if one is
@@ -18,14 +22,12 @@ function writeJSON(fileName, object) {
 // case-insensitive regular expression.
 function isES5CasedVariant(a, b) {
 	return (a < 0x80 && b < 0x80) &&
-		(oneWayMappings[a] == b || oneWayMappings[b] == a);
+		(oneWayMappings.get(a) == b || oneWayMappings.get(b) == a);
 }
 
-function extend(object, key, value, callback) {
-	if (key in object) {
-		// Note: a `hasOwnProperty` check is not needed as this build script only
-		// ever runs in clean environments.
-		const currentValue = object[key];
+function extend(map, key, value, callback) {
+	if (map.has(key)) {
+		const currentValue = map.get(key);
 		if (Array.isArray(currentValue)) {
 			if (currentValue.indexOf(value) > -1) {
 				return;
@@ -48,10 +50,10 @@ function extend(object, key, value, callback) {
 					return;
 				}
 			}
-			object[key] = [currentValue, value];
+			map.set(key, [currentValue, value]);
 		}
 	} else {
-		object[key] = value;
+		map.set(key, value);
 	}
 }
 
@@ -82,17 +84,18 @@ const simpleMappings = require('unicode-8.0.0/Case_Folding/S/code-points');
 // and `a` to `A`), and the `S` mappings in both directions (i.e. `ẞ` should
 // fold to `ß` and `ß` to `ẞ`). Let’s start with the simple case folding (in
 // one direction) first, then filter the set, and then deal with the inverse.
-const oneWayMappings = Object.assign(
-	{},
-	commonMappings,
-	simpleMappings
-);
+const oneWayMappings = new Map();
+for (const from of Object.keys(commonMappings)) {
+	const to = commonMappings[from];
+	oneWayMappings.set(Number(from), Number(to));
+}
+for (const from of Object.keys(simpleMappings)) {
+	const to = simpleMappings[from];
+	oneWayMappings.set(Number(from), Number(to));
+}
 // Note: various code points can fold into the same code point, so it’s not
 // possible to simply invert `oneWayMappings` — some entries would be lost in
 // the process.
-
-// Save the uncompressed, JSON-formatted version.
-writeJSON('data/simple-case-folding-mappings.json', oneWayMappings);
 
 // In case-insignificant matches when Unicode is `true` (i.e. when the `u`
 // flag is enabled), all characters are implicitly case-folded using the
@@ -107,9 +110,8 @@ writeJSON('data/simple-case-folding-mappings.json', oneWayMappings);
 // Get the mappings that are unique to regular expressions that have both the
 // `i` and `u` flags set. In addition to the above, this includes all mappings
 // for astral code points.
-const filteredMappings = {};
-_.forEach(oneWayMappings, function(to, from) {
-	from = Number(from);
+const filteredMappings = new Map();
+for (const [from, to] of oneWayMappings.entries()) {
 	// Case folding is applied to both the pattern and the string being matched.
 	// Because of that e.g. `/[A-Z]/iu` matches U+017F and U+212A, just like
 	// `/[a-z]/iu` would, even though no symbol in the range from `A` to `Z`
@@ -120,13 +122,11 @@ _.forEach(oneWayMappings, function(to, from) {
 	// 2. `oneWayMappings` already maps `ſ` to `s`. (383 → 115)
 	// 3. So, in the generated mappings, make sure `S` maps to `ſ`. (83 → 383)
 	// Check if there are any other code points that map to the same `to` value.
-	for (let otherFrom in oneWayMappings) {
-		const otherTo = oneWayMappings[otherFrom];
-		otherFrom = Number(otherFrom);
+	for (const [otherFrom, otherTo] of oneWayMappings.entries()) {
 		if (otherFrom != from && otherTo == to) {
 			// Note: we could use `extend` here, but it’s not necessary as there can
 			// only be a single value for the key `from` at this point.
-			filteredMappings[from] = otherFrom;
+			filteredMappings.set(from, otherFrom);
 		}
 	}
 	if (
@@ -138,22 +138,20 @@ _.forEach(oneWayMappings, function(to, from) {
 	) {
 		extend(filteredMappings, from, to);
 	}
-});
+}
 
 // Create a new object containing all `filteredMappings` and their inverse.
-const iuMappings = {};
-_.forEach(filteredMappings, function(to, from) {
-	from = Number(from);
+const iuMappings = new Map();
+for (const [from, to] of filteredMappings.entries()) {
 	if (Array.isArray(to)) {
-		to.forEach(function(codePoint) {
+		for (const codePoint of to) {
 			extend(iuMappings, from, codePoint, isES5CasedVariant);
 			extend(iuMappings, codePoint, from, isES5CasedVariant);
-		});
+		}
 	} else {
 		extend(iuMappings, from, to, isES5CasedVariant);
 		extend(iuMappings, to, from, isES5CasedVariant);
 	}
-});
+}
 
-// Save the uncompressed, JSON-formatted version.
-writeJSON('data/iu-mappings.json', iuMappings);
+writeMap('data/iu-mappings.js', iuMappings);
