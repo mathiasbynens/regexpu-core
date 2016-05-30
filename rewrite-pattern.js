@@ -1,6 +1,8 @@
 var generate = require('regjsgen').generate;
 var parse = require('regjsparser').parse;
 var regenerate = require('regenerate');
+var looseMatch = require('unicode-loose-match');
+var unicodeProperties = require('regenerate-unicode-properties');
 var iuMappings = require('./data/iu-mappings.json');
 var ESCAPE_SETS = require('./data/character-class-escape-sets.js');
 
@@ -12,6 +14,50 @@ function getCharacterClassEscapeSet(character) {
 		return ESCAPE_SETS.UNICODE[character];
 	}
 	return ESCAPE_SETS.REGULAR[character];
+}
+
+var knownUnicodeProperties = new Set(unicodeProperties);
+
+function getUnicodePropertyValueSet(property, value) {
+	var path = knownUnicodeProperties.has(property) ?
+		property + '/' + value :
+		'Binary_Property/' + property;
+	var set;
+	try {
+		set = require('regenerate-unicode-properties/' + path + '.js');
+	} catch (exception) {
+		throw new Error(
+			'Failed to recognize value `' + value +
+			'` for property `' + property + '`.'
+		);
+	}
+	return set;
+}
+
+function getUnicodePropertyEscapeSet(value, isNegative) {
+	var parts = value.split('=');
+	var canonical;
+	if (parts.length == 1) {
+		var firstPart = parts[0];
+		// It could be a `General_Category` value or a binary property.
+		canonical = looseMatch('General_Category', firstPart);
+		if (!canonical.value) {
+			// It’s not a `General_Category` value, so check if it’s a binary
+			// property. Note: `looseMatch` throws on invalid properties.
+			canonical = looseMatch(firstPart);
+		}
+	} else {
+		// The pattern consists of two parts, i.e. `Property=Value`.
+		canonical = looseMatch(parts[0], parts[1]);
+	}
+	var set = getUnicodePropertyValueSet(
+		canonical.property,
+		canonical.value
+	).clone();
+	if (isNegative) {
+		return UNICODE_SET.clone().remove(set);
+	}
+	return set;
 }
 
 var object = {};
@@ -121,6 +167,9 @@ function processCharacterClass(characterClassItem) {
 			case 'characterClassEscape':
 				set.add(getCharacterClassEscapeSet(item.value));
 				break;
+			case 'unicodePropertyEscape':
+				set.add(getUnicodePropertyEscapeSet(item.value));
+				break;
 			// The `default` clause is only here as a safeguard; it should never be
 			// reached. Code coverage tools should ignore it.
 			/* istanbul ignore next */
@@ -145,6 +194,12 @@ function processTerm(item) {
 			break;
 		case 'characterClass':
 			item = processCharacterClass(item);
+			break;
+		case 'unicodePropertyEscape':
+			update(
+				item,
+				getUnicodePropertyEscapeSet(item.value, item.negative)
+			);
 			break;
 		case 'characterClassEscape':
 			update(
@@ -184,8 +239,8 @@ function processTerm(item) {
 	return item;
 };
 
-module.exports = function(pattern, flags) {
-	var tree = parse(pattern, flags);
+module.exports = function(pattern, flags, features) {
+	var tree = parse(pattern, flags, features);
 	ignoreCase = flags ? flags.indexOf('i') > -1 : false;
 	unicode = flags ? flags.indexOf('u') > -1 : false;
 	assign(tree, processTerm(tree));
