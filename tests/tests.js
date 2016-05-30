@@ -1,20 +1,22 @@
-var assert = require('assert');
-var regenerate = require('regenerate');
-var rewritePattern = require('../rewrite-pattern.js');
-var fixtures = require('regexpu-fixtures');
+'use strict';
+
+const assert = require('assert');
+const regenerate = require('regenerate');
+const rewritePattern = require('../rewrite-pattern.js');
+const fixtures = require('regexpu-fixtures');
 
 describe('rewritePattern', function() {
-	fixtures.forEach(function(fixture) {
-		var pattern = fixture.pattern;
-		fixture.flags.forEach(function(flag) {
+	for (const fixture of fixtures) {
+		const pattern = fixture.pattern;
+		for (const flag of fixture.flags) {
 			it('rewrites `/' + pattern + '/' + flag + '` correctly', function() {
 				assert.equal(rewritePattern(pattern, flag), fixture.transpiled);
 			});
-		});
-	});
+		}
+	}
 });
 
-var unicodePropertyEscapeFixtures = [
+const unicodePropertyEscapeFixtures = [
 	// http://unicode.org/reports/tr18/#RL1.2 item 1
 	{
 		'path': 'General_Category/Uppercase_Letter',
@@ -473,9 +475,9 @@ var unicodePropertyEscapeFixtures = [
 	}
 ];
 
-var UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
-var getPropertyValuePattern = function(path) {
-	var codePoints = require('unicode-8.0.0/' + path + '/code-points.js');
+const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
+const getPropertyValuePattern = function(path) {
+	const codePoints = require('unicode-8.0.0/' + path + '/code-points.js');
 	return {
 		'p': regenerate(codePoints).toString(),
 		'P': UNICODE_SET.clone().remove(codePoints).toString()
@@ -483,30 +485,30 @@ var getPropertyValuePattern = function(path) {
 };
 
 describe('unicodePropertyEscapes', function() {
-	var features = {
+	const features = {
 		'unicodePropertyEscape': true
 	};
-	unicodePropertyEscapeFixtures.forEach(function(fixture) {
-		var expected = getPropertyValuePattern(fixture.path);
-		fixture.expressions.forEach(function(pattern) {
-			var p = '\\p{' + pattern + '}';
+	for (const fixture of unicodePropertyEscapeFixtures) {
+		const expected = getPropertyValuePattern(fixture.path);
+		for (const pattern of fixture.expressions) {
+			const p = `\\p{${ pattern }}`;
 			it('rewrites `/' + p + '/u` correctly', function() {
-				var transpiled = rewritePattern(p, 'u', features);
+				const transpiled = rewritePattern(p, 'u', features);
 				assert(
 					transpiled == expected.p ||
 					transpiled == '(?:' + expected.p + ')'
 				);
 			});
-			var P = '\\P{' + pattern + '}';
+			const P = `\\P{${ pattern }}`;
 			it('rewrites `/' + P + '/u` correctly', function() {
-				var transpiled = rewritePattern(P, 'u', features);
+				const transpiled = rewritePattern(P, 'u', features);
 				assert(
 					transpiled == expected.P ||
 					transpiled == '(?:' + expected.P + ')'
 				);
 			});
-		});
-	});
+		}
+	}
 	it('transpiles Unicode property escapes within various constructions', function() {
 		assert.equal(
 			rewritePattern('\\p{ASCII_Hex_Digit}', 'u', features),

@@ -1,44 +1,44 @@
-var generate = require('regjsgen').generate;
-var parse = require('regjsparser').parse;
-var regenerate = require('regenerate');
-var looseMatch = require('unicode-loose-match');
-var unicodeProperties = require('regenerate-unicode-properties');
-var iuMappings = require('./data/iu-mappings.json');
-var ESCAPE_SETS = require('./data/character-class-escape-sets.js');
+'use strict';
+
+const generate = require('regjsgen').generate;
+const parse = require('regjsparser').parse;
+const regenerate = require('regenerate');
+const looseMatch = require('unicode-loose-match');
+const knownUnicodeProperties = new Set(
+	require('regenerate-unicode-properties')
+);
+const iuMappings = require('./data/iu-mappings.js');
+const ESCAPE_SETS = require('./data/character-class-escape-sets.js');
 
 function getCharacterClassEscapeSet(character) {
 	if (unicode) {
 		if (ignoreCase) {
-			return ESCAPE_SETS.UNICODE_IGNORE_CASE[character];
+			return ESCAPE_SETS.UNICODE_IGNORE_CASE.get(character);
 		}
-		return ESCAPE_SETS.UNICODE[character];
+		return ESCAPE_SETS.UNICODE.get(character);
 	}
-	return ESCAPE_SETS.REGULAR[character];
+	return ESCAPE_SETS.REGULAR.get(character);
 }
 
-var knownUnicodeProperties = new Set(unicodeProperties);
-
 function getUnicodePropertyValueSet(property, value) {
-	var path = knownUnicodeProperties.has(property) ?
-		property + '/' + value :
-		'Binary_Property/' + property;
-	var set;
+	const path = knownUnicodeProperties.has(property) ?
+		`${ property }/${ value }` :
+		`Binary_Property/${ property }`;
 	try {
-		set = require('regenerate-unicode-properties/' + path + '.js');
+		return require(`regenerate-unicode-properties/${ path }.js`);
 	} catch (exception) {
 		throw new Error(
-			'Failed to recognize value `' + value +
-			'` for property `' + property + '`.'
+			`Failed to recognize value \`${ value }\` for property ` +
+			`\`${ property }\`.`
 		);
 	}
-	return set;
 }
 
 function getUnicodePropertyEscapeSet(value, isNegative) {
-	var parts = value.split('=');
-	var canonical;
+	const parts = value.split('=');
+	let canonical;
 	if (parts.length == 1) {
-		var firstPart = parts[0];
+		const firstPart = parts[0];
 		// It could be a `General_Category` value or a binary property.
 		canonical = looseMatch('General_Category', firstPart);
 		if (!canonical.value) {
@@ -50,7 +50,7 @@ function getUnicodePropertyEscapeSet(value, isNegative) {
 		// The pattern consists of two parts, i.e. `Property=Value`.
 		canonical = looseMatch(parts[0], parts[1]);
 	}
-	var set = getUnicodePropertyValueSet(
+	const set = getUnicodePropertyValueSet(
 		canonical.property,
 		canonical.value
 	).clone();
@@ -60,22 +60,16 @@ function getUnicodePropertyEscapeSet(value, isNegative) {
 	return set;
 }
 
-var object = {};
-var hasOwnProperty = object.hasOwnProperty;
-function has(object, property) {
-	return hasOwnProperty.call(object, property);
-}
-
 // Prepare a Regenerate set containing all code points, used for negative
 // character classes (if any).
-var UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
+const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 // Without the `u` flag, the range stops at 0xFFFF.
 // https://mths.be/es6#sec-pattern-semantics
-var BMP_SET = regenerate().addRange(0x0, 0xFFFF);
+const BMP_SET = regenerate().addRange(0x0, 0xFFFF);
 
 // Prepare a Regenerate set containing all code points that are supposed to be
 // matched by `/./u`. https://mths.be/es6#sec-atom
-var DOT_SET_UNICODE = UNICODE_SET.clone() // all Unicode code points
+const DOT_SET_UNICODE = UNICODE_SET.clone() // all Unicode code points
 	.remove(
 		// minus `LineTerminator`s (https://mths.be/es6#sec-line-terminators):
 		0x000A, // Line Feed <LF>
@@ -85,15 +79,15 @@ var DOT_SET_UNICODE = UNICODE_SET.clone() // all Unicode code points
 	);
 // Prepare a Regenerate set containing all code points that are supposed to be
 // matched by `/./` (only BMP code points).
-var DOT_SET = DOT_SET_UNICODE.clone()
+const DOT_SET = DOT_SET_UNICODE.clone()
 	.intersection(BMP_SET);
 
 // Add a range of code points + any case-folded code points in that range to a
 // set.
 regenerate.prototype.iuAddRange = function(min, max) {
-	var $this = this;
+	const $this = this;
 	do {
-		var folded = caseFold(min);
+		const folded = caseFold(min);
 		if (folded) {
 			$this.add(folded);
 		}
@@ -101,19 +95,12 @@ regenerate.prototype.iuAddRange = function(min, max) {
 	return $this;
 };
 
-function assign(target, source) {
-	for (var key in source) {
-		// Note: `hasOwnProperty` is not needed here.
-		target[key] = source[key];
-	}
-}
-
 function update(item, pattern) {
 	// TODO: Test if memoizing `pattern` here is worth the effort.
 	if (!pattern) {
 		return;
 	}
-	var tree = parse(pattern, '');
+	let tree = parse(pattern, '');
 	switch (tree.type) {
 		case 'characterClass':
 		case 'group':
@@ -124,7 +111,7 @@ function update(item, pattern) {
 			// Wrap the pattern in a non-capturing group.
 			tree = wrap(tree, pattern);
 	}
-	assign(item, tree);
+	Object.assign(item, tree);
 }
 
 function wrap(tree, pattern) {
@@ -133,32 +120,32 @@ function wrap(tree, pattern) {
 		'type': 'group',
 		'behavior': 'ignore',
 		'body': [tree],
-		'raw': '(?:' + pattern + ')'
+		'raw': `(?:${ pattern })`
 	};
 }
 
 function caseFold(codePoint) {
-	return has(iuMappings, codePoint) ? iuMappings[codePoint] : false;
+	return iuMappings.get(codePoint) || false;
 }
 
-var ignoreCase = false;
-var unicode = false;
+let ignoreCase = false;
+let unicode = false;
 function processCharacterClass(characterClassItem) {
-	var set = regenerate();
-	var body = characterClassItem.body.forEach(function(item) {
+	let set = regenerate();
+	const body = characterClassItem.body.forEach(function(item) {
 		switch (item.type) {
 			case 'value':
 				set.add(item.codePoint);
 				if (ignoreCase && unicode) {
-					var folded = caseFold(item.codePoint);
+					const folded = caseFold(item.codePoint);
 					if (folded) {
 						set.add(folded);
 					}
 				}
 				break;
 			case 'characterClassRange':
-				var min = item.min.codePoint;
-				var max = item.max.codePoint;
+				const min = item.min.codePoint;
+				const max = item.max.codePoint;
 				set.addRange(min, max);
 				if (ignoreCase && unicode) {
 					set.iuAddRange(min, max);
@@ -174,7 +161,7 @@ function processCharacterClass(characterClassItem) {
 			// reached. Code coverage tools should ignore it.
 			/* istanbul ignore next */
 			default:
-				throw Error('Unknown term type: ' + item.type);
+				throw new Error(`Unknown term type: ${ item.type }`);
 		}
 	});
 	if (characterClassItem.negative) {
@@ -214,10 +201,10 @@ function processTerm(item) {
 			item.body = item.body.map(processTerm);
 			break;
 		case 'value':
-			var codePoint = item.codePoint;
-			var set = regenerate(codePoint);
+			const codePoint = item.codePoint;
+			const set = regenerate(codePoint);
 			if (ignoreCase && unicode) {
-				var folded = caseFold(codePoint);
+				const folded = caseFold(codePoint);
 				if (folded) {
 					set.add(folded);
 				}
@@ -234,15 +221,15 @@ function processTerm(item) {
 		// reached. Code coverage tools should ignore it.
 		/* istanbul ignore next */
 		default:
-			throw Error('Unknown term type: ' + item.type);
+			throw new Error(`Unknown term type: ${ item.type }`);
 	}
 	return item;
 };
 
 module.exports = function(pattern, flags, features) {
-	var tree = parse(pattern, flags, features);
-	ignoreCase = flags ? flags.indexOf('i') > -1 : false;
-	unicode = flags ? flags.indexOf('u') > -1 : false;
-	assign(tree, processTerm(tree));
+	const tree = parse(pattern, flags, features);
+	ignoreCase = flags && flags.includes('i');
+	unicode = flags && flags.includes('u');
+	Object.assign(tree, processTerm(tree));
 	return generate(tree);
 };
