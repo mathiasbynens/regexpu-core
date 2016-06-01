@@ -531,8 +531,16 @@ describe('unicodePropertyEscapes', function() {
 			'[0-9A-F_a-f]'
 		);
 		assert.equal(
+			rewritePattern('[\\P{Block=Low_Surrogates}]', 'u', features),
+			'(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF]))'
+		);
+		assert.equal(
 			rewritePattern('[\\p{Block=Aegean_Numbers}_]', 'u', features),
 			'(?:_|\\uD800[\\uDD00-\\uDD3F])'
+		);
+		assert.equal(
+			rewritePattern('[\\P{Block=Low_Surrogates}_]', 'u', features),
+			'(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF]))'
 		);
 		assert.equal(
 			rewritePattern('(?:\\p{ASCII_Hex_Digit})', 'u', features),
@@ -579,5 +587,14 @@ describe('unicodePropertyEscapes', function() {
 		assert.throws(function() {
 			rewritePattern('\\P{General_Category=UnknownCategory}', 'u', features);
 		}, Error);
+	});
+	it('simplifies the output using Unicode code point escapes when `useUnicodeFlag` is enabled', function() {
+		assert.equal(
+			rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
+				'unicodePropertyEscape': true,
+				'useUnicodeFlag': true
+			}),
+			'[\\u{10100}-\\u{1013F}]'
+		);
 	});
 });

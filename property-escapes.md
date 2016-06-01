@@ -1,6 +1,6 @@
 # Unicode property escapes in _regexpu_
 
-To opt-in to experimental support for Unicode property escapes, enable the `unicodePropertyEscape` feature:
+To opt-in to experimental support for Unicode property escapes, enable [the `unicodePropertyEscape` option](README.md#unicodepropertyescape-default-false).
 
 ```js
 rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
@@ -9,7 +9,17 @@ rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
 // → '(?:\\uD800[\\uDD00-\\uDD3F])'
 ```
 
-Here’s an exhaustive overview of the Unicode properties and values that _regexpu_ supports in `\p{…}` and `\P{…}` expressions.
+If you’re targeting ES6 environments exclusively, consider enabling [the `useUnicodeFlag` option](README.md#useunicodeflag-default-false) for more compact output.
+
+```js
+rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
+  'unicodePropertyEscape': true,
+  'useUnicodeFlag': true
+});
+// → '[\\u{10100}-\\u{1013F}]'
+```
+
+Here’s an exhaustive overview of the Unicode properties and values that _regexpu_ supports in `\p{…}` and `\P{…}` expressions in regular expressions with the `u` flag.
 
 ## Non-binary properties
 

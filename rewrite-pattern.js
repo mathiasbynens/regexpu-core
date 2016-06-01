@@ -11,8 +11,8 @@ const iuMappings = require('./data/iu-mappings.js');
 const ESCAPE_SETS = require('./data/character-class-escape-sets.js');
 
 const getCharacterClassEscapeSet = function(character) {
-	if (unicode) {
-		if (ignoreCase) {
+	if (config.unicode) {
+		if (config.ignoreCase) {
 			return ESCAPE_SETS.UNICODE_IGNORE_CASE.get(character);
 		}
 		return ESCAPE_SETS.UNICODE.get(character);
@@ -96,11 +96,7 @@ regenerate.prototype.iuAddRange = function(min, max) {
 };
 
 const update = function(item, pattern) {
-	// TODO: Test if memoizing `pattern` here is worth the effort.
-	if (!pattern) {
-		return;
-	}
-	let tree = parse(pattern, '');
+	let tree = parse(pattern, config.useUnicodeFlag ? 'u' : '');
 	switch (tree.type) {
 		case 'characterClass':
 		case 'group':
@@ -128,15 +124,13 @@ const caseFold = function(codePoint) {
 	return iuMappings.get(codePoint) || false;
 };
 
-let ignoreCase = false;
-let unicode = false;
-const processCharacterClass = function(characterClassItem) {
+const processCharacterClass = function(characterClassItem, regenerateOptions) {
 	let set = regenerate();
 	const body = characterClassItem.body.forEach(function(item) {
 		switch (item.type) {
 			case 'value':
 				set.add(item.codePoint);
-				if (ignoreCase && unicode) {
+				if (config.ignoreCase && config.unicode) {
 					const folded = caseFold(item.codePoint);
 					if (folded) {
 						set.add(folded);
@@ -147,7 +141,7 @@ const processCharacterClass = function(characterClassItem) {
 				const min = item.min.codePoint;
 				const max = item.max.codePoint;
 				set.addRange(min, max);
-				if (ignoreCase && unicode) {
+				if (config.ignoreCase && config.unicode) {
 					set.iuAddRange(min, max);
 				}
 				break;
@@ -155,7 +149,7 @@ const processCharacterClass = function(characterClassItem) {
 				set.add(getCharacterClassEscapeSet(item.value));
 				break;
 			case 'unicodePropertyEscape':
-				set.add(getUnicodePropertyEscapeSet(item.value));
+				set.add(getUnicodePropertyEscapeSet(item.value, item.negative));
 				break;
 			// The `default` clause is only here as a safeguard; it should never be
 			// reached. Code coverage tools should ignore it.
@@ -165,33 +159,35 @@ const processCharacterClass = function(characterClassItem) {
 		}
 	});
 	if (characterClassItem.negative) {
-		set = (unicode ? UNICODE_SET : BMP_SET).clone().remove(set);
+		set = (config.unicode ? UNICODE_SET : BMP_SET).clone().remove(set);
 	}
-	update(characterClassItem, set.toString());
+	update(characterClassItem, set.toString(regenerateOptions));
 	return characterClassItem;
 };
 
-const processTerm = function(item) {
+const processTerm = function(item, regenerateOptions) {
 	switch (item.type) {
 		case 'dot':
 			update(
 				item,
-				(unicode ? DOT_SET_UNICODE : DOT_SET).toString()
+				(config.unicode ? DOT_SET_UNICODE : DOT_SET)
+					.toString(regenerateOptions)
 			);
 			break;
 		case 'characterClass':
-			item = processCharacterClass(item);
+			item = processCharacterClass(item, regenerateOptions);
 			break;
 		case 'unicodePropertyEscape':
 			update(
 				item,
 				getUnicodePropertyEscapeSet(item.value, item.negative)
+					.toString(regenerateOptions)
 			);
 			break;
 		case 'characterClassEscape':
 			update(
 				item,
-				getCharacterClassEscapeSet(item.value).toString()
+				getCharacterClassEscapeSet(item.value).toString(regenerateOptions)
 			);
 			break;
 		case 'alternative':
@@ -203,13 +199,13 @@ const processTerm = function(item) {
 		case 'value':
 			const codePoint = item.codePoint;
 			const set = regenerate(codePoint);
-			if (ignoreCase && unicode) {
+			if (config.ignoreCase && config.unicode) {
 				const folded = caseFold(codePoint);
 				if (folded) {
 					set.add(folded);
 				}
 			}
-			update(item, set.toString());
+			update(item, set.toString(regenerateOptions));
 			break;
 		case 'anchor':
 		case 'empty':
@@ -226,11 +222,23 @@ const processTerm = function(item) {
 	return item;
 };
 
-const rewritePattern = function(pattern, flags, features) {
-	const tree = parse(pattern, flags, features);
-	ignoreCase = flags && flags.includes('i');
-	unicode = flags && flags.includes('u');
-	Object.assign(tree, processTerm(tree));
+const config = {
+	'ignoreCase': false,
+	'unicode': false,
+	'useUnicodeFlag': false
+};
+const rewritePattern = function(pattern, flags, options) {
+	const regjsparserFeatures = {
+		'unicodePropertyEscape': options && options.unicodePropertyEscape
+	};
+	config.useUnicodeFlag = options && options.useUnicodeFlag;
+	const regenerateOptions = {
+		'hasUnicodeFlag': config.useUnicodeFlag
+	};
+	const tree = parse(pattern, flags, regjsparserFeatures);
+	config.ignoreCase = flags && flags.includes('i');
+	config.unicode = flags && flags.includes('u');
+	Object.assign(tree, processTerm(tree, regenerateOptions));
 	return generate(tree);
 };
 
