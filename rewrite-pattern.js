@@ -10,7 +10,7 @@ const knownUnicodeProperties = new Set(
 const iuMappings = require('./data/iu-mappings.js');
 const ESCAPE_SETS = require('./data/character-class-escape-sets.js');
 
-function getCharacterClassEscapeSet(character) {
+const getCharacterClassEscapeSet = function(character) {
 	if (unicode) {
 		if (ignoreCase) {
 			return ESCAPE_SETS.UNICODE_IGNORE_CASE.get(character);
@@ -18,9 +18,9 @@ function getCharacterClassEscapeSet(character) {
 		return ESCAPE_SETS.UNICODE.get(character);
 	}
 	return ESCAPE_SETS.REGULAR.get(character);
-}
+};
 
-function getUnicodePropertyValueSet(property, value) {
+const getUnicodePropertyValueSet = function(property, value) {
 	const path = knownUnicodeProperties.has(property) ?
 		`${ property }/${ value }` :
 		`Binary_Property/${ property }`;
@@ -32,9 +32,9 @@ function getUnicodePropertyValueSet(property, value) {
 			`\`${ property }\`.`
 		);
 	}
-}
+};
 
-function getUnicodePropertyEscapeSet(value, isNegative) {
+const getUnicodePropertyEscapeSet = function(value, isNegative) {
 	const parts = value.split('=');
 	let canonical;
 	if (parts.length == 1) {
@@ -58,7 +58,7 @@ function getUnicodePropertyEscapeSet(value, isNegative) {
 		return UNICODE_SET.clone().remove(set);
 	}
 	return set;
-}
+};
 
 // Prepare a Regenerate set containing all code points, used for negative
 // character classes (if any).
@@ -95,7 +95,7 @@ regenerate.prototype.iuAddRange = function(min, max) {
 	return $this;
 };
 
-function update(item, pattern) {
+const update = function(item, pattern) {
 	// TODO: Test if memoizing `pattern` here is worth the effort.
 	if (!pattern) {
 		return;
@@ -112,9 +112,9 @@ function update(item, pattern) {
 			tree = wrap(tree, pattern);
 	}
 	Object.assign(item, tree);
-}
+};
 
-function wrap(tree, pattern) {
+const wrap = function(tree, pattern) {
 	// Wrap the pattern in a non-capturing group.
 	return {
 		'type': 'group',
@@ -122,15 +122,15 @@ function wrap(tree, pattern) {
 		'body': [tree],
 		'raw': `(?:${ pattern })`
 	};
-}
+};
 
-function caseFold(codePoint) {
+const caseFold = function(codePoint) {
 	return iuMappings.get(codePoint) || false;
-}
+};
 
 let ignoreCase = false;
 let unicode = false;
-function processCharacterClass(characterClassItem) {
+const processCharacterClass = function(characterClassItem) {
 	let set = regenerate();
 	const body = characterClassItem.body.forEach(function(item) {
 		switch (item.type) {
@@ -169,9 +169,9 @@ function processCharacterClass(characterClassItem) {
 	}
 	update(characterClassItem, set.toString());
 	return characterClassItem;
-}
+};
 
-function processTerm(item) {
+const processTerm = function(item) {
 	switch (item.type) {
 		case 'dot':
 			update(
@@ -226,10 +226,12 @@ function processTerm(item) {
 	return item;
 };
 
-module.exports = function(pattern, flags, features) {
+const rewritePattern = function(pattern, flags, features) {
 	const tree = parse(pattern, flags, features);
 	ignoreCase = flags && flags.includes('i');
 	unicode = flags && flags.includes('u');
 	Object.assign(tree, processTerm(tree));
 	return generate(tree);
 };
+
+module.exports = rewritePattern;
