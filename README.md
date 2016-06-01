@@ -9,7 +9,7 @@ _regexpu-core_ contains _regexpu_’s core functionality, i.e. `rewritePattern(p
 To use _regexpu-core_ programmatically, install it as a dependency via [npm](https://www.npmjs.com/):
 
 ```bash
-npm install regexpu-core --save-dev
+npm install regexpu-core --save
 ```
 
 Then, `require` it:
@@ -22,7 +22,7 @@ const rewritePattern = require('regexpu-core');
 
 This module exports a single function named `rewritePattern`.
 
-### `rewritePattern(pattern, flags, features)`
+### `rewritePattern(pattern, flags, options)`
 
 This function takes a string that represents a regular expression pattern as well as a string representing its flags, and returns an ES5-compatible version of the pattern.
 
@@ -49,13 +49,29 @@ rewritePattern('foo.bar', 'u');
 // → 'foo(?:[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uD7FF\\uDC00-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF])bar'
 ```
 
-The optional `features` argument is passed to [`regjsgen.parse`](https://github.com/d10/regjsgen). For example, to enable [experimental support for Unicode property escapes](property-escapes.md):
+The optional `options` argument recognizes the following properties:
+
+#### `unicodePropertyEscape` (default: `false`)
+
+Setting this option to `true` enables [experimental support for Unicode property escapes](property-escapes.md):
 
 ```js
 rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
   'unicodePropertyEscape': true
 });
 // → '(?:\\uD800[\\uDD00-\\uDD3F])'
+```
+
+#### `useUnicodeFlag` (default: `false`)
+
+Setting this option to `true` enables the use of Unicode code point escapes of the form `\u{…}`, resulting in more compact output. Note that in regular expressions, such escape sequences only work correctly when the ES6 `u` flag is set.
+
+```js
+rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
+  'unicodePropertyEscape': true,
+  'useUnicodeFlag': true
+});
+// → '[\\u{10100}-\\u{1013F}]'
 ```
 
 ## Author
