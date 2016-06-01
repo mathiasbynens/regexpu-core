@@ -10,4 +10,6 @@ script:
      fi'
   - 'npm test'
 after_script:
-  - 'istanbul cover --verbose --dir coverage node_modules/.bin/_mocha tests/tests.js -- -u exports -R spec && coveralls < coverage/lcov.info'
+  - 'istanbul cover --report html node_modules/.bin/_mocha tests -- -u exports -R spec && codecov'
+git:
+  depth: 1

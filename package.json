@@ -45,7 +45,7 @@
   "scripts": {
     "build": "node scripts/iu-mappings.js && node scripts/character-class-escape-sets.js",
     "test": "mocha tests",
-    "coverage": "istanbul cover --report html node_modules/.bin/_mocha tests/tests.js -- -u exports -R spec"
+    "cover": "istanbul cover --report html node_modules/.bin/_mocha tests -- -u exports -R spec"
   },
   "dependencies": {
     "regenerate": "^1.3.0",
@@ -55,7 +55,7 @@
     "unicode-loose-match": "^2.0.7"
   },
   "devDependencies": {
-    "coveralls": "^2.11.2",
+    "codecov": "^1.0.1",
     "istanbul": "^0.4.0",
     "jsesc": "^2.1.0",
     "lodash": "^4.13.1",
