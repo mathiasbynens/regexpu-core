@@ -40,7 +40,7 @@
     "LICENSE-MIT.txt",
     "rewrite-pattern.js",
     "data/character-class-escape-sets.js",
-    "data/iu-mappings.json"
+    "data/iu-mappings.js"
   ],
   "scripts": {
     "build": "node scripts/iu-mappings.js && node scripts/character-class-escape-sets.js",
