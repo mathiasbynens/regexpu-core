@@ -64,7 +64,7 @@ rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
 
 #### `useUnicodeFlag` (default: `false`)
 
-Setting this option to `true` enables the use of Unicode code point escapes of the form `\u{…}`, resulting in more compact output. Note that in regular expressions, such escape sequences only work correctly when the ES6 `u` flag is set.
+Setting this option to `true` enables the use of Unicode code point escapes of the form `\u{…}`. Note that in regular expressions, such escape sequences only work correctly when the ES6 `u` flag is set. Enabling this setting often results in more compact output, although there are cases (such as `\p{Lu}`) where it actually _increases_ the output size.
 
 ```js
 rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
