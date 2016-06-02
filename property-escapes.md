@@ -19,7 +19,11 @@ rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
 // → '[\\u{10100}-\\u{1013F}]'
 ```
 
-Here’s an exhaustive overview of the Unicode properties and values that _regexpu_ supports in `\p{…}` and `\P{…}` expressions in regular expressions with the `u` flag.
+[An online demo is available.](https://mothereff.in/regexpu#input=var+regex+%3D+/%5Cp%7BScript_Extensions%3DGreek%7D/u%3B&unicodePropertyEscape=1)
+
+Note that this feature is non-standard. This implementation may or may not reflect what eventually gets specified.
+
+What follows is an exhaustive overview of the Unicode properties and values that _regexpu_ supports in `\p{…}` and `\P{…}` expressions in regular expressions with the `u` flag.
 
 ## Non-binary properties
 
