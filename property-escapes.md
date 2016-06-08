@@ -1,6 +1,6 @@
 # Unicode property escapes in _regexpu_
 
-To opt-in to experimental support for Unicode property escapes, enable [the `unicodePropertyEscape` option](README.md#unicodepropertyescape-default-false).
+To opt-in to experimental support for [Unicode property escapes](https://github.com/mathiasbynens/es-regexp-unicode-property-escapes), enable [the `unicodePropertyEscape` option](README.md#unicodepropertyescape-default-false).
 
 ```js
 rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
@@ -9,7 +9,7 @@ rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
 // → '(?:\\uD800[\\uDD00-\\uDD3F])'
 ```
 
-If you’re targeting ES6 environments exclusively, consider enabling [the `useUnicodeFlag` option](README.md#useunicodeflag-default-false) for more compact output.
+If you’re targeting ES6 environments exclusively, consider enabling [the `useUnicodeFlag` option](README.md#useunicodeflag-default-false) for simpler (but not necessarily more compact) output.
 
 ```js
 rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {

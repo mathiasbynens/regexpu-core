@@ -21,116 +21,110 @@ const unicodePropertyEscapeFixtures = [
 	{
 		'path': 'General_Category/Uppercase_Letter',
 		'expressions': [
-			'Lu',
-			'lu',
-			'General_Category=Lu',
-			'gc=lu',
-			'Uppercase_Letter',
-			'UppercaseLetter',
-			'uppercase letter',
-			'uppercaseletter',
-			'General_Category=Uppercase_Letter',
-			'General_Category=UppercaseLetter',
+			'gc=Lu',
 			'gc=Uppercase_Letter',
-			'gc=UppercaseLetter'
+			'General_Category=Lu',
+			'General_Category=Uppercase_Letter',
+			'Lu',
+			'Uppercase_Letter'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 2a
 	{
 		'path': 'Script/Greek',
 		'expressions': [
-			'Script=Greek',
-			'script=Greek',
-			'sc=greek'
+			'sc=Grek',
+			'sc=Greek',
+			'Script=Grek',
+			'Script=Greek'
 		]
 	},
 	{
 		'path': 'Script/Hiragana',
 		'expressions': [
-			'Script=Hiragana',
-			'script=Hira',
-			'sc=hira'
+			'sc=Hira',
+			'sc=Hiragana',
+			'Script=Hira',
+			'Script=Hiragana'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 2b
 	{
 		'path': 'Script_Extensions/Greek',
 		'expressions': [
-			'Script_Extensions=Greek',
-			'scriptextensions=Greek',
-			'scx=greek'
+			'scx=Grek',
+			'scx=Greek',
+			'Script_Extensions=Grek',
+			'Script_Extensions=Greek'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 3
 	{
 		'path': 'Binary_Property/Alphabetic',
 		'expressions': [
-			'Alphabetic',
-			'alpha'
+			'Alpha',
+			'Alphabetic'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 4
 	{
 		'path': 'Binary_Property/Uppercase',
 		'expressions': [
-			'Uppercase',
-			'upper'
+			'Upper',
+			'Uppercase'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 5
 	{
 		'path': 'Binary_Property/Lowercase',
 		'expressions': [
-			'Lowercase',
-			'lower'
+			'Lower',
+			'Lowercase'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 6
 	{
 		'path': 'Binary_Property/White_Space',
 		'expressions': [
-			'White_Space',
-			'wspace'
+			'WSpace',
+			'White_Space'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 7
 	{
 		'path': 'Binary_Property/Noncharacter_Code_Point',
 		'expressions': [
-			'Noncharacter_Code_Point',
-			'nchar'
+			'NChar',
+			'Noncharacter_Code_Point'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 8
 	{
 		'path': 'Binary_Property/Default_Ignorable_Code_Point',
 		'expressions': [
-			'Default_Ignorable_Code_Point',
-			'di'
+			'DI',
+			'Default_Ignorable_Code_Point'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 9a
 	{
 		'path': 'Binary_Property/Any',
 		'expressions': [
-			'Any',
-			'any'
+			'Any'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 9b
 	{
 		'path': 'Binary_Property/ASCII',
 		'expressions': [
-			'ASCII',
-			'ascii'
+			'ASCII'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL1.2 item 9c
 	{
 		'path': 'Binary_Property/Assigned',
 		'expressions': [
-			'Assigned',
-			'assigned'
+			'Assigned'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
@@ -138,340 +132,346 @@ const unicodePropertyEscapeFixtures = [
 		'path': 'Binary_Property/ASCII_Hex_Digit',
 		'expressions': [
 			'ASCII_Hex_Digit',
-			'ahex'
+			'AHex'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Bidi_Class/Arabic_Letter',
 		'expressions': [
-			'Bidi_Class=Arabic_Letter',
-			'Bidi_Class=al',
-			'bc=al'
+			'bc=AL',
+			'bc=Arabic_Letter',
+			'Bidi_Class=AL',
+			'Bidi_Class=Arabic_Letter'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Bidi_Control',
 		'expressions': [
-			'Bidi_Control',
-			'bidic'
+			'Bidi_C',
+			'Bidi_Control'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Block/Alphabetic_Presentation_Forms',
 		'expressions': [
-			'Block=Alphabetic_Presentation_Forms',
-			'Block=alphabeticpresentationforms',
-			'Block=alphabeticpf',
-			'blk=alphabeticpf'
+			'blk=Alphabetic_PF',
+			'blk=Alphabetic_Presentation_Forms',
+			'Block=Alphabetic_PF',
+			'Block=Alphabetic_Presentation_Forms'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Bidi_Mirrored',
 		'expressions': [
-			'Bidi_Mirrored',
-			'bidim'
+			'Bidi_M',
+			'Bidi_Mirrored'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Case_Ignorable',
 		'expressions': [
+			'CI',
 			'Case_Ignorable',
-			'ci'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Cased',
 		'expressions': [
-			'Cased',
-			'cased'
+			'Cased'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_NFKC_Casefolded',
 		'expressions': [
-			'Changes_When_NFKC_Casefolded',
-			'cwkcf'
+			'CWKCF',
+			'Changes_When_NFKC_Casefolded'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_Casefolded',
 		'expressions': [
-			'Changes_When_Casefolded',
-			'cwcf'
+			'CWCF',
+			'Changes_When_Casefolded'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_Casemapped',
 		'expressions': [
-			'Changes_When_Casemapped',
-			'cwcm'
+			'CWCM',
+			'Changes_When_Casemapped'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_Lowercased',
 		'expressions': [
-			'Changes_When_Lowercased',
-			'cwl'
+			'CWL',
+			'Changes_When_Lowercased'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_Titlecased',
 		'expressions': [
-			'Changes_When_Titlecased',
-			'cwt'
+			'CWT',
+			'Changes_When_Titlecased'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_Uppercased',
 		'expressions': [
-			'Changes_When_Uppercased',
-			'cwu'
+			'CWU',
+			'Changes_When_Uppercased'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Composition_Exclusion',
 		'expressions': [
-			'Composition_Exclusion',
-			'ce'
+			'CE',
+			'Composition_Exclusion'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Dash',
 		'expressions': [
-			'Dash',
-			'dash'
+			'Dash'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Deprecated',
 		'expressions': [
-			'Deprecated',
-			'dep'
+			'Dep',
+			'Deprecated'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Diacritic',
 		'expressions': [
-			'Diacritic',
-			'dia'
+			'Dia',
+			'Diacritic'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Extender',
 		'expressions': [
-			'Extender',
-			'ext'
+			'Ext',
+			'Extender'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Full_Composition_Exclusion',
 		'expressions': [
-			'Full_Composition_Exclusion',
-			'comp_ex',
-			'compex'
+			'Comp_Ex',
+			'Full_Composition_Exclusion'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Grapheme_Base',
 		'expressions': [
-			'Grapheme_Base',
-			'grbase'
+			'Gr_Base',
+			'Grapheme_Base'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Grapheme_Extend',
 		'expressions': [
-			'Grapheme_Extend',
-			'grext'
+			'Gr_Ext',
+			'Grapheme_Extend'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Hex_Digit',
 		'expressions': [
-			'Hex_Digit',
-			'hex'
+			'Hex',
+			'Hex_Digit'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/ID_Continue',
 		'expressions': [
-			'ID_Continue',
-			'idc'
+			'IDC',
+			'ID_Continue'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/ID_Start',
 		'expressions': [
-			'ID_Start',
-			'ids'
+			'IDS',
+			'ID_Start'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Ideographic',
 		'expressions': [
-			'Ideographic',
-			'ideo'
+			'Ideo',
+			'Ideographic'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/IDS_Binary_Operator',
 		'expressions': [
-			'IDS_Binary_Operator',
-			'idsb'
+			'IDSB',
+			'IDS_Binary_Operator'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/IDS_Trinary_Operator',
 		'expressions': [
-			'IDS_Trinary_Operator',
-			'idst'
+			'IDST',
+			'IDS_Trinary_Operator'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Join_Control',
 		'expressions': [
-			'Join_Control',
-			'joinc'
+			'Join_C',
+			'Join_Control'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Logical_Order_Exception',
 		'expressions': [
-			'Logical_Order_Exception',
-			'loe'
+			'LOE',
+			'Logical_Order_Exception'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Math',
 		'expressions': [
-			'Math',
-			'math'
+			'Math'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Pattern_Syntax',
 		'expressions': [
-			'Pattern_Syntax',
-			'patsyn'
+			'Pat_Syn',
+			'Pattern_Syntax'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Pattern_White_Space',
 		'expressions': [
-			'Pattern_White_Space',
-			'patws'
+			'Pat_WS',
+			'Pattern_White_Space'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Quotation_Mark',
 		'expressions': [
-			'Quotation_Mark',
-			'qmark'
+			'QMark',
+			'Quotation_Mark'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Radical',
 		'expressions': [
-			'Radical',
-			'radical'
+			'Radical'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Soft_Dotted',
 		'expressions': [
-			'Soft_Dotted',
-			'sd'
+			'SD',
+			'Soft_Dotted'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
-	// TODO: Re-enable this test once Unicode v9 is released.
+	// TODO: Re-enable this test once Unicode v9.0.0 is released.
 	// {
 	// 	'path': 'Binary_Property/STerm',
 	// 	'expressions': [
-	// 		'STerm',
-	// 		'sterm'
+	// 		'STerm'
 	// 	]
 	// },
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Terminal_Punctuation',
 		'expressions': [
-			'Terminal_Punctuation',
-			'term'
+			'Term',
+			'Terminal_Punctuation'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Unified_Ideograph',
 		'expressions': [
-			'Unified_Ideograph',
-			'uideo'
+			'UIdeo',
+			'Unified_Ideograph'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Variation_Selector',
 		'expressions': [
-			'Variation_Selector',
-			'vs'
+			'VS',
+			'Variation_Selector'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/XID_Continue',
 		'expressions': [
-			'XID_Continue',
-			'xidc'
+			'XIDC',
+			'XID_Continue'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/XID_Start',
 		'expressions': [
-			'XID_Start',
-			'xids'
+			'XIDS',
+			'XID_Start'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Bidi_Paired_Bracket_Type/Open',
 		'expressions': [
-			'Bidi_Paired_Bracket_Type=Open',
-			'bpt=o'
+			'bpt=o',
+			'bpt=Open',
+			'Bidi_Paired_Bracket_Type=o',
+			'Bidi_Paired_Bracket_Type=Open'
+		]
+	},
+	{
+		'path': 'Block/Superscripts_And_Subscripts',
+		'expressions': [
+			'blk=Super_And_Sub',
+			'blk=Superscripts_And_Subscripts',
+			'Block=Super_And_Sub',
+			'Block=Superscripts_And_Subscripts'
 		]
 	}
 ];
@@ -587,6 +587,17 @@ describe('unicodePropertyEscapes', function() {
 		}, Error);
 		assert.throws(function() {
 			rewritePattern('\\P{General_Category=UnknownCategory}', 'u', features);
+		}, Error);
+	});
+	it('throws when loose matching is attempted', function() {
+		assert.throws(function() {
+			rewritePattern('\\p{gc=uppercaseletter}', 'u', features);
+		}, Error);
+		assert.throws(function() {
+			rewritePattern('\p{Block=Superscripts and Subscripts}', 'u', features);
+		}, Error);
+		assert.throws(function() {
+			rewritePattern('\\P{_-_lOwEr_C-A_S-E_-_}', 'u', features);
 		}, Error);
 	});
 	it('simplifies the output using Unicode code point escapes when `useUnicodeFlag` is enabled', function() {
