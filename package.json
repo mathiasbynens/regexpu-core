@@ -52,7 +52,8 @@
     "regenerate-unicode-properties": "^1.0.0",
     "regjsgen": "^0.3.0",
     "regjsparser": "^0.2.0",
-    "unicode-loose-match": "^2.0.7"
+    "unicode-match-property": "^0.1.1",
+    "unicode-match-property-value": "^1.0.1"
   },
   "devDependencies": {
     "codecov": "^1.0.1",

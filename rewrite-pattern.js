@@ -3,10 +3,8 @@
 const generate = require('regjsgen').generate;
 const parse = require('regjsparser').parse;
 const regenerate = require('regenerate');
-const looseMatch = require('unicode-loose-match');
-const knownUnicodeProperties = new Set(
-	require('regenerate-unicode-properties')
-);
+const unicodeMatchProperty = require('unicode-match-property');
+const unicodeMatchPropertyValue = require('unicode-match-property-value');
 const iuMappings = require('./data/iu-mappings.js');
 const ESCAPE_SETS = require('./data/character-class-escape-sets.js');
 
@@ -21,7 +19,7 @@ const getCharacterClassEscapeSet = function(character) {
 };
 
 const getUnicodePropertyValueSet = function(property, value) {
-	const path = knownUnicodeProperties.has(property) ?
+	const path = value ?
 		`${ property }/${ value }` :
 		`Binary_Property/${ property }`;
 	try {
@@ -34,30 +32,36 @@ const getUnicodePropertyValueSet = function(property, value) {
 	}
 };
 
+const handleLoneUnicodePropertyNameOrValue = function(value) {
+	// It could be a `General_Category` value or a binary property.
+	// Note: `unicodeMatchPropertyValue` throws on invalid values.
+	try {
+		const property = 'General_Category';
+		const category = unicodeMatchPropertyValue(property, value);
+		return getUnicodePropertyValueSet(property, category);
+	} catch (exception) {}
+	// It’s not a `General_Category` value, so check if it’s a binary
+	// property. Note: `unicodeMatchProperty` throws on invalid properties.
+	const property = unicodeMatchProperty(value);
+	return getUnicodePropertyValueSet(property);
+};
+
 const getUnicodePropertyEscapeSet = function(value, isNegative) {
 	const parts = value.split('=');
-	let canonical;
+	const firstPart = parts[0];
+	let set;
 	if (parts.length == 1) {
-		const firstPart = parts[0];
-		// It could be a `General_Category` value or a binary property.
-		canonical = looseMatch('General_Category', firstPart);
-		if (!canonical.value) {
-			// It’s not a `General_Category` value, so check if it’s a binary
-			// property. Note: `looseMatch` throws on invalid properties.
-			canonical = looseMatch(firstPart);
-		}
+		set = handleLoneUnicodePropertyNameOrValue(firstPart);
 	} else {
 		// The pattern consists of two parts, i.e. `Property=Value`.
-		canonical = looseMatch(parts[0], parts[1]);
+		const property = unicodeMatchProperty(firstPart);
+		const value = unicodeMatchPropertyValue(property, parts[1]);
+		set = getUnicodePropertyValueSet(property, value);
 	}
-	const set = getUnicodePropertyValueSet(
-		canonical.property,
-		canonical.value
-	).clone();
 	if (isNegative) {
 		return UNICODE_SET.clone().remove(set);
 	}
-	return set;
+	return set.clone();
 };
 
 // Prepare a Regenerate set containing all code points, used for negative
