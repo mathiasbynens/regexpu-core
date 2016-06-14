@@ -418,13 +418,14 @@ const unicodePropertyEscapeFixtures = [
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/STerm',
-		'expressions': [
-			'STerm',
-			'sterm'
-		]
-	},
+	// TODO: Re-enable this test once Unicode v9 is released.
+	// {
+	// 	'path': 'Binary_Property/STerm',
+	// 	'expressions': [
+	// 		'STerm',
+	// 		'sterm'
+	// 	]
+	// },
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Terminal_Punctuation',
@@ -597,4 +598,14 @@ describe('unicodePropertyEscapes', function() {
 			'[\\u{10100}-\\u{1013F}]'
 		);
 	});
+	assert.equal(
+		rewritePattern('\u03B8', 'iu'),
+		'[\\u03B8\\u03F4]'
+	);
+	assert.equal(
+		rewritePattern('\u03B8', 'iu', {
+			'useUnicodeFlag': true
+		}),
+		'\\u03B8'
+	);
 });

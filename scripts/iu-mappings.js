@@ -4,6 +4,10 @@ const fs = require('fs');
 const _ = require('lodash');
 const jsesc = require('jsesc');
 
+function hex(number) {
+	return `0x${ number.toString(16).toUpperCase() }`;
+}
+
 function writeMap(fileName, map) {
 	// Sort map by key.
 	const sortedMap = new Map([...map].sort((a, b) => a[0] - b[0]));
@@ -16,7 +20,7 @@ function writeMap(fileName, map) {
 	);
 }
 
-// Given two code points, check if both are in the ASCII ranges and if one is
+// Given two code points, check if both are in the ASCII range and if one is
 // the uppercased version of the other. In that case, ES5 engines know about
 // this mapping, so it’s only needed to include one of the two in a
 // case-insensitive regular expression.
@@ -97,13 +101,13 @@ for (const from of Object.keys(simpleMappings)) {
 // possible to simply invert `oneWayMappings` — some entries would be lost in
 // the process.
 
-// In case-insignificant matches when Unicode is `true` (i.e. when the `u`
+// In case-insignificant matches when `Unicode` is `true` (i.e. when the `u`
 // flag is enabled), all characters are implicitly case-folded using the
 // simple mapping provided by the Unicode standard immediately before they
 // are compared. The simple mapping always maps to a single code point, so it
 // does not map, for example, `ß` (U+00DF) to `SS`. It may however map a code
 // point outside the Basic Latin range to a character within, for example, `ſ`
-// (U+017F) to `s`. Such characters are not mapped if Unicode is `false`.
+// (U+017F) to `s`. Such characters are not mapped if `Unicode` is `false`.
 // This prevents Unicode code points such as U+017F and U+212A from matching
 // regular expressions such as `/[a‑z]/i`, but they will match `/[a‑z]/ui`.
 // https://mths.be/es6#sec-runtime-semantics-canonicalize-abstract-operation
@@ -134,9 +138,28 @@ for (const [from, to] of oneWayMappings.entries()) {
 		(from > 0xFFFF || to > 0xFFFF) ||
 		// Exclude ES5 mappings as per the above comment.
 		// https://mths.be/es6#sec-runtime-semantics-canonicalize-abstract-operation
-		(from >= 0x80 && to < 0x80)
+		( // TODO: Make this not depend on the engine in which this build script
+			// runs. (If V8 has a bug, then the generated data has the same bug.)
+			!RegExp(String.fromCodePoint(from), 'i').test(String.fromCodePoint(to))
+		)
 	) {
 		extend(filteredMappings, from, to);
+	} else {
+		const stringFrom = String.fromCodePoint(from);
+		const stringTo = String.fromCodePoint(to);
+		const code = `/${
+			jsesc(stringFrom)
+		}/i.test(${
+			jsesc(stringTo, { 'wrap': true })
+		})`;
+		console.log(
+			`Skipping ${ hex(from) } → ${ hex(to) } since ${ code } is already \`true\`.`
+		);
+		// The following snippet was used to create https://mths.be/demo/regex-i.
+		// https://github.com/mathiasbynens/regexpu-core/issues/7#issuecomment-225894534
+		// console.log(
+		// 	`console.assert(${ code }, ${ JSON.stringify(code) });`
+		// );
 	}
 }
 

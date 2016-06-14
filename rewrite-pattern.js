@@ -82,8 +82,8 @@ const DOT_SET_UNICODE = UNICODE_SET.clone() // all Unicode code points
 const DOT_SET = DOT_SET_UNICODE.clone()
 	.intersection(BMP_SET);
 
-// Add a range of code points + any case-folded code points in that range to a
-// set.
+// Given a range of code points, add any case-folded code points in that range
+// to a set.
 regenerate.prototype.iuAddRange = function(min, max) {
 	const $this = this;
 	do {
@@ -130,7 +130,7 @@ const processCharacterClass = function(characterClassItem, regenerateOptions) {
 		switch (item.type) {
 			case 'value':
 				set.add(item.codePoint);
-				if (config.ignoreCase && config.unicode) {
+				if (config.ignoreCase && config.unicode && !config.useUnicodeFlag) {
 					const folded = caseFold(item.codePoint);
 					if (folded) {
 						set.add(folded);
@@ -141,7 +141,7 @@ const processCharacterClass = function(characterClassItem, regenerateOptions) {
 				const min = item.min.codePoint;
 				const max = item.max.codePoint;
 				set.addRange(min, max);
-				if (config.ignoreCase && config.unicode) {
+				if (config.ignoreCase && config.unicode && !config.useUnicodeFlag) {
 					set.iuAddRange(min, max);
 				}
 				break;
@@ -199,7 +199,7 @@ const processTerm = function(item, regenerateOptions) {
 		case 'value':
 			const codePoint = item.codePoint;
 			const set = regenerate(codePoint);
-			if (config.ignoreCase && config.unicode) {
+			if (config.ignoreCase && config.unicode && !config.useUnicodeFlag) {
 				const folded = caseFold(codePoint);
 				if (folded) {
 					set.add(folded);
