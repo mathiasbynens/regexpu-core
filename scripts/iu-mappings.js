@@ -138,7 +138,8 @@ for (const [from, to] of oneWayMappings.entries()) {
 		(from > 0xFFFF || to > 0xFFFF) ||
 		// Exclude ES5 mappings as per the above comment.
 		// https://mths.be/es6#sec-runtime-semantics-canonicalize-abstract-operation
-		( // TODO: Make this not depend on the engine in which this build script
+		(
+			// TODO: Make this not depend on the engine in which this build script
 			// runs. (If V8 has a bug, then the generated data has the same bug.)
 			!RegExp(String.fromCodePoint(from), 'i').test(String.fromCodePoint(to))
 		)
