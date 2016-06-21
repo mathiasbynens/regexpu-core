@@ -408,13 +408,13 @@ const unicodePropertyEscapeFixtures = [
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
-	// TODO: Re-enable this test once Unicode v9.0.0 is released.
-	// {
-	// 	'path': 'Binary_Property/STerm',
-	// 	'expressions': [
-	// 		'STerm'
-	// 	]
-	// },
+	{
+		'path': 'Binary_Property/Sentence_Terminal',
+		'expressions': [
+			'STerm',
+			'Sentence_Terminal'
+		]
+	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Terminal_Punctuation',
@@ -478,7 +478,7 @@ const unicodePropertyEscapeFixtures = [
 
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 const getPropertyValuePattern = function(path) {
-	const codePoints = require('unicode-8.0.0/' + path + '/code-points.js');
+	const codePoints = require('unicode-9.0.0/' + path + '/code-points.js');
 	return {
 		'p': regenerate(codePoints).toString(),
 		'P': UNICODE_SET.clone().remove(codePoints).toString()
