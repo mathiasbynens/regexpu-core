@@ -32,7 +32,7 @@ What follows is an exhaustive overview of the Unicode properties and values that
 Possible values:
 
 ```sh
-$ node -e 'require("unicode-8.0.0").Bidi_Class.forEach(c => { console.log(`\\p{Bidi_Class=${c}}`); })'
+$ node -e 'require("unicode-9.0.0").Bidi_Class.forEach(c => { console.log(`\\p{Bidi_Class=${c}}`); })'
 \p{Bidi_Class=Arabic_Letter}
 \p{Bidi_Class=Arabic_Number}
 \p{Bidi_Class=Boundary_Neutral}
@@ -65,7 +65,7 @@ Note that bidi class aliases may be used as well, e.g. `\p{Bidi_Class=AL}`, alth
 Possible values:
 
 ```sh
-$ node -e 'require("unicode-8.0.0").Bidi_Paired_Bracket_Type.forEach(t => { console.log(`\\p{Bidi_Paired_Bracket_Type=${t}}`); })'
+$ node -e 'require("unicode-9.0.0").Bidi_Paired_Bracket_Type.forEach(t => { console.log(`\\p{Bidi_Paired_Bracket_Type=${t}}`); })'
 \p{Bidi_Paired_Bracket_Type=Close}
 \p{Bidi_Paired_Bracket_Type=None}
 \p{Bidi_Paired_Bracket_Type=Open}
@@ -78,7 +78,8 @@ Note that property name aliases may be used as well, e.g. `\p{Bidi_Paired_Bracke
 Possible values:
 
 ```sh
-$ node -e 'require("unicode-8.0.0").Block.forEach(b => { console.log(`\\p{Block=${b}}`); })'
+$ node -e 'require("unicode-9.0.0").Block.forEach(b => { console.log(`\\p{Block=${b}}`); })'
+\p{Block=Adlam}
 \p{Block=Aegean_Numbers}
 \p{Block=Ahom}
 \p{Block=Alchemical_Symbols}
@@ -103,6 +104,7 @@ $ node -e 'require("unicode-8.0.0").Block.forEach(b => { console.log(`\\p{Block=
 \p{Block=Bassa_Vah}
 \p{Block=Batak}
 \p{Block=Bengali}
+\p{Block=Bhaiksuki}
 \p{Block=Block_Elements}
 \p{Block=Bopomofo}
 \p{Block=Bopomofo_Extended}
@@ -148,6 +150,7 @@ $ node -e 'require("unicode-8.0.0").Block.forEach(b => { console.log(`\\p{Block=
 \p{Block=Cyrillic}
 \p{Block=Cyrillic_Extended_A}
 \p{Block=Cyrillic_Extended_B}
+\p{Block=Cyrillic_Extended_C}
 \p{Block=Cyrillic_Supplement}
 \p{Block=Deseret}
 \p{Block=Devanagari}
@@ -173,6 +176,7 @@ $ node -e 'require("unicode-8.0.0").Block.forEach(b => { console.log(`\\p{Block=
 \p{Block=Georgian}
 \p{Block=Georgian_Supplement}
 \p{Block=Glagolitic}
+\p{Block=Glagolitic_Supplement}
 \p{Block=Gothic}
 \p{Block=Grantha}
 \p{Block=Greek_And_Coptic}
@@ -193,6 +197,7 @@ $ node -e 'require("unicode-8.0.0").Block.forEach(b => { console.log(`\\p{Block=
 \p{Block=Hiragana}
 \p{Block=IPA_Extensions}
 \p{Block=Ideographic_Description_Characters}
+\p{Block=Ideographic_Symbols_And_Punctuation}
 \p{Block=Imperial_Aramaic}
 \p{Block=Inscriptional_Pahlavi}
 \p{Block=Inscriptional_Parthian}
@@ -233,6 +238,7 @@ $ node -e 'require("unicode-8.0.0").Block.forEach(b => { console.log(`\\p{Block=
 \p{Block=Malayalam}
 \p{Block=Mandaic}
 \p{Block=Manichaean}
+\p{Block=Marchen}
 \p{Block=Mathematical_Alphanumeric_Symbols}
 \p{Block=Mathematical_Operators}
 \p{Block=Meetei_Mayek}
@@ -250,6 +256,7 @@ $ node -e 'require("unicode-8.0.0").Block.forEach(b => { console.log(`\\p{Block=
 \p{Block=Modi}
 \p{Block=Modifier_Tone_Letters}
 \p{Block=Mongolian}
+\p{Block=Mongolian_Supplement}
 \p{Block=Mro}
 \p{Block=Multani}
 \p{Block=Musical_Symbols}
@@ -259,6 +266,7 @@ $ node -e 'require("unicode-8.0.0").Block.forEach(b => { console.log(`\\p{Block=
 \p{Block=NKo}
 \p{Block=Nabataean}
 \p{Block=New_Tai_Lue}
+\p{Block=Newa}
 \p{Block=Number_Forms}
 \p{Block=Ogham}
 \p{Block=Ol_Chiki}
@@ -272,6 +280,7 @@ $ node -e 'require("unicode-8.0.0").Block.forEach(b => { console.log(`\\p{Block=
 \p{Block=Optical_Character_Recognition}
 \p{Block=Oriya}
 \p{Block=Ornamental_Dingbats}
+\p{Block=Osage}
 \p{Block=Osmanya}
 \p{Block=Pahawh_Hmong}
 \p{Block=Palmyrene}
@@ -322,6 +331,8 @@ $ node -e 'require("unicode-8.0.0").Block.forEach(b => { console.log(`\\p{Block=
 \p{Block=Tai_Xuan_Jing_Symbols}
 \p{Block=Takri}
 \p{Block=Tamil}
+\p{Block=Tangut}
+\p{Block=Tangut_Components}
 \p{Block=Telugu}
 \p{Block=Thaana}
 \p{Block=Thai}
@@ -350,7 +361,7 @@ Note that block name aliases may be used as well, e.g. `\p{Arabic_Math}`, althou
 Possible values:
 
 ```sh
-$ node -e 'require("unicode-8.0.0").General_Category.forEach(c => { console.log(`\\p{${c}}`); })'
+$ node -e 'require("unicode-9.0.0").General_Category.forEach(c => { console.log(`\\p{${c}}`); })'
 \p{Cased_Letter}
 \p{Close_Punctuation}
 \p{Connector_Punctuation}
@@ -400,7 +411,8 @@ Category aliases may be used, e.g. `\p{Lc}` or `\p{General_Category=Lc}`, althou
 The sets of possible values for `Script` and `Script_Extensions` are identical:
 
 ```sh
-$ node -e 'require("unicode-8.0.0").Script_Extensions.forEach(s => { console.log(`\\p{Script_Extensions=${s}}`); })'
+$ node -e 'require("unicode-9.0.0").Script_Extensions.forEach(s => { console.log(`\\p{Script_Extensions=${s}}`); })'
+\p{Script_Extensions=Adlam}
 \p{Script_Extensions=Ahom}
 \p{Script_Extensions=Anatolian_Hieroglyphs}
 \p{Script_Extensions=Arabic}
@@ -411,6 +423,7 @@ $ node -e 'require("unicode-8.0.0").Script_Extensions.forEach(s => { console.log
 \p{Script_Extensions=Bassa_Vah}
 \p{Script_Extensions=Batak}
 \p{Script_Extensions=Bengali}
+\p{Script_Extensions=Bhaiksuki}
 \p{Script_Extensions=Bopomofo}
 \p{Script_Extensions=Brahmi}
 \p{Script_Extensions=Braille}
@@ -472,6 +485,7 @@ $ node -e 'require("unicode-8.0.0").Script_Extensions.forEach(s => { console.log
 \p{Script_Extensions=Malayalam}
 \p{Script_Extensions=Mandaic}
 \p{Script_Extensions=Manichaean}
+\p{Script_Extensions=Marchen}
 \p{Script_Extensions=Meetei_Mayek}
 \p{Script_Extensions=Mende_Kikakui}
 \p{Script_Extensions=Meroitic_Cursive}
@@ -484,6 +498,7 @@ $ node -e 'require("unicode-8.0.0").Script_Extensions.forEach(s => { console.log
 \p{Script_Extensions=Myanmar}
 \p{Script_Extensions=Nabataean}
 \p{Script_Extensions=New_Tai_Lue}
+\p{Script_Extensions=Newa}
 \p{Script_Extensions=Nko}
 \p{Script_Extensions=Ogham}
 \p{Script_Extensions=Ol_Chiki}
@@ -495,6 +510,7 @@ $ node -e 'require("unicode-8.0.0").Script_Extensions.forEach(s => { console.log
 \p{Script_Extensions=Old_South_Arabian}
 \p{Script_Extensions=Old_Turkic}
 \p{Script_Extensions=Oriya}
+\p{Script_Extensions=Osage}
 \p{Script_Extensions=Osmanya}
 \p{Script_Extensions=Pahawh_Hmong}
 \p{Script_Extensions=Palmyrene}
@@ -522,6 +538,7 @@ $ node -e 'require("unicode-8.0.0").Script_Extensions.forEach(s => { console.log
 \p{Script_Extensions=Tai_Viet}
 \p{Script_Extensions=Takri}
 \p{Script_Extensions=Tamil}
+\p{Script_Extensions=Tangut}
 \p{Script_Extensions=Telugu}
 \p{Script_Extensions=Thaana}
 \p{Script_Extensions=Thai}
@@ -541,7 +558,7 @@ Note that script name aliases may be used as well, e.g. `\p{Script_Extensions=Ag
 All binary properties in the Unicode standard are supported:
 
 ```sh
-$ node -e 'require("unicode-8.0.0").Binary_Property.forEach(p => { console.log(`\\p{${p}}`); })'
+$ node -e 'require("unicode-9.0.0").Binary_Property.forEach(p => { console.log(`\\p{${p}}`); })'
 \p{ASCII}
 \p{ASCII_Hex_Digit}
 \p{Alphabetic}
@@ -594,9 +611,10 @@ $ node -e 'require("unicode-8.0.0").Binary_Property.forEach(p => { console.log(`
 \p{Other_Uppercase}
 \p{Pattern_Syntax}
 \p{Pattern_White_Space}
+\p{Prepended_Concatenation_Mark}
 \p{Quotation_Mark}
 \p{Radical}
-\p{STerm}
+\p{Sentence_Terminal}
 \p{Soft_Dotted}
 \p{Terminal_Punctuation}
 \p{Unified_Ideograph}
