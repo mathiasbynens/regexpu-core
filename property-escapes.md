@@ -406,6 +406,59 @@ Note that the `General_Category=` prefix may be used, e.g. `\p{General_Category=
 
 Category aliases may be used, e.g. `\p{Lc}` or `\p{General_Category=Lc}`, although IMHO it’s more readable to stick to the canonical category names listed above.
 
+### `Line_Break`
+
+Possible values:
+
+```sh
+$ node -e 'require("unicode-9.0.0").Line_Break.forEach(v => { console.log(`\\p{Line_Break=${v}}`); })'
+\p{Line_Break=Alphabetic}
+\p{Line_Break=Ambiguous}
+\p{Line_Break=Break_After}
+\p{Line_Break=Break_Before}
+\p{Line_Break=Break_Both}
+\p{Line_Break=Break_Symbols}
+\p{Line_Break=Carriage_Return}
+\p{Line_Break=Close_Parenthesis}
+\p{Line_Break=Close_Punctuation}
+\p{Line_Break=Combining_Mark}
+\p{Line_Break=Complex_Context}
+\p{Line_Break=Conditional_Japanese_Starter}
+\p{Line_Break=Contingent_Break}
+\p{Line_Break=E_Base}
+\p{Line_Break=E_Modifier}
+\p{Line_Break=Exclamation}
+\p{Line_Break=Glue}
+\p{Line_Break=H2}
+\p{Line_Break=H3}
+\p{Line_Break=Hebrew_Letter}
+\p{Line_Break=Hyphen}
+\p{Line_Break=Ideographic}
+\p{Line_Break=Infix_Numeric}
+\p{Line_Break=Inseparable}
+\p{Line_Break=JL}
+\p{Line_Break=JT}
+\p{Line_Break=JV}
+\p{Line_Break=Line_Feed}
+\p{Line_Break=Mandatory_Break}
+\p{Line_Break=Next_Line}
+\p{Line_Break=Nonstarter}
+\p{Line_Break=Numeric}
+\p{Line_Break=Open_Punctuation}
+\p{Line_Break=Postfix_Numeric}
+\p{Line_Break=Prefix_Numeric}
+\p{Line_Break=Quotation}
+\p{Line_Break=Regional_Indicator}
+\p{Line_Break=Space}
+\p{Line_Break=Surrogate}
+\p{Line_Break=Unknown}
+\p{Line_Break=Word_Joiner}
+\p{Line_Break=ZWJ}
+\p{Line_Break=ZWSpace}
+```
+
+Note that property value aliases may be used as well, e.g. `\p{Line_Break=AL}`, although IMHO it’s more readable to stick to the canonical property values listed above.
+
 ### `Script` & `Script_Extensions`
 
 The sets of possible values for `Script` and `Script_Extensions` are identical:
@@ -553,6 +606,38 @@ $ node -e 'require("unicode-9.0.0").Script_Extensions.forEach(s => { console.log
 
 Note that script name aliases may be used as well, e.g. `\p{Script_Extensions=Aghb}`, although IMHO it’s more readable to stick to the canonical script names listed above.
 
+### `Word_Break`
+
+Possible values:
+
+```sh
+$ node -e 'require("unicode-9.0.0").Word_Break.forEach(v => { console.log(`\\p{Word_Break=${v}}`); })'
+\p{Word_Break=ALetter}
+\p{Word_Break=CR}
+\p{Word_Break=Double_Quote}
+\p{Word_Break=E_Base}
+\p{Word_Break=E_Base_GAZ}
+\p{Word_Break=E_Modifier}
+\p{Word_Break=Extend}
+\p{Word_Break=ExtendNumLet}
+\p{Word_Break=Format}
+\p{Word_Break=Glue_After_Zwj}
+\p{Word_Break=Hebrew_Letter}
+\p{Word_Break=Katakana}
+\p{Word_Break=LF}
+\p{Word_Break=MidLetter}
+\p{Word_Break=MidNum}
+\p{Word_Break=MidNumLet}
+\p{Word_Break=Newline}
+\p{Word_Break=Numeric}
+\p{Word_Break=Other}
+\p{Word_Break=Regional_Indicator}
+\p{Word_Break=Single_Quote}
+\p{Word_Break=ZWJ}
+```
+
+Note that property value aliases may be used as well, e.g. `\p{Word_Break=DQ}`, although IMHO it’s more readable to stick to the canonical property values listed above.
+
 ## Binary properties
 
 All binary properties in the Unicode standard are supported:
@@ -643,7 +728,6 @@ The abovementioned list of properties and values goes a long way towards fulfill
 * `Hangul_Syllable_Type`
 * `Joining_Group`
 * `Joining_Type`
-* `Line_Break`
 * `Lowercase_Mapping`
 * `Name` & `Name_Alias`
 * `NFC_Quick_Check`
@@ -660,4 +744,3 @@ The abovementioned list of properties and values goes a long way towards fulfill
 * `Simple_Uppercase_Mapping`
 * `Titlecase_Mapping`
 * `Uppercase_Mapping`
-* `Word_Break`
