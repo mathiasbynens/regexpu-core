@@ -26,15 +26,14 @@ function addCharacterClassEscape(lower, set) {
 	ESCAPE_CHARS[lower] = ESCAPE_CHARS_UNICODE[lower] = set;
 	const upper = lower.toUpperCase();
 	ESCAPE_CHARS[upper] = BMP_SET.clone().remove(set);
-	const uExcludeSet = UNICODE_SET.clone().remove(set);
-	ESCAPE_CHARS_UNICODE[upper] = uExcludeSet;
+	ESCAPE_CHARS_UNICODE[upper] = UNICODE_SET.clone().remove(set);
 	// Check if one or more symbols in this set fold to another one. If so,
 	// a copy of the set including the mapped symbols is created for use with
 	// regular expressions that have both the `u` and `i` flags set.
 	const codePoints = set.toArray();
 	const iuSet = regenerate();
 	let containsFoldingSymbols = false;
-	codePoints.forEach(function(codePoint) {
+	for (const codePoint of codePoints) {
 		let folded = caseFold(codePoint);
 		if (folded) {
 			containsFoldingSymbols = true;
@@ -44,13 +43,13 @@ function addCharacterClassEscape(lower, set) {
 				iuSet.add(folded);
 			}
 		}
-	});
-	ESCAPE_CHARS_UNICODE_IGNORE_CASE[lower] = containsFoldingSymbols ?
+	}
+	const iuLowerSet = containsFoldingSymbols ?
 		iuSet.clone().add(set) :
 		set;
-	ESCAPE_CHARS_UNICODE_IGNORE_CASE[upper] = containsFoldingSymbols ?
-		iuSet.clone().add(uExcludeSet) :
-		uExcludeSet;
+	const iuUpperSet = UNICODE_SET.clone().remove(iuLowerSet);
+	ESCAPE_CHARS_UNICODE_IGNORE_CASE[lower] = iuLowerSet;
+	ESCAPE_CHARS_UNICODE_IGNORE_CASE[upper] = iuUpperSet;
 }
 
 // Prepare a Regenerate set for every existing character class escape.
