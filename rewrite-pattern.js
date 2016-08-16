@@ -8,14 +8,43 @@ const unicodeMatchPropertyValue = require('unicode-match-property-value');
 const iuMappings = require('./data/iu-mappings.js');
 const ESCAPE_SETS = require('./data/character-class-escape-sets.js');
 
-const getCharacterClassEscapeSet = function(character) {
-	if (config.unicode) {
-		if (config.ignoreCase) {
+// Prepare a Regenerate set containing all code points, used for negative
+// character classes (if any).
+const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
+// Without the `u` flag, the range stops at 0xFFFF.
+// https://mths.be/es6#sec-pattern-semantics
+const BMP_SET = regenerate().addRange(0x0, 0xFFFF);
+
+// Prepare a Regenerate set containing all code points that are supposed to be
+// matched by `/./u`. https://mths.be/es6#sec-atom
+const DOT_SET_UNICODE = UNICODE_SET.clone() // all Unicode code points
+	.remove(
+		// minus `LineTerminator`s (https://mths.be/es6#sec-line-terminators):
+		0x000A, // Line Feed <LF>
+		0x000D, // Carriage Return <CR>
+		0x2028, // Line Separator <LS>
+		0x2029  // Paragraph Separator <PS>
+	);
+// Prepare a Regenerate set containing all code points that are supposed to be
+// matched by `/./` (only BMP code points).
+const DOT_SET = DOT_SET_UNICODE.clone()
+	.intersection(BMP_SET);
+
+const getCharacterClassEscapeSet = function(character, unicode, ignoreCase) {
+	if (unicode) {
+		if (ignoreCase) {
 			return ESCAPE_SETS.UNICODE_IGNORE_CASE.get(character);
 		}
 		return ESCAPE_SETS.UNICODE.get(character);
 	}
 	return ESCAPE_SETS.REGULAR.get(character);
+};
+
+const getDotSet = function(unicode, dotAll) {
+	if (dotAll) {
+		return unicode ? UNICODE_SET : BMP_SET;
+	}
+	return unicode ? DOT_SET_UNICODE : DOT_SET;
 };
 
 const getUnicodePropertyValueSet = function(property, value) {
@@ -63,28 +92,6 @@ const getUnicodePropertyEscapeSet = function(value, isNegative) {
 	}
 	return set.clone();
 };
-
-// Prepare a Regenerate set containing all code points, used for negative
-// character classes (if any).
-const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
-// Without the `u` flag, the range stops at 0xFFFF.
-// https://mths.be/es6#sec-pattern-semantics
-const BMP_SET = regenerate().addRange(0x0, 0xFFFF);
-
-// Prepare a Regenerate set containing all code points that are supposed to be
-// matched by `/./u`. https://mths.be/es6#sec-atom
-const DOT_SET_UNICODE = UNICODE_SET.clone() // all Unicode code points
-	.remove(
-		// minus `LineTerminator`s (https://mths.be/es6#sec-line-terminators):
-		0x000A, // Line Feed <LF>
-		0x000D, // Carriage Return <CR>
-		0x2028, // Line Separator <LS>
-		0x2029  // Paragraph Separator <PS>
-	);
-// Prepare a Regenerate set containing all code points that are supposed to be
-// matched by `/./` (only BMP code points).
-const DOT_SET = DOT_SET_UNICODE.clone()
-	.intersection(BMP_SET);
 
 // Given a range of code points, add any case-folded code points in that range
 // to a set.
@@ -150,7 +157,11 @@ const processCharacterClass = function(characterClassItem, regenerateOptions) {
 				}
 				break;
 			case 'characterClassEscape':
-				set.add(getCharacterClassEscapeSet(item.value));
+				set.add(getCharacterClassEscapeSet(
+					item.value,
+					config.unicode,
+					config.ignoreCase
+				));
 				break;
 			case 'unicodePropertyEscape':
 				set.add(getUnicodePropertyEscapeSet(item.value, item.negative));
@@ -174,8 +185,7 @@ const processTerm = function(item, regenerateOptions) {
 		case 'dot':
 			update(
 				item,
-				(config.unicode ? DOT_SET_UNICODE : DOT_SET)
-					.toString(regenerateOptions)
+				getDotSet(config.unicode, config.dotAll).toString(regenerateOptions)
 			);
 			break;
 		case 'characterClass':
@@ -191,7 +201,11 @@ const processTerm = function(item, regenerateOptions) {
 		case 'characterClassEscape':
 			update(
 				item,
-				getCharacterClassEscapeSet(item.value).toString(regenerateOptions)
+				getCharacterClassEscapeSet(
+					item.value,
+					config.unicode,
+					config.ignoreCase
+				).toString(regenerateOptions)
 			);
 			break;
 		case 'alternative':
@@ -231,6 +245,7 @@ const processTerm = function(item, regenerateOptions) {
 const config = {
 	'ignoreCase': false,
 	'unicode': false,
+	'dotAll': false,
 	'useUnicodeFlag': false
 };
 const rewritePattern = function(pattern, flags, options) {
@@ -238,8 +253,10 @@ const rewritePattern = function(pattern, flags, options) {
 		'unicodePropertyEscape': options && options.unicodePropertyEscape
 	};
 	config.ignoreCase = flags && flags.includes('i');
-	config.useUnicodeFlag = options && options.useUnicodeFlag;
 	config.unicode = flags && flags.includes('u');
+	const supportDotAllFlag = options && options.dotAllFlag;
+	config.dotAll = supportDotAllFlag && flags && flags.includes('s');
+	config.useUnicodeFlag = options && options.useUnicodeFlag;
 	const regenerateOptions = {
 		'hasUnicodeFlag': config.useUnicodeFlag,
 		'bmpOnly': !config.unicode

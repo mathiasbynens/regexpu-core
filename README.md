@@ -51,6 +51,30 @@ rewritePattern('foo.bar', 'u');
 
 The optional `options` argument recognizes the following properties:
 
+#### `dotAllFlag` (default: `false`)
+
+Setting this option to `true` enables experimental support for [the `s` (`dotAll`) flag](https://github.com/mathiasbynens/es-regexp-dotall-flag).
+
+```js
+rewritePattern('.');
+// → '[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF]'
+
+rewritePattern('.', '', {
+  'dotAllFlag': true
+});
+// → '[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF]'
+
+rewritePattern('.', 's', {
+  'dotAllFlag': true
+});
+// → '[\\0-\\uFFFF]'
+
+rewritePattern('.', 'su', {
+  'dotAllFlag': true
+});
+// → '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+```
+
 #### `unicodePropertyEscape` (default: `false`)
 
 Setting this option to `true` enables [experimental support for Unicode property escapes](property-escapes.md):

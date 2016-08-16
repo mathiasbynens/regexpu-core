@@ -5,7 +5,8 @@ const regenerate = require('regenerate');
 const rewritePattern = require('../rewrite-pattern.js');
 const fixtures = require('regexpu-fixtures');
 
-const BMP_PATTERN = '[\\s\\S]';
+const BMP_SET = regenerate().addRange(0x0, 0xFFFF);
+const BMP_PATTERN = BMP_SET.toString({ 'bmpOnly': true });
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 const UNICODE_PATTERN = UNICODE_SET.toString();
 
@@ -622,4 +623,45 @@ describe('unicodePropertyEscapes', function() {
 		}),
 		'\\u03B8'
 	);
+});
+
+const dotAllFlagFixtures = [
+	{
+		'pattern': '.',
+		'flags': 's',
+		'expected': BMP_PATTERN
+	},
+	{
+		'pattern': '.',
+		'flags': 'gimsy',
+		'expected': BMP_PATTERN
+	},
+	{
+		'pattern': '.',
+		'flags': 'su',
+		'expected': UNICODE_PATTERN
+	},
+	{
+		'pattern': '.',
+		'flags': 'gimsuy',
+		'expected': UNICODE_PATTERN
+	}
+];
+
+describe('dotAllFlag', function() {
+	const features = {
+		'dotAllFlag': true
+	};
+	for (const fixture of dotAllFlagFixtures) {
+		const pattern = fixture.pattern;
+		const flags = fixture.flags;
+		it('rewrites `/' + pattern + '/' + flags + '` correctly', function() {
+			const transpiled = rewritePattern(pattern, flags, features);
+			const expected = fixture.expected;
+			assert(
+				transpiled == expected ||
+				transpiled == '(?:' + expected + ')'
+			);
+		});
+	}
 });
