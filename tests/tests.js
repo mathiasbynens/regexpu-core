@@ -5,6 +5,10 @@ const regenerate = require('regenerate');
 const rewritePattern = require('../rewrite-pattern.js');
 const fixtures = require('regexpu-fixtures');
 
+const BMP_PATTERN = '[\\s\\S]';
+const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
+const UNICODE_PATTERN = UNICODE_SET.toString();
+
 describe('rewritePattern', function() {
 	for (const fixture of fixtures) {
 		const pattern = fixture.pattern;
@@ -476,7 +480,6 @@ const unicodePropertyEscapeFixtures = [
 	}
 ];
 
-const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 const getPropertyValuePattern = function(path) {
 	const codePoints = require('unicode-9.0.0/' + path + '/code-points.js');
 	return {

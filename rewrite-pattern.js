@@ -198,7 +198,9 @@ const processTerm = function(item, regenerateOptions) {
 		case 'disjunction':
 		case 'group':
 		case 'quantifier':
-			item.body = item.body.map(processTerm);
+			item.body = item.body.map(function(term) {
+				return processTerm(term, regenerateOptions);
+			});
 			break;
 		case 'value':
 			const codePoint = item.codePoint;
@@ -235,13 +237,14 @@ const rewritePattern = function(pattern, flags, options) {
 	const regjsparserFeatures = {
 		'unicodePropertyEscape': options && options.unicodePropertyEscape
 	};
+	config.ignoreCase = flags && flags.includes('i');
 	config.useUnicodeFlag = options && options.useUnicodeFlag;
+	config.unicode = flags && flags.includes('u');
 	const regenerateOptions = {
-		'hasUnicodeFlag': config.useUnicodeFlag
+		'hasUnicodeFlag': config.useUnicodeFlag,
+		'bmpOnly': !config.unicode
 	};
 	const tree = parse(pattern, flags, regjsparserFeatures);
-	config.ignoreCase = flags && flags.includes('i');
-	config.unicode = flags && flags.includes('u');
 	Object.assign(tree, processTerm(tree, regenerateOptions));
 	return generate(tree);
 };
