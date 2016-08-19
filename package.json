@@ -53,15 +53,15 @@
     "regjsgen": "^0.3.0",
     "regjsparser": "^0.2.0",
     "unicode-match-property": "^0.1.1",
-    "unicode-match-property-value": "^1.0.1"
+    "unicode-match-property-value": "^1.0.2"
   },
   "devDependencies": {
     "codecov": "^1.0.1",
     "istanbul": "^0.4.4",
-    "jsesc": "^2.1.0",
-    "lodash": "^4.13.1",
-    "mocha": "^2.2.1",
-    "regexpu-fixtures": "^2.0.1",
+    "jsesc": "^2.2.0",
+    "lodash": "^4.15.0",
+    "mocha": "^3.0.2",
+    "regexpu-fixtures": "^2.1.1",
     "unicode-9.0.0": "^0.7.0"
   }
 }
