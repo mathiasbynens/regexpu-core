@@ -3,20 +3,20 @@
 To opt-in to experimental support for [Unicode property escapes](https://github.com/mathiasbynens/es-regexp-unicode-property-escapes), enable [the `unicodePropertyEscape` option](README.md#unicodepropertyescape-default-false).
 
 ```js
-rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
+rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
   'unicodePropertyEscape': true
 });
-// → '(?:\\uD800[\\uDD00-\\uDD3F])'
+// → '(?:\\uD811[\\uDC00-\\uDE46])'
 ```
 
 If you’re targeting ES6 environments exclusively, consider enabling [the `useUnicodeFlag` option](README.md#useunicodeflag-default-false) for simpler (but not necessarily more compact) output.
 
 ```js
-rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
+rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
   'unicodePropertyEscape': true,
   'useUnicodeFlag': true
 });
-// → '[\\u{10100}-\\u{1013F}]'
+// → '[\\u{14400}-\\u{14646}]'
 ```
 
 [An online demo is available.](https://mothereff.in/regexpu#input=var+regex+%3D+/%5Cp%7BScript_Extensions%3DGreek%7D/u%3B&unicodePropertyEscape=1)
@@ -26,335 +26,6 @@ Note that this feature is non-standard. This implementation may or may not refle
 What follows is an exhaustive overview of the Unicode properties and values that _regexpu_ supports in `\p{…}` and `\P{…}` expressions in regular expressions with the `u` flag.
 
 ## Non-binary properties
-
-### `Bidi_Class`
-
-Possible values:
-
-```sh
-$ node -e 'require("unicode-9.0.0").Bidi_Class.forEach(c => { console.log(`\\p{Bidi_Class=${c}}`); })'
-\p{Bidi_Class=Arabic_Letter}
-\p{Bidi_Class=Arabic_Number}
-\p{Bidi_Class=Boundary_Neutral}
-\p{Bidi_Class=Common_Separator}
-\p{Bidi_Class=European_Number}
-\p{Bidi_Class=European_Separator}
-\p{Bidi_Class=European_Terminator}
-\p{Bidi_Class=First_Strong_Isolate}
-\p{Bidi_Class=Left_To_Right}
-\p{Bidi_Class=Left_To_Right_Embedding}
-\p{Bidi_Class=Left_To_Right_Isolate}
-\p{Bidi_Class=Left_To_Right_Override}
-\p{Bidi_Class=Nonspacing_Mark}
-\p{Bidi_Class=Other_Neutral}
-\p{Bidi_Class=Paragraph_Separator}
-\p{Bidi_Class=Pop_Directional_Format}
-\p{Bidi_Class=Pop_Directional_Isolate}
-\p{Bidi_Class=Right_To_Left}
-\p{Bidi_Class=Right_To_Left_Embedding}
-\p{Bidi_Class=Right_To_Left_Isolate}
-\p{Bidi_Class=Right_To_Left_Override}
-\p{Bidi_Class=Segment_Separator}
-\p{Bidi_Class=White_Space}
-```
-
-Note that bidi class aliases may be used as well, e.g. `\p{Bidi_Class=AL}`, although IMHO it’s more readable to stick to the canonical class names listed above.
-
-### `Bidi_Paired_Bracket_Type`
-
-Possible values:
-
-```sh
-$ node -e 'require("unicode-9.0.0").Bidi_Paired_Bracket_Type.forEach(t => { console.log(`\\p{Bidi_Paired_Bracket_Type=${t}}`); })'
-\p{Bidi_Paired_Bracket_Type=Close}
-\p{Bidi_Paired_Bracket_Type=None}
-\p{Bidi_Paired_Bracket_Type=Open}
-```
-
-Note that property name aliases may be used as well, e.g. `\p{Bidi_Paired_Bracket_Type=o}`, although IMHO it’s more readable to stick to the canonical property names listed above.
-
-### `Block`
-
-Possible values:
-
-```sh
-$ node -e 'require("unicode-9.0.0").Block.forEach(b => { console.log(`\\p{Block=${b}}`); })'
-\p{Block=Adlam}
-\p{Block=Aegean_Numbers}
-\p{Block=Ahom}
-\p{Block=Alchemical_Symbols}
-\p{Block=Alphabetic_Presentation_Forms}
-\p{Block=Anatolian_Hieroglyphs}
-\p{Block=Ancient_Greek_Musical_Notation}
-\p{Block=Ancient_Greek_Numbers}
-\p{Block=Ancient_Symbols}
-\p{Block=Arabic}
-\p{Block=Arabic_Extended_A}
-\p{Block=Arabic_Mathematical_Alphabetic_Symbols}
-\p{Block=Arabic_Presentation_Forms_A}
-\p{Block=Arabic_Presentation_Forms_B}
-\p{Block=Arabic_Supplement}
-\p{Block=Armenian}
-\p{Block=Arrows}
-\p{Block=Avestan}
-\p{Block=Balinese}
-\p{Block=Bamum}
-\p{Block=Bamum_Supplement}
-\p{Block=Basic_Latin}
-\p{Block=Bassa_Vah}
-\p{Block=Batak}
-\p{Block=Bengali}
-\p{Block=Bhaiksuki}
-\p{Block=Block_Elements}
-\p{Block=Bopomofo}
-\p{Block=Bopomofo_Extended}
-\p{Block=Box_Drawing}
-\p{Block=Brahmi}
-\p{Block=Braille_Patterns}
-\p{Block=Buginese}
-\p{Block=Buhid}
-\p{Block=Byzantine_Musical_Symbols}
-\p{Block=CJK_Compatibility}
-\p{Block=CJK_Compatibility_Forms}
-\p{Block=CJK_Compatibility_Ideographs}
-\p{Block=CJK_Compatibility_Ideographs_Supplement}
-\p{Block=CJK_Radicals_Supplement}
-\p{Block=CJK_Strokes}
-\p{Block=CJK_Symbols_And_Punctuation}
-\p{Block=CJK_Unified_Ideographs}
-\p{Block=CJK_Unified_Ideographs_Extension_A}
-\p{Block=CJK_Unified_Ideographs_Extension_B}
-\p{Block=CJK_Unified_Ideographs_Extension_C}
-\p{Block=CJK_Unified_Ideographs_Extension_D}
-\p{Block=CJK_Unified_Ideographs_Extension_E}
-\p{Block=Carian}
-\p{Block=Caucasian_Albanian}
-\p{Block=Chakma}
-\p{Block=Cham}
-\p{Block=Cherokee}
-\p{Block=Cherokee_Supplement}
-\p{Block=Combining_Diacritical_Marks}
-\p{Block=Combining_Diacritical_Marks_Extended}
-\p{Block=Combining_Diacritical_Marks_For_Symbols}
-\p{Block=Combining_Diacritical_Marks_Supplement}
-\p{Block=Combining_Half_Marks}
-\p{Block=Common_Indic_Number_Forms}
-\p{Block=Control_Pictures}
-\p{Block=Coptic}
-\p{Block=Coptic_Epact_Numbers}
-\p{Block=Counting_Rod_Numerals}
-\p{Block=Cuneiform}
-\p{Block=Cuneiform_Numbers_And_Punctuation}
-\p{Block=Currency_Symbols}
-\p{Block=Cypriot_Syllabary}
-\p{Block=Cyrillic}
-\p{Block=Cyrillic_Extended_A}
-\p{Block=Cyrillic_Extended_B}
-\p{Block=Cyrillic_Extended_C}
-\p{Block=Cyrillic_Supplement}
-\p{Block=Deseret}
-\p{Block=Devanagari}
-\p{Block=Devanagari_Extended}
-\p{Block=Dingbats}
-\p{Block=Domino_Tiles}
-\p{Block=Duployan}
-\p{Block=Early_Dynastic_Cuneiform}
-\p{Block=Egyptian_Hieroglyphs}
-\p{Block=Elbasan}
-\p{Block=Emoticons}
-\p{Block=Enclosed_Alphanumeric_Supplement}
-\p{Block=Enclosed_Alphanumerics}
-\p{Block=Enclosed_CJK_Letters_And_Months}
-\p{Block=Enclosed_Ideographic_Supplement}
-\p{Block=Ethiopic}
-\p{Block=Ethiopic_Extended}
-\p{Block=Ethiopic_Extended_A}
-\p{Block=Ethiopic_Supplement}
-\p{Block=General_Punctuation}
-\p{Block=Geometric_Shapes}
-\p{Block=Geometric_Shapes_Extended}
-\p{Block=Georgian}
-\p{Block=Georgian_Supplement}
-\p{Block=Glagolitic}
-\p{Block=Glagolitic_Supplement}
-\p{Block=Gothic}
-\p{Block=Grantha}
-\p{Block=Greek_And_Coptic}
-\p{Block=Greek_Extended}
-\p{Block=Gujarati}
-\p{Block=Gurmukhi}
-\p{Block=Halfwidth_And_Fullwidth_Forms}
-\p{Block=Hangul_Compatibility_Jamo}
-\p{Block=Hangul_Jamo}
-\p{Block=Hangul_Jamo_Extended_A}
-\p{Block=Hangul_Jamo_Extended_B}
-\p{Block=Hangul_Syllables}
-\p{Block=Hanunoo}
-\p{Block=Hatran}
-\p{Block=Hebrew}
-\p{Block=High_Private_Use_Surrogates}
-\p{Block=High_Surrogates}
-\p{Block=Hiragana}
-\p{Block=IPA_Extensions}
-\p{Block=Ideographic_Description_Characters}
-\p{Block=Ideographic_Symbols_And_Punctuation}
-\p{Block=Imperial_Aramaic}
-\p{Block=Inscriptional_Pahlavi}
-\p{Block=Inscriptional_Parthian}
-\p{Block=Javanese}
-\p{Block=Kaithi}
-\p{Block=Kana_Supplement}
-\p{Block=Kanbun}
-\p{Block=Kangxi_Radicals}
-\p{Block=Kannada}
-\p{Block=Katakana}
-\p{Block=Katakana_Phonetic_Extensions}
-\p{Block=Kayah_Li}
-\p{Block=Kharoshthi}
-\p{Block=Khmer}
-\p{Block=Khmer_Symbols}
-\p{Block=Khojki}
-\p{Block=Khudawadi}
-\p{Block=Lao}
-\p{Block=Latin_1_Supplement}
-\p{Block=Latin_Extended_A}
-\p{Block=Latin_Extended_Additional}
-\p{Block=Latin_Extended_B}
-\p{Block=Latin_Extended_C}
-\p{Block=Latin_Extended_D}
-\p{Block=Latin_Extended_E}
-\p{Block=Lepcha}
-\p{Block=Letterlike_Symbols}
-\p{Block=Limbu}
-\p{Block=Linear_A}
-\p{Block=Linear_B_Ideograms}
-\p{Block=Linear_B_Syllabary}
-\p{Block=Lisu}
-\p{Block=Low_Surrogates}
-\p{Block=Lycian}
-\p{Block=Lydian}
-\p{Block=Mahajani}
-\p{Block=Mahjong_Tiles}
-\p{Block=Malayalam}
-\p{Block=Mandaic}
-\p{Block=Manichaean}
-\p{Block=Marchen}
-\p{Block=Mathematical_Alphanumeric_Symbols}
-\p{Block=Mathematical_Operators}
-\p{Block=Meetei_Mayek}
-\p{Block=Meetei_Mayek_Extensions}
-\p{Block=Mende_Kikakui}
-\p{Block=Meroitic_Cursive}
-\p{Block=Meroitic_Hieroglyphs}
-\p{Block=Miao}
-\p{Block=Miscellaneous_Mathematical_Symbols_A}
-\p{Block=Miscellaneous_Mathematical_Symbols_B}
-\p{Block=Miscellaneous_Symbols}
-\p{Block=Miscellaneous_Symbols_And_Arrows}
-\p{Block=Miscellaneous_Symbols_And_Pictographs}
-\p{Block=Miscellaneous_Technical}
-\p{Block=Modi}
-\p{Block=Modifier_Tone_Letters}
-\p{Block=Mongolian}
-\p{Block=Mongolian_Supplement}
-\p{Block=Mro}
-\p{Block=Multani}
-\p{Block=Musical_Symbols}
-\p{Block=Myanmar}
-\p{Block=Myanmar_Extended_A}
-\p{Block=Myanmar_Extended_B}
-\p{Block=NKo}
-\p{Block=Nabataean}
-\p{Block=New_Tai_Lue}
-\p{Block=Newa}
-\p{Block=Number_Forms}
-\p{Block=Ogham}
-\p{Block=Ol_Chiki}
-\p{Block=Old_Hungarian}
-\p{Block=Old_Italic}
-\p{Block=Old_North_Arabian}
-\p{Block=Old_Permic}
-\p{Block=Old_Persian}
-\p{Block=Old_South_Arabian}
-\p{Block=Old_Turkic}
-\p{Block=Optical_Character_Recognition}
-\p{Block=Oriya}
-\p{Block=Ornamental_Dingbats}
-\p{Block=Osage}
-\p{Block=Osmanya}
-\p{Block=Pahawh_Hmong}
-\p{Block=Palmyrene}
-\p{Block=Pau_Cin_Hau}
-\p{Block=Phags_Pa}
-\p{Block=Phaistos_Disc}
-\p{Block=Phoenician}
-\p{Block=Phonetic_Extensions}
-\p{Block=Phonetic_Extensions_Supplement}
-\p{Block=Playing_Cards}
-\p{Block=Private_Use_Area}
-\p{Block=Psalter_Pahlavi}
-\p{Block=Rejang}
-\p{Block=Rumi_Numeral_Symbols}
-\p{Block=Runic}
-\p{Block=Samaritan}
-\p{Block=Saurashtra}
-\p{Block=Sharada}
-\p{Block=Shavian}
-\p{Block=Shorthand_Format_Controls}
-\p{Block=Siddham}
-\p{Block=Sinhala}
-\p{Block=Sinhala_Archaic_Numbers}
-\p{Block=Small_Form_Variants}
-\p{Block=Sora_Sompeng}
-\p{Block=Spacing_Modifier_Letters}
-\p{Block=Specials}
-\p{Block=Sundanese}
-\p{Block=Sundanese_Supplement}
-\p{Block=Superscripts_And_Subscripts}
-\p{Block=Supplemental_Arrows_A}
-\p{Block=Supplemental_Arrows_B}
-\p{Block=Supplemental_Arrows_C}
-\p{Block=Supplemental_Mathematical_Operators}
-\p{Block=Supplemental_Punctuation}
-\p{Block=Supplemental_Symbols_And_Pictographs}
-\p{Block=Supplementary_Private_Use_Area_A}
-\p{Block=Supplementary_Private_Use_Area_B}
-\p{Block=Sutton_SignWriting}
-\p{Block=Syloti_Nagri}
-\p{Block=Syriac}
-\p{Block=Tagalog}
-\p{Block=Tagbanwa}
-\p{Block=Tags}
-\p{Block=Tai_Le}
-\p{Block=Tai_Tham}
-\p{Block=Tai_Viet}
-\p{Block=Tai_Xuan_Jing_Symbols}
-\p{Block=Takri}
-\p{Block=Tamil}
-\p{Block=Tangut}
-\p{Block=Tangut_Components}
-\p{Block=Telugu}
-\p{Block=Thaana}
-\p{Block=Thai}
-\p{Block=Tibetan}
-\p{Block=Tifinagh}
-\p{Block=Tirhuta}
-\p{Block=Transport_And_Map_Symbols}
-\p{Block=Ugaritic}
-\p{Block=Unified_Canadian_Aboriginal_Syllabics}
-\p{Block=Unified_Canadian_Aboriginal_Syllabics_Extended}
-\p{Block=Vai}
-\p{Block=Variation_Selectors}
-\p{Block=Variation_Selectors_Supplement}
-\p{Block=Vedic_Extensions}
-\p{Block=Vertical_Forms}
-\p{Block=Warang_Citi}
-\p{Block=Yi_Radicals}
-\p{Block=Yi_Syllables}
-\p{Block=Yijing_Hexagram_Symbols}
-```
-
-Note that block name aliases may be used as well, e.g. `\p{Arabic_Math}`, although IMHO it’s more readable to stick to the canonical block names listed above.
 
 ### `General_Category`
 
@@ -405,59 +76,6 @@ $ node -e 'require("unicode-9.0.0").General_Category.forEach(c => { console.log(
 Note that the `General_Category=` prefix may be used, e.g. `\p{General_Category=Cased_Letter}`.
 
 Category aliases may be used, e.g. `\p{Lc}` or `\p{General_Category=Lc}`, although IMHO it’s more readable to stick to the canonical category names listed above.
-
-### `Line_Break`
-
-Possible values:
-
-```sh
-$ node -e 'require("unicode-9.0.0").Line_Break.forEach(v => { console.log(`\\p{Line_Break=${v}}`); })'
-\p{Line_Break=Alphabetic}
-\p{Line_Break=Ambiguous}
-\p{Line_Break=Break_After}
-\p{Line_Break=Break_Before}
-\p{Line_Break=Break_Both}
-\p{Line_Break=Break_Symbols}
-\p{Line_Break=Carriage_Return}
-\p{Line_Break=Close_Parenthesis}
-\p{Line_Break=Close_Punctuation}
-\p{Line_Break=Combining_Mark}
-\p{Line_Break=Complex_Context}
-\p{Line_Break=Conditional_Japanese_Starter}
-\p{Line_Break=Contingent_Break}
-\p{Line_Break=E_Base}
-\p{Line_Break=E_Modifier}
-\p{Line_Break=Exclamation}
-\p{Line_Break=Glue}
-\p{Line_Break=H2}
-\p{Line_Break=H3}
-\p{Line_Break=Hebrew_Letter}
-\p{Line_Break=Hyphen}
-\p{Line_Break=Ideographic}
-\p{Line_Break=Infix_Numeric}
-\p{Line_Break=Inseparable}
-\p{Line_Break=JL}
-\p{Line_Break=JT}
-\p{Line_Break=JV}
-\p{Line_Break=Line_Feed}
-\p{Line_Break=Mandatory_Break}
-\p{Line_Break=Next_Line}
-\p{Line_Break=Nonstarter}
-\p{Line_Break=Numeric}
-\p{Line_Break=Open_Punctuation}
-\p{Line_Break=Postfix_Numeric}
-\p{Line_Break=Prefix_Numeric}
-\p{Line_Break=Quotation}
-\p{Line_Break=Regional_Indicator}
-\p{Line_Break=Space}
-\p{Line_Break=Surrogate}
-\p{Line_Break=Unknown}
-\p{Line_Break=Word_Joiner}
-\p{Line_Break=ZWJ}
-\p{Line_Break=ZWSpace}
-```
-
-Note that property value aliases may be used as well, e.g. `\p{Line_Break=AL}`, although IMHO it’s more readable to stick to the canonical property values listed above.
 
 ### `Script` & `Script_Extensions`
 
@@ -717,8 +335,11 @@ Note that property name aliases may be used as well, e.g. `\p{AHex}`, although I
 The abovementioned list of properties and values goes a long way towards fulfilling [UTR18 requirement RL2.7](http://unicode.org/reports/tr18/#RL2.7). However, the following properties are not currently supported:
 
 * `Age`
+* `Bidi_Class`
 * `Bidi_Mirroring_Glyph`
+* `Bidi_Paired_Bracket_Type`
 * `Bidi_Paired_Bracket`
+* `Block`
 * `Canonical_Combining_Class`
 * `Case_Folding`
 * `Decomposition_Mapping`
@@ -728,6 +349,7 @@ The abovementioned list of properties and values goes a long way towards fulfill
 * `Hangul_Syllable_Type`
 * `Joining_Group`
 * `Joining_Type`
+* `Line_Break`
 * `Lowercase_Mapping`
 * `Name` & `Name_Alias`
 * `NFC_Quick_Check`

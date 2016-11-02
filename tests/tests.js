@@ -141,15 +141,15 @@ const unicodePropertyEscapeFixtures = [
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Bidi_Class/Arabic_Letter',
-		'expressions': [
-			'bc=AL',
-			'bc=Arabic_Letter',
-			'Bidi_Class=AL',
-			'Bidi_Class=Arabic_Letter'
-		]
-	},
+	// {
+	// 	'path': 'Bidi_Class/Arabic_Letter',
+	// 	'expressions': [
+	// 		'bc=AL',
+	// 		'bc=Arabic_Letter',
+	// 		'Bidi_Class=AL',
+	// 		'Bidi_Class=Arabic_Letter'
+	// 	]
+	// },
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Bidi_Control',
@@ -159,15 +159,15 @@ const unicodePropertyEscapeFixtures = [
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Block/Alphabetic_Presentation_Forms',
-		'expressions': [
-			'blk=Alphabetic_PF',
-			'blk=Alphabetic_Presentation_Forms',
-			'Block=Alphabetic_PF',
-			'Block=Alphabetic_Presentation_Forms'
-		]
-	},
+	// {
+	// 	'path': 'Block/Alphabetic_Presentation_Forms',
+	// 	'expressions': [
+	// 		'blk=Alphabetic_PF',
+	// 		'blk=Alphabetic_Presentation_Forms',
+	// 		'Block=Alphabetic_PF',
+	// 		'Block=Alphabetic_Presentation_Forms'
+	// 	]
+	// },
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Bidi_Mirrored',
@@ -461,24 +461,24 @@ const unicodePropertyEscapeFixtures = [
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Bidi_Paired_Bracket_Type/Open',
-		'expressions': [
-			'bpt=o',
-			'bpt=Open',
-			'Bidi_Paired_Bracket_Type=o',
-			'Bidi_Paired_Bracket_Type=Open'
-		]
-	},
-	{
-		'path': 'Block/Superscripts_And_Subscripts',
-		'expressions': [
-			'blk=Super_And_Sub',
-			'blk=Superscripts_And_Subscripts',
-			'Block=Super_And_Sub',
-			'Block=Superscripts_And_Subscripts'
-		]
-	}
+	// {
+	// 	'path': 'Bidi_Paired_Bracket_Type/Open',
+	// 	'expressions': [
+	// 		'bpt=o',
+	// 		'bpt=Open',
+	// 		'Bidi_Paired_Bracket_Type=o',
+	// 		'Bidi_Paired_Bracket_Type=Open'
+	// 	]
+	// },
+	// {
+	// 	'path': 'Block/Superscripts_And_Subscripts',
+	// 	'expressions': [
+	// 		'blk=Super_And_Sub',
+	// 		'blk=Superscripts_And_Subscripts',
+	// 		'Block=Super_And_Sub',
+	// 		'Block=Superscripts_And_Subscripts'
+	// 	]
+	// }
 ];
 
 const getPropertyValuePattern = function(path) {
@@ -520,40 +520,40 @@ describe('unicodePropertyEscapes', function() {
 			'[0-9A-Fa-f]'
 		);
 		assert.equal(
-			rewritePattern('\\p{Block=Aegean_Numbers}', 'u', features),
-			'(?:\\uD800[\\uDD00-\\uDD3F])'
+			rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', features),
+			'(?:\\uD811[\\uDC00-\\uDE46])'
 		);
 		assert.equal(
 			rewritePattern('\\p{ASCII_Hex_Digit}+', 'u', features),
 			'[0-9A-Fa-f]+'
 		);
 		assert.equal(
-			rewritePattern('\\p{Block=Aegean_Numbers}+', 'u', features),
-			'(?:\\uD800[\\uDD00-\\uDD3F])+'
+			rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}+', 'u', features),
+			'(?:\\uD811[\\uDC00-\\uDE46])+'
 		);
 		assert.equal(
 			rewritePattern('[\\p{ASCII_Hex_Digit}_]', 'u', features),
 			'[0-9A-F_a-f]'
 		);
 		assert.equal(
-			rewritePattern('[\\P{Block=Low_Surrogates}]', 'u', features),
-			'(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF]))'
+			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', features),
+			'(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
 		);
 		assert.equal(
-			rewritePattern('[\\p{Block=Aegean_Numbers}_]', 'u', features),
-			'(?:_|\\uD800[\\uDD00-\\uDD3F])'
+			rewritePattern('[\\p{Script_Extensions=Anatolian_Hieroglyphs}_]', 'u', features),
+			'(?:_|\\uD811[\\uDC00-\\uDE46])'
 		);
 		assert.equal(
-			rewritePattern('[\\P{Block=Low_Surrogates}_]', 'u', features),
-			'(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF]))'
+			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}_]', 'u', features),
+			'(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
 		);
 		assert.equal(
 			rewritePattern('(?:\\p{ASCII_Hex_Digit})', 'u', features),
 			'(?:[0-9A-Fa-f])'
 		);
 		assert.equal(
-			rewritePattern('(?:\\p{Block=Aegean_Numbers})', 'u', features),
-			'(?:(?:\\uD800[\\uDD00-\\uDD3F]))'
+			rewritePattern('(?:\\p{Script_Extensions=Anatolian_Hieroglyphs})', 'u', features),
+			'(?:(?:\\uD811[\\uDC00-\\uDE46]))'
 		);
 	});
 	it('throws without the `u` flag', function() {
@@ -606,11 +606,11 @@ describe('unicodePropertyEscapes', function() {
 	});
 	it('simplifies the output using Unicode code point escapes when `useUnicodeFlag` is enabled', function() {
 		assert.equal(
-			rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
+			rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
 				'unicodePropertyEscape': true,
 				'useUnicodeFlag': true
 			}),
-			'[\\u{10100}-\\u{1013F}]'
+			'[\\u{14400}-\\u{14646}]'
 		);
 	});
 	assert.equal(
