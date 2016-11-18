@@ -478,11 +478,41 @@ const unicodePropertyEscapeFixtures = [
 	// 		'Block=Super_And_Sub',
 	// 		'Block=Superscripts_And_Subscripts'
 	// 	]
-	// }
+	// },
+	// http://unicode.org/reports/tr51/
+	{
+		'path': 'Emoji',
+		'expressions': [
+			'Emoji'
+		]
+	},
+	// http://unicode.org/reports/tr51/
+	{
+		'path': 'Emoji_Modifier',
+		'expressions': [
+			'Emoji_Modifier'
+		]
+	},
+	// http://unicode.org/reports/tr51/
+	{
+		'path': 'Emoji_Modifier_Base',
+		'expressions': [
+			'Emoji_Modifier_Base'
+		]
+	},
+	// http://unicode.org/reports/tr51/
+	{
+		'path': 'Emoji_Presentation',
+		'expressions': [
+			'Emoji_Presentation'
+		]
+	}
 ];
 
 const getPropertyValuePattern = function(path) {
-	const codePoints = require('unicode-9.0.0/' + path + '/code-points.js');
+	const codePoints = path.startsWith('Emoji') ?
+		require(`unicode-tr51/${ path }.js`) :
+		require(`unicode-9.0.0/${ path }/code-points.js`);
 	return {
 		'p': regenerate(codePoints).toString(),
 		'P': UNICODE_SET.clone().remove(codePoints).toString()

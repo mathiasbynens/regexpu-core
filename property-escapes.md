@@ -261,7 +261,7 @@ Note that property value aliases may be used as well, e.g. `\p{Word_Break=DQ}`, 
 All binary properties in the Unicode standard are supported:
 
 ```sh
-$ node -e 'require("unicode-9.0.0").Binary_Property.forEach(p => { console.log(`\\p{${p}}`); })'
+$ node -e 'require("unicode-9.0.0").Binary_Property.concat(require("unicode-tr51")).sort().forEach(p => { console.log(`\\p{${p}}`); })'
 \p{ASCII}
 \p{ASCII_Hex_Digit}
 \p{Alphabetic}
@@ -282,6 +282,10 @@ $ node -e 'require("unicode-9.0.0").Binary_Property.forEach(p => { console.log(`
 \p{Default_Ignorable_Code_Point}
 \p{Deprecated}
 \p{Diacritic}
+\p{Emoji}
+\p{Emoji_Modifier}
+\p{Emoji_Modifier_Base}
+\p{Emoji_Presentation}
 \p{Expands_On_NFC}
 \p{Expands_On_NFD}
 \p{Expands_On_NFKC}
