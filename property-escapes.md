@@ -224,38 +224,6 @@ $ node -e 'require("unicode-9.0.0").Script_Extensions.forEach(s => { console.log
 
 Note that script name aliases may be used as well, e.g. `\p{Script_Extensions=Aghb}`, although IMHO it’s more readable to stick to the canonical script names listed above.
 
-### `Word_Break`
-
-Possible values:
-
-```sh
-$ node -e 'require("unicode-9.0.0").Word_Break.forEach(v => { console.log(`\\p{Word_Break=${v}}`); })'
-\p{Word_Break=ALetter}
-\p{Word_Break=CR}
-\p{Word_Break=Double_Quote}
-\p{Word_Break=E_Base}
-\p{Word_Break=E_Base_GAZ}
-\p{Word_Break=E_Modifier}
-\p{Word_Break=Extend}
-\p{Word_Break=ExtendNumLet}
-\p{Word_Break=Format}
-\p{Word_Break=Glue_After_Zwj}
-\p{Word_Break=Hebrew_Letter}
-\p{Word_Break=Katakana}
-\p{Word_Break=LF}
-\p{Word_Break=MidLetter}
-\p{Word_Break=MidNum}
-\p{Word_Break=MidNumLet}
-\p{Word_Break=Newline}
-\p{Word_Break=Numeric}
-\p{Word_Break=Other}
-\p{Word_Break=Regional_Indicator}
-\p{Word_Break=Single_Quote}
-\p{Word_Break=ZWJ}
-```
-
-Note that property value aliases may be used as well, e.g. `\p{Word_Break=DQ}`, although IMHO it’s more readable to stick to the canonical property values listed above.
-
 ## Binary properties
 
 All binary properties in the Unicode standard are supported:
@@ -370,3 +338,4 @@ The abovementioned list of properties and values goes a long way towards fulfill
 * `Simple_Uppercase_Mapping`
 * `Titlecase_Mapping`
 * `Uppercase_Mapping`
+* `Word_Break`
