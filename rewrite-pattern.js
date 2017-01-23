@@ -262,7 +262,8 @@ const rewritePattern = function(pattern, flags, options) {
 		'bmpOnly': !config.unicode
 	};
 	const tree = parse(pattern, flags, regjsparserFeatures);
-	Object.assign(tree, processTerm(tree, regenerateOptions));
+	// Note: `processTerm` mutates `tree`.
+	processTerm(tree, regenerateOptions);
 	return generate(tree);
 };
 
