@@ -4,11 +4,11 @@ const fs = require('fs');
 const _ = require('lodash');
 const jsesc = require('jsesc');
 
-function hex(number) {
+const hex = (number) => {
 	return `0x${ number.toString(16).toUpperCase() }`;
-}
+};
 
-function writeMap(fileName, map) {
+const writeMap = (fileName, map) => {
 	// Sort map by key.
 	const sortedMap = new Map([...map].sort((a, b) => a[0] - b[0]));
 	fs.writeFileSync(
@@ -24,12 +24,12 @@ function writeMap(fileName, map) {
 // the uppercased version of the other. In that case, ES5 engines know about
 // this mapping, so it’s only needed to include one of the two in a
 // case-insensitive regular expression.
-function isES5CasedVariant(a, b) {
+const isES5CasedVariant = (a, b) => {
 	return (a < 0x80 && b < 0x80) &&
 		(oneWayMappings.get(a) == b || oneWayMappings.get(b) == a);
-}
+};
 
-function extend(map, key, value, callback) {
+const extend = (map, key, value, callback) => {
 	if (map.has(key)) {
 		const currentValue = map.get(key);
 		if (Array.isArray(currentValue)) {
@@ -37,7 +37,7 @@ function extend(map, key, value, callback) {
 				return;
 			}
 			if (callback) {
-				const skip = currentValue.some(function(codePoint) {
+				const skip = currentValue.some((codePoint) => {
 					return callback(codePoint, value);
 				});
 				if (skip) {
@@ -59,7 +59,7 @@ function extend(map, key, value, callback) {
 	} else {
 		map.set(key, value);
 	}
-}
+};
 
 // From <http://unicode.org/Public/UCD/latest/ucd/CaseFolding.txt>:
 //

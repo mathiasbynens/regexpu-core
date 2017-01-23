@@ -10,11 +10,11 @@ const BMP_PATTERN = BMP_SET.toString({ 'bmpOnly': true });
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 const UNICODE_PATTERN = UNICODE_SET.toString();
 
-describe('rewritePattern', function() {
+describe('rewritePattern', () => {
 	for (const fixture of fixtures) {
 		const pattern = fixture.pattern;
 		for (const flag of fixture.flags) {
-			it('rewrites `/' + pattern + '/' + flag + '` correctly', function() {
+			it('rewrites `/' + pattern + '/' + flag + '` correctly', () => {
 				assert.equal(rewritePattern(pattern, flag), fixture.transpiled);
 			});
 		}
@@ -509,7 +509,7 @@ const unicodePropertyEscapeFixtures = [
 	}
 ];
 
-const getPropertyValuePattern = function(path) {
+const getPropertyValuePattern = (path) => {
 	const codePoints = path.startsWith('Emoji') ?
 		require(`unicode-tr51/${ path }.js`) :
 		require(`unicode-9.0.0/${ path }/code-points.js`);
@@ -519,7 +519,7 @@ const getPropertyValuePattern = function(path) {
 	};
 };
 
-describe('unicodePropertyEscapes', function() {
+describe('unicodePropertyEscapes', () => {
 	const features = {
 		'unicodePropertyEscape': true
 	};
@@ -527,7 +527,7 @@ describe('unicodePropertyEscapes', function() {
 		const expected = getPropertyValuePattern(fixture.path);
 		for (const pattern of fixture.expressions) {
 			const p = `\\p{${ pattern }}`;
-			it('rewrites `/' + p + '/u` correctly', function() {
+			it('rewrites `/' + p + '/u` correctly', () => {
 				const transpiled = rewritePattern(p, 'u', features);
 				assert(
 					transpiled == expected.p ||
@@ -535,7 +535,7 @@ describe('unicodePropertyEscapes', function() {
 				);
 			});
 			const P = `\\P{${ pattern }}`;
-			it('rewrites `/' + P + '/u` correctly', function() {
+			it('rewrites `/' + P + '/u` correctly', () => {
 				const transpiled = rewritePattern(P, 'u', features);
 				assert(
 					transpiled == expected.P ||
@@ -544,7 +544,7 @@ describe('unicodePropertyEscapes', function() {
 			});
 		}
 	}
-	it('transpiles Unicode property escapes within various constructions', function() {
+	it('transpiles Unicode property escapes within various constructions', () => {
 		assert.equal(
 			rewritePattern('\\p{ASCII_Hex_Digit}', 'u', features),
 			'[0-9A-Fa-f]'
@@ -586,55 +586,55 @@ describe('unicodePropertyEscapes', function() {
 			'(?:(?:\\uD811[\\uDC00-\\uDE46]))'
 		);
 	});
-	it('throws without the `u` flag', function() {
-		assert.throws(function() {
+	it('throws without the `u` flag', () => {
+		assert.throws(() => {
 			rewritePattern('\\p{ASCII_Hex_Digit}', '', features);
 		}, Error);
-		assert.throws(function() {
+		assert.throws(() => {
 			rewritePattern('\\P{ASCII_Hex_Digit}', '', features);
 		}, Error);
 	});
-	it('throws without the `unicodePropertyEscape` feature enabled', function() {
-		assert.throws(function() {
+	it('throws without the `unicodePropertyEscape` feature enabled', () => {
+		assert.throws(() => {
 			rewritePattern('\\p{ASCII_Hex_Digit}', 'u');
 		}, Error);
-		assert.throws(function() {
+		assert.throws(() => {
 			rewritePattern('\\P{ASCII_Hex_Digit}', 'u');
 		}, Error);
 	});
-	it('throws on unknown binary properties', function() {
-		assert.throws(function() {
+	it('throws on unknown binary properties', () => {
+		assert.throws(() => {
 			rewritePattern('\\p{UnknownBinaryProperty}', 'u', features);
 		}, Error);
-		assert.throws(function() {
+		assert.throws(() => {
 			rewritePattern('\\P{UnknownBinaryProperty}', 'u', features);
 		}, Error);
 	});
-	it('throws on non-binary properties without a value', function() {
-		assert.throws(function() {
+	it('throws on non-binary properties without a value', () => {
+		assert.throws(() => {
 			rewritePattern('\\p{General_Category}', 'u', features);
 		}, Error);
 	});
-	it('throws on unknown property values', function() {
-		assert.throws(function() {
+	it('throws on unknown property values', () => {
+		assert.throws(() => {
 			rewritePattern('\\p{General_Category=UnknownCategory}', 'u', features);
 		}, Error);
-		assert.throws(function() {
+		assert.throws(() => {
 			rewritePattern('\\P{General_Category=UnknownCategory}', 'u', features);
 		}, Error);
 	});
-	it('throws when loose matching is attempted', function() {
-		assert.throws(function() {
+	it('throws when loose matching is attempted', () => {
+		assert.throws(() => {
 			rewritePattern('\\p{gc=uppercaseletter}', 'u', features);
 		}, Error);
-		assert.throws(function() {
+		assert.throws(() => {
 			rewritePattern('\p{Block=Superscripts and Subscripts}', 'u', features);
 		}, Error);
-		assert.throws(function() {
+		assert.throws(() => {
 			rewritePattern('\\P{_-_lOwEr_C-A_S-E_-_}', 'u', features);
 		}, Error);
 	});
-	it('simplifies the output using Unicode code point escapes when `useUnicodeFlag` is enabled', function() {
+	it('simplifies the output using Unicode code point escapes when `useUnicodeFlag` is enabled', () => {
 		assert.equal(
 			rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
 				'unicodePropertyEscape': true,
@@ -678,14 +678,14 @@ const dotAllFlagFixtures = [
 	}
 ];
 
-describe('dotAllFlag', function() {
+describe('dotAllFlag', () => {
 	const features = {
 		'dotAllFlag': true
 	};
 	for (const fixture of dotAllFlagFixtures) {
 		const pattern = fixture.pattern;
 		const flags = fixture.flags;
-		it('rewrites `/' + pattern + '/' + flags + '` correctly', function() {
+		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
 			const transpiled = rewritePattern(pattern, flags, features);
 			const expected = fixture.expected;
 			assert(

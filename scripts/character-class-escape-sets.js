@@ -8,9 +8,9 @@ const Zs = require('unicode-9.0.0/General_Category/Space_Separator/code-points.j
 
 const iuMappings = require('../data/iu-mappings.js');
 
-function caseFold(codePoint) {
+const caseFold = (codePoint) => {
 	return iuMappings.get(codePoint) || false;
-}
+};
 
 // Prepare a Regenerate set containing all code points, used for negative
 // character classes (if any).
@@ -22,7 +22,7 @@ const BMP_SET = regenerate().addRange(0x0, 0xFFFF);
 const ESCAPE_CHARS = {};
 const ESCAPE_CHARS_UNICODE = {};
 const ESCAPE_CHARS_UNICODE_IGNORE_CASE = {};
-function addCharacterClassEscape(lower, set) {
+const addCharacterClassEscape = (lower, set) => {
 	ESCAPE_CHARS[lower] = ESCAPE_CHARS_UNICODE[lower] = set;
 	const upper = lower.toUpperCase();
 	ESCAPE_CHARS[upper] = BMP_SET.clone().remove(set);
@@ -83,9 +83,9 @@ addCharacterClassEscape(
 
 /*----------------------------------------------------------------------------*/
 
-function codePointToString(codePoint) {
+const codePointToString = (codePoint) => {
 	return '0x' + codePoint.toString(16).toUpperCase();
-}
+};
 
 // Regenerate plugin that turns a set into some JavaScript source code that
 // generates that set.
@@ -115,13 +115,13 @@ regenerate.prototype.toCode = function() {
 		(ranges.length ? '\n\t\t.' + ranges.join('\n\t\t.') : '');
 };
 
-function stringify(name, object) {
-	const source = 'exports.' + name + ' = new Map([\n\t' + Object.keys(object).map(function(character) {
+const stringify = (name, object) => {
+	const source = 'exports.' + name + ' = new Map([\n\t' + Object.keys(object).map((character) => {
 		const set = object[character];
 		return '[' + jsesc(character, { 'wrap': true }) + ', ' + set.toCode() + ']';
 	}).join(',\n\t') + '\n]);';
 	return source;
-}
+};
 
 const source = [
 	'// Generated using `npm run build`. Do not edit.\n' +

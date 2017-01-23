@@ -30,7 +30,7 @@ const DOT_SET_UNICODE = UNICODE_SET.clone() // all Unicode code points
 const DOT_SET = DOT_SET_UNICODE.clone()
 	.intersection(BMP_SET);
 
-const getCharacterClassEscapeSet = function(character, unicode, ignoreCase) {
+const getCharacterClassEscapeSet = (character, unicode, ignoreCase) => {
 	if (unicode) {
 		if (ignoreCase) {
 			return ESCAPE_SETS.UNICODE_IGNORE_CASE.get(character);
@@ -40,14 +40,14 @@ const getCharacterClassEscapeSet = function(character, unicode, ignoreCase) {
 	return ESCAPE_SETS.REGULAR.get(character);
 };
 
-const getDotSet = function(unicode, dotAll) {
+const getDotSet = (unicode, dotAll) => {
 	if (dotAll) {
 		return unicode ? UNICODE_SET : BMP_SET;
 	}
 	return unicode ? DOT_SET_UNICODE : DOT_SET;
 };
 
-const getUnicodePropertyValueSet = function(property, value) {
+const getUnicodePropertyValueSet = (property, value) => {
 	const path = value ?
 		`${ property }/${ value }` :
 		`Binary_Property/${ property }`;
@@ -61,7 +61,7 @@ const getUnicodePropertyValueSet = function(property, value) {
 	}
 };
 
-const handleLoneUnicodePropertyNameOrValue = function(value) {
+const handleLoneUnicodePropertyNameOrValue = (value) => {
 	// It could be a `General_Category` value or a binary property.
 	// Note: `unicodeMatchPropertyValue` throws on invalid values.
 	try {
@@ -75,7 +75,7 @@ const handleLoneUnicodePropertyNameOrValue = function(value) {
 	return getUnicodePropertyValueSet(property);
 };
 
-const getUnicodePropertyEscapeSet = function(value, isNegative) {
+const getUnicodePropertyEscapeSet = (value, isNegative) => {
 	const parts = value.split('=');
 	const firstPart = parts[0];
 	let set;
@@ -106,7 +106,7 @@ regenerate.prototype.iuAddRange = function(min, max) {
 	return $this;
 };
 
-const update = function(item, pattern) {
+const update = (item, pattern) => {
 	let tree = parse(pattern, config.useUnicodeFlag ? 'u' : '');
 	switch (tree.type) {
 		case 'characterClass':
@@ -121,7 +121,7 @@ const update = function(item, pattern) {
 	Object.assign(item, tree);
 };
 
-const wrap = function(tree, pattern) {
+const wrap = (tree, pattern) => {
 	// Wrap the pattern in a non-capturing group.
 	return {
 		'type': 'group',
@@ -131,13 +131,13 @@ const wrap = function(tree, pattern) {
 	};
 };
 
-const caseFold = function(codePoint) {
+const caseFold = (codePoint) => {
 	return iuMappings.get(codePoint) || false;
 };
 
-const processCharacterClass = function(characterClassItem, regenerateOptions) {
+const processCharacterClass = (characterClassItem, regenerateOptions) => {
 	let set = regenerate();
-	const body = characterClassItem.body.forEach(function(item) {
+	const body = characterClassItem.body.forEach((item) => {
 		switch (item.type) {
 			case 'value':
 				set.add(item.codePoint);
@@ -180,7 +180,7 @@ const processCharacterClass = function(characterClassItem, regenerateOptions) {
 	return characterClassItem;
 };
 
-const processTerm = function(item, regenerateOptions) {
+const processTerm = (item, regenerateOptions) => {
 	switch (item.type) {
 		case 'dot':
 			update(
@@ -212,7 +212,7 @@ const processTerm = function(item, regenerateOptions) {
 		case 'disjunction':
 		case 'group':
 		case 'quantifier':
-			item.body = item.body.map(function(term) {
+			item.body = item.body.map(term => {
 				return processTerm(term, regenerateOptions);
 			});
 			break;
@@ -248,7 +248,7 @@ const config = {
 	'dotAll': false,
 	'useUnicodeFlag': false
 };
-const rewritePattern = function(pattern, flags, options) {
+const rewritePattern = (pattern, flags, options) => {
 	const regjsparserFeatures = {
 		'unicodePropertyEscape': options && options.unicodePropertyEscape
 	};
