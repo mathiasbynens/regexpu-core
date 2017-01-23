@@ -137,7 +137,7 @@ const caseFold = (codePoint) => {
 
 const processCharacterClass = (characterClassItem, regenerateOptions) => {
 	let set = regenerate();
-	const body = characterClassItem.body.forEach((item) => {
+	for (const item of characterClassItem.body) {
 		switch (item.type) {
 			case 'value':
 				set.add(item.codePoint);
@@ -172,7 +172,7 @@ const processCharacterClass = (characterClassItem, regenerateOptions) => {
 			default:
 				throw new Error(`Unknown term type: ${ item.type }`);
 		}
-	});
+	}
 	if (characterClassItem.negative) {
 		set = (config.unicode ? UNICODE_SET : BMP_SET).clone().remove(set);
 	}
