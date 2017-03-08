@@ -488,6 +488,13 @@ const unicodePropertyEscapeFixtures = [
 	},
 	// http://unicode.org/reports/tr51/
 	{
+		'path': 'Emoji_Component',
+		'expressions': [
+			'Emoji_Component'
+		]
+	},
+	// http://unicode.org/reports/tr51/
+	{
 		'path': 'Emoji_Modifier',
 		'expressions': [
 			'Emoji_Modifier'

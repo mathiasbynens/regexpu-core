@@ -52,7 +52,7 @@
     "regenerate-unicode-properties": "^4.0.3",
     "regjsgen": "^0.3.0",
     "regjsparser": "^0.2.1",
-    "unicode-match-property": "^0.1.2",
+    "unicode-match-property": "^0.1.3",
     "unicode-match-property-value": "^1.0.2"
   },
   "devDependencies": {
