@@ -251,6 +251,7 @@ $ node -e 'require("unicode-9.0.0").Binary_Property.concat(require("unicode-tr51
 \p{Deprecated}
 \p{Diacritic}
 \p{Emoji}
+\p{Emoji_Component}
 \p{Emoji_Modifier}
 \p{Emoji_Modifier_Base}
 \p{Emoji_Presentation}
