@@ -617,6 +617,21 @@ describe('unicodePropertyEscapes', () => {
 			rewritePattern('\\P{UnknownBinaryProperty}', 'u', features);
 		}, Error);
 	});
+	it('throws on explicitly unsupported properties', () => {
+		// https://github.com/tc39/proposal-regexp-unicode-property-escapes/issues/27
+		assert.throws(() => {
+			rewritePattern('\\p{FC_NFKC_Closure}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Grapheme_Link}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\p{Expands_On_NFC}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Other_ID_Start}', 'u', features);
+		}, Error);
+	});
 	it('throws on non-binary properties without a value', () => {
 		assert.throws(() => {
 			rewritePattern('\\p{General_Category}', 'u', features);

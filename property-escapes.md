@@ -229,7 +229,7 @@ Note that script name aliases may be used as well, e.g. `\p{Script_Extensions=Ag
 All binary properties in the Unicode standard are supported:
 
 ```sh
-$ node -e 'require("unicode-9.0.0").Binary_Property.concat(require("unicode-tr51")).sort().forEach(p => { console.log(`\\p{${p}}`); })'
+$ node -e 'require("regenerate-unicode-properties").get("Binary_Property").forEach(p => { console.log(`\\p{${p}}`); })'
 \p{ASCII}
 \p{ASCII_Hex_Digit}
 \p{Alphabetic}
@@ -255,18 +255,11 @@ $ node -e 'require("unicode-9.0.0").Binary_Property.concat(require("unicode-tr51
 \p{Emoji_Modifier}
 \p{Emoji_Modifier_Base}
 \p{Emoji_Presentation}
-\p{Expands_On_NFC}
-\p{Expands_On_NFD}
-\p{Expands_On_NFKC}
-\p{Expands_On_NFKD}
 \p{Extender}
-\p{FC_NFKC_Closure}
 \p{Full_Composition_Exclusion}
 \p{Grapheme_Base}
 \p{Grapheme_Extend}
-\p{Grapheme_Link}
 \p{Hex_Digit}
-\p{Hyphen}
 \p{IDS_Binary_Operator}
 \p{IDS_Trinary_Operator}
 \p{ID_Continue}
@@ -277,14 +270,6 @@ $ node -e 'require("unicode-9.0.0").Binary_Property.concat(require("unicode-tr51
 \p{Lowercase}
 \p{Math}
 \p{Noncharacter_Code_Point}
-\p{Other_Alphabetic}
-\p{Other_Default_Ignorable_Code_Point}
-\p{Other_Grapheme_Extend}
-\p{Other_ID_Continue}
-\p{Other_ID_Start}
-\p{Other_Lowercase}
-\p{Other_Math}
-\p{Other_Uppercase}
 \p{Pattern_Syntax}
 \p{Pattern_White_Space}
 \p{Prepended_Concatenation_Mark}

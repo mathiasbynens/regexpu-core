@@ -81,21 +81,19 @@ const extend = (map, key, value, callback) => {
 //  A. To do a simple case folding, use the mappings with status C + S.
 //  B. To do a full case folding, use the mappings with status C + F.
 
-const commonMappings = require('unicode-9.0.0/Case_Folding/C/code-points');
-const simpleMappings = require('unicode-9.0.0/Case_Folding/S/code-points');
+const commonMappings = require('unicode-9.0.0/Case_Folding/C/code-points.js');
+const simpleMappings = require('unicode-9.0.0/Case_Folding/S/code-points.js');
 
 // We want the `C` mappings in both directions (i.e. `A` should fold to `a`
 // and `a` to `A`), and the `S` mappings in both directions (i.e. `ẞ` should
 // fold to `ß` and `ß` to `ẞ`). Let’s start with the simple case folding (in
 // one direction) first, then filter the set, and then deal with the inverse.
 const oneWayMappings = new Map();
-for (const from of Object.keys(commonMappings)) {
-	const to = commonMappings[from];
-	oneWayMappings.set(Number(from), Number(to));
+for (const [from, to] of commonMappings) {
+	oneWayMappings.set(from, to);
 }
-for (const from of Object.keys(simpleMappings)) {
-	const to = simpleMappings[from];
-	oneWayMappings.set(Number(from), Number(to));
+for (const [from, to] of simpleMappings) {
+	oneWayMappings.set(from, to);
 }
 // Note: various code points can fold into the same code point, so it’s not
 // possible to simply invert `oneWayMappings` — some entries would be lost in
@@ -115,7 +113,7 @@ for (const from of Object.keys(simpleMappings)) {
 // `i` and `u` flags set. In addition to the above, this includes all mappings
 // for astral code points.
 const filteredMappings = new Map();
-for (const [from, to] of oneWayMappings.entries()) {
+for (const [from, to] of oneWayMappings) {
 	// Case folding is applied to both the pattern and the string being matched.
 	// Because of that e.g. `/[A-Z]/iu` matches U+017F and U+212A, just like
 	// `/[a-z]/iu` would, even though no symbol in the range from `A` to `Z`
@@ -126,7 +124,7 @@ for (const [from, to] of oneWayMappings.entries()) {
 	// 2. `oneWayMappings` already maps `ſ` to `s`. (383 → 115)
 	// 3. So, in the generated mappings, make sure `S` maps to `ſ`. (83 → 383)
 	// Check if there are any other code points that map to the same `to` value.
-	for (const [otherFrom, otherTo] of oneWayMappings.entries()) {
+	for (const [otherFrom, otherTo] of oneWayMappings) {
 		if (otherFrom != from && otherTo == to) {
 			// Note: we could use `extend` here, but it’s not necessary as there can
 			// only be a single value for the key `from` at this point.
@@ -166,7 +164,7 @@ for (const [from, to] of oneWayMappings.entries()) {
 
 // Create a new object containing all `filteredMappings` and their inverse.
 const iuMappings = new Map();
-for (const [from, to] of filteredMappings.entries()) {
+for (const [from, to] of filteredMappings) {
 	if (Array.isArray(to)) {
 		for (const codePoint of to) {
 			extend(iuMappings, from, codePoint, isES5CasedVariant);
