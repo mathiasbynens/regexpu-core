@@ -52,7 +52,7 @@
     "regenerate-unicode-properties": "^5.0.6",
     "regjsgen": "^0.3.0",
     "regjsparser": "^0.2.1",
-    "unicode-match-property-ecmascript": "^1.0.0",
+    "unicode-match-property-ecmascript": "^1.0.1",
     "unicode-match-property-value-ecmascript": "^1.0.0"
   },
   "devDependencies": {
