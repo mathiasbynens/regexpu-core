@@ -3,8 +3,8 @@
 const generate = require('regjsgen').generate;
 const parse = require('regjsparser').parse;
 const regenerate = require('regenerate');
-const unicodeMatchProperty = require('unicode-match-property');
-const unicodeMatchPropertyValue = require('unicode-match-property-value');
+const unicodeMatchProperty = require('unicode-match-property-ecmascript');
+const unicodeMatchPropertyValue = require('unicode-match-property-value-ecmascript');
 const iuMappings = require('./data/iu-mappings.js');
 const ESCAPE_SETS = require('./data/character-class-escape-sets.js');
 

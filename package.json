@@ -49,11 +49,11 @@
   },
   "dependencies": {
     "regenerate": "^1.3.2",
-    "regenerate-unicode-properties": "^5.0.5",
+    "regenerate-unicode-properties": "^5.0.6",
     "regjsgen": "^0.3.0",
     "regjsparser": "^0.2.1",
-    "unicode-match-property": "^0.2.2",
-    "unicode-match-property-value": "^2.0.1"
+    "unicode-match-property-ecmascript": "^1.0.0",
+    "unicode-match-property-value-ecmascript": "^1.0.0"
   },
   "devDependencies": {
     "codecov": "^2.1.0",
