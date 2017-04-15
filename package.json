@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "regenerate": "^1.3.2",
-    "regenerate-unicode-properties": "^5.0.4",
+    "regenerate-unicode-properties": "^5.0.5",
     "regjsgen": "^0.3.0",
     "regjsparser": "^0.2.1",
     "unicode-match-property": "^0.2.2",
