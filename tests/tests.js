@@ -241,14 +241,6 @@ const unicodePropertyEscapeFixtures = [
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
-		'path': 'Binary_Property/Composition_Exclusion',
-		'expressions': [
-			'CE',
-			'Composition_Exclusion'
-		]
-	},
-	// http://unicode.org/reports/tr18/#RL2.7
-	{
 		'path': 'Binary_Property/Dash',
 		'expressions': [
 			'Dash'
@@ -276,14 +268,6 @@ const unicodePropertyEscapeFixtures = [
 		'expressions': [
 			'Ext',
 			'Extender'
-		]
-	},
-	// http://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Full_Composition_Exclusion',
-		'expressions': [
-			'Comp_Ex',
-			'Full_Composition_Exclusion'
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
@@ -620,16 +604,58 @@ describe('unicodePropertyEscapes', () => {
 	it('throws on explicitly unsupported properties', () => {
 		// https://github.com/tc39/proposal-regexp-unicode-property-escapes/issues/27
 		assert.throws(() => {
-			rewritePattern('\\p{FC_NFKC_Closure}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Grapheme_Link}', 'u', features);
+			rewritePattern('\\P{Composition_Exclusion}', 'u', features);
 		}, Error);
 		assert.throws(() => {
 			rewritePattern('\\p{Expands_On_NFC}', 'u', features);
 		}, Error);
 		assert.throws(() => {
+			rewritePattern('\\p{Expands_On_NFD}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\p{Expands_On_NFKC}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\p{Expands_On_NFKD}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\p{FC_NFKC_Closure}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\p{Full_Composition_Exclusion}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Grapheme_Link}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Hyphen}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Other_Alphabetic}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Other_Default_Ignorable_Code_Point}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Other_Grapheme_Extend}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Other_ID_Continue}', 'u', features);
+		}, Error);
+		assert.throws(() => {
 			rewritePattern('\\P{Other_ID_Start}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Other_Lowercase}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Other_Math}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Other_Uppercase}', 'u', features);
+		}, Error);
+		assert.throws(() => {
+			rewritePattern('\\P{Prepended_Concatenation_Mark}', 'u', features);
 		}, Error);
 	});
 	it('throws on non-binary properties without a value', () => {
