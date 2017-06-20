@@ -32,7 +32,7 @@ What follows is an exhaustive overview of the Unicode properties and values that
 Possible values:
 
 ```sh
-$ node -e 'require("unicode-9.0.0").General_Category.forEach(c => { console.log(`\\p{${c}}`); })'
+$ node -e 'require("regenerate-unicode-properties").get("General_Category").forEach(c => { console.log(`\\p{${c}}`); })'
 \p{Cased_Letter}
 \p{Close_Punctuation}
 \p{Connector_Punctuation}
@@ -82,7 +82,7 @@ Category aliases may be used, e.g. `\p{Lc}` or `\p{General_Category=Lc}`, althou
 The sets of possible values for `Script` and `Script_Extensions` are identical:
 
 ```sh
-$ node -e 'require("unicode-9.0.0").Script_Extensions.forEach(s => { console.log(`\\p{Script_Extensions=${s}}`); })'
+$ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").forEach(s => { console.log(`\\p{Script_Extensions=${s}}`); })'
 \p{Script_Extensions=Adlam}
 \p{Script_Extensions=Ahom}
 \p{Script_Extensions=Anatolian_Hieroglyphs}
@@ -157,6 +157,7 @@ $ node -e 'require("unicode-9.0.0").Script_Extensions.forEach(s => { console.log
 \p{Script_Extensions=Mandaic}
 \p{Script_Extensions=Manichaean}
 \p{Script_Extensions=Marchen}
+\p{Script_Extensions=Masaram_Gondi}
 \p{Script_Extensions=Meetei_Mayek}
 \p{Script_Extensions=Mende_Kikakui}
 \p{Script_Extensions=Meroitic_Cursive}
@@ -171,6 +172,7 @@ $ node -e 'require("unicode-9.0.0").Script_Extensions.forEach(s => { console.log
 \p{Script_Extensions=New_Tai_Lue}
 \p{Script_Extensions=Newa}
 \p{Script_Extensions=Nko}
+\p{Script_Extensions=Nushu}
 \p{Script_Extensions=Ogham}
 \p{Script_Extensions=Ol_Chiki}
 \p{Script_Extensions=Old_Hungarian}
@@ -199,6 +201,7 @@ $ node -e 'require("unicode-9.0.0").Script_Extensions.forEach(s => { console.log
 \p{Script_Extensions=SignWriting}
 \p{Script_Extensions=Sinhala}
 \p{Script_Extensions=Sora_Sompeng}
+\p{Script_Extensions=Soyombo}
 \p{Script_Extensions=Sundanese}
 \p{Script_Extensions=Syloti_Nagri}
 \p{Script_Extensions=Syriac}
@@ -220,6 +223,7 @@ $ node -e 'require("unicode-9.0.0").Script_Extensions.forEach(s => { console.log
 \p{Script_Extensions=Vai}
 \p{Script_Extensions=Warang_Citi}
 \p{Script_Extensions=Yi}
+\p{Script_Extensions=Zanabazar_Square}
 ```
 
 Note that script name aliases may be used as well, e.g. `\p{Script_Extensions=Aghb}`, although IMHO it’s more readable to stick to the canonical script names listed above.
@@ -245,7 +249,6 @@ $ node -e 'require("regenerate-unicode-properties").get("Binary_Property").forEa
 \p{Changes_When_NFKC_Casefolded}
 \p{Changes_When_Titlecased}
 \p{Changes_When_Uppercased}
-\p{Composition_Exclusion}
 \p{Dash}
 \p{Default_Ignorable_Code_Point}
 \p{Deprecated}
@@ -256,7 +259,6 @@ $ node -e 'require("regenerate-unicode-properties").get("Binary_Property").forEa
 \p{Emoji_Modifier_Base}
 \p{Emoji_Presentation}
 \p{Extender}
-\p{Full_Composition_Exclusion}
 \p{Grapheme_Base}
 \p{Grapheme_Extend}
 \p{Hex_Digit}
@@ -272,7 +274,6 @@ $ node -e 'require("regenerate-unicode-properties").get("Binary_Property").forEa
 \p{Noncharacter_Code_Point}
 \p{Pattern_Syntax}
 \p{Pattern_White_Space}
-\p{Prepended_Concatenation_Mark}
 \p{Quotation_Mark}
 \p{Radical}
 \p{Sentence_Terminal}
