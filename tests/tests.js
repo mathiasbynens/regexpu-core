@@ -503,7 +503,7 @@ const unicodePropertyEscapeFixtures = [
 const getPropertyValuePattern = (path) => {
 	const codePoints = path.startsWith('Emoji') ?
 		require(`unicode-tr51/${ path }.js`) :
-		require(`unicode-9.0.0/${ path }/code-points.js`);
+		require(`unicode-10.0.0/${ path }/code-points.js`);
 	return {
 		'p': regenerate(codePoints).toString(),
 		'P': UNICODE_SET.clone().remove(codePoints).toString()
