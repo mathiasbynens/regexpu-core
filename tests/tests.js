@@ -388,6 +388,13 @@ const unicodePropertyEscapeFixtures = [
 			'Radical'
 		]
 	},
+	{
+		'path': 'Binary_Property/Regional_Indicator',
+		'expressions': [
+			'RI',
+			'Regional_Indicator'
+		]
+	},
 	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Soft_Dotted',

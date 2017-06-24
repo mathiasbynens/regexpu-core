@@ -230,7 +230,7 @@ Note that script name aliases may be used as well, e.g. `\p{Script_Extensions=Ag
 
 ## Binary properties
 
-All binary properties in the Unicode standard are supported:
+The following binary properties are supported:
 
 ```sh
 $ node -e 'require("regenerate-unicode-properties").get("Binary_Property").forEach(p => { console.log(`\\p{${p}}`); })'
@@ -276,6 +276,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Binary_Property").forEa
 \p{Pattern_White_Space}
 \p{Quotation_Mark}
 \p{Radical}
+\p{Regional_Indicator}
 \p{Sentence_Terminal}
 \p{Soft_Dotted}
 \p{Terminal_Punctuation}
