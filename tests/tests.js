@@ -504,11 +504,19 @@ const unicodePropertyEscapeFixtures = [
 		'expressions': [
 			'Emoji_Presentation'
 		]
-	}
+	},
+	// http://unicode.org/reports/tr51/proposed.html
+	{
+		'path': 'Extended_Pictographic',
+		'expressions': [
+			'Extended_Pictographic'
+		]
+	},
 ];
 
 const getPropertyValuePattern = (path) => {
-	const codePoints = path.startsWith('Emoji') ?
+	const codePoints =
+		(path == 'Extended_Pictographic' || path.startsWith('Emoji')) ?
 		require(`unicode-tr51/${ path }.js`) :
 		require(`unicode-10.0.0/${ path }/code-points.js`);
 	return {

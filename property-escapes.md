@@ -258,6 +258,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Binary_Property").forEa
 \p{Emoji_Modifier}
 \p{Emoji_Modifier_Base}
 \p{Emoji_Presentation}
+\p{Extended_Pictographic}
 \p{Extender}
 \p{Grapheme_Base}
 \p{Grapheme_Extend}
