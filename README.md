@@ -80,10 +80,10 @@ rewritePattern('.', 'su', {
 Setting this option to `true` enables [experimental support for Unicode property escapes](property-escapes.md):
 
 ```js
-rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
+rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
   'unicodePropertyEscape': true
 });
-// → '(?:\\uD800[\\uDD00-\\uDD3F])'
+// → '(?:\\uD811[\\uDC00-\\uDE46])'
 ```
 
 #### `useUnicodeFlag` (default: `false`)
@@ -91,11 +91,11 @@ rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
 Setting this option to `true` enables the use of Unicode code point escapes of the form `\u{…}`. Note that in regular expressions, such escape sequences only work correctly when the ES6 `u` flag is set. Enabling this setting often results in more compact output, although there are cases (such as `\p{Lu}`) where it actually _increases_ the output size.
 
 ```js
-rewritePattern('\\p{Block=Aegean_Numbers}', 'u', {
+rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
   'unicodePropertyEscape': true,
   'useUnicodeFlag': true
 });
-// → '[\\u{10100}-\\u{1013F}]'
+// → '[\\u{14400}-\\u{14646}]'
 ```
 
 ## Author
