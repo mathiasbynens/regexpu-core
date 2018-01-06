@@ -801,4 +801,16 @@ describe('namedGroups', () => {
 			}
 		});
 	}
+
+	it('onNamedGroup is optional', () => {
+		let transpiled;
+		const pattern = '(?<name>)';
+		const expected = '()';
+		assert.doesNotThrow(() => {
+			transpiled = rewritePattern('(?<name>)', '', {
+				'namedGroups': true
+			});
+		});
+		assert.strictEqual(transpiled, expected);
+	})
 });
