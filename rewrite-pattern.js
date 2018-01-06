@@ -185,6 +185,13 @@ const updateNamedReference = (item, index) => {
 	item.matchIndex = index;
 };
 
+const assertNoUnmatchedReferences = (groups) => {
+	const unmatchedReferencesNames = Object.keys(groups.unmatchedReferences);
+	if (unmatchedReferencesNames.length > 0) {
+		throw new Error(`Unknown group names: ${unmatchedReferencesNames}`);
+	}
+};
+
 const processTerm = (item, regenerateOptions, groups) => {
 	switch (item.type) {
 		case 'dot':
@@ -217,6 +224,13 @@ const processTerm = (item, regenerateOptions, groups) => {
 			groups.lastIndex++;
 			if (item.name) {
 				const name = item.name.value;
+
+				if (groups.names[name]) {
+					throw new Error(
+						`Multiple groups with the same name (${ name }) are not allowed.`
+					);
+				}
+
 				const index = groups.lastIndex;
 				delete item.name;
 
@@ -230,6 +244,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 					groups.unmatchedReferences[name].forEach(reference => {
 						updateNamedReference(reference, index);
 					});
+					delete groups.unmatchedReferences[name];
 				}
 			}
 			/* falls through */
@@ -310,6 +325,7 @@ const rewritePattern = (pattern, flags, options) => {
 	const tree = parse(pattern, flags, regjsparserFeatures);
 	// Note: `processTerm` mutates `tree` and `groups`.
 	processTerm(tree, regenerateOptions, groups);
+	assertNoUnmatchedReferences(groups);
 	return generate(tree);
 };
 

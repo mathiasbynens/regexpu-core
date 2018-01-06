@@ -812,5 +812,21 @@ describe('namedGroups', () => {
 			});
 		});
 		assert.strictEqual(transpiled, expected);
-	})
+	});
+
+	it('multiple groups with the same name are disallowed', () => {
+		assert.throws(() => {
+			rewritePattern("(?<name>)(?<name>)", '', {
+				'namedGroups': true
+			});
+		});
+	});
+
+	it('named references must reference a group', () => {
+		assert.throws(() => {
+			rewritePattern("\\k<name>", '', {
+				'namedGroups': true
+			});
+		});
+	});
 });
