@@ -739,3 +739,66 @@ describe('dotAllFlag', () => {
 		});
 	}
 });
+
+const namedGroupsFeatures = [
+	{
+		'pattern': '(?<name>)\\k<name>',
+		'flags': '',
+		'expected': '()\\1',
+		'expectedGroups': [
+			['name', 1]
+		]
+	},
+	{
+		'pattern': '(?<name1>)(?<name2>)\\k<name1>\\k<name2>',
+		'flags': '',
+		'expected': '()()\\1\\2',
+		'expectedGroups': [
+			['name1', 1],
+			['name2', 2]
+		]
+	},
+	{
+		'pattern': '()(?<name>)\\k<name>',
+		'flags': '',
+		'expected': '()()\\2',
+		'expectedGroups': [
+			['name', 2]
+		]
+	},
+	{
+		'pattern': '(?<name>)()\\1',
+		'flags': '',
+		'expected': '()()\\1'
+	},
+	{
+		'pattern': '\\k<name>\\k<name>(?<name>)\\k<name>',
+		'flags': '',
+		'expected': '\\1\\1()\\1'
+	},
+	{
+		'pattern': '(?<name>\\k<name>)',
+		'flags': '',
+		'expected': '(\\1)'
+	}
+];
+
+describe('namedGroups', () => {
+	for (const fixture of namedGroupsFeatures) {
+		const pattern = fixture.pattern;
+		const flags = fixture.flags;
+		const expected = fixture.expected;
+		const expectedGroups = fixture.expectedGroups;
+		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
+			const groups = [];
+			const transpiled = rewritePattern(pattern, flags, {
+				'namedGroups': true,
+				'onNamedGroup': (name, index) => { groups.push([ name, index ]) }
+			});
+			assert.strictEqual(transpiled, expected);
+			if (expectedGroups) {
+				assert.deepStrictEqual(groups, expectedGroups);
+			}
+		});
+	}
+});

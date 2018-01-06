@@ -86,6 +86,31 @@ rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
 // → '(?:\\uD811[\\uDC00-\\uDE46])'
 ```
 
+#### `namedGroups` (default: `false`)
+
+Setting this option to `true` enables experimental support for [named groups](https://github.com/tc39/proposal-regexp-named-groups).
+
+```js
+rewritePattern('(?<name>.)\k<name>', '', {
+  'namedGroups': true
+});
+// -> '(.)\1'
+```
+
+#### `onNamedGroup`
+
+This option is a function that will be called when a named groups is found. It receives two parameters:
+the name of the group and its index.
+
+```js
+rewritePattern('(?<name>.)\k<name>', '', {
+  'namedGroups': true,
+  onNamedGroup(name, index) {
+    console.log(name, index); // -> 'name', 1
+  }
+});
+```
+
 #### `useUnicodeFlag` (default: `false`)
 
 Setting this option to `true` enables the use of Unicode code point escapes of the form `\u{…}`. Note that in regular expressions, such escape sequences only work correctly when the ES6 `u` flag is set. Enabling this setting often results in more compact output, although there are cases (such as `\p{Lu}`) where it actually _increases_ the output size.

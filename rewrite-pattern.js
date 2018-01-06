@@ -180,7 +180,12 @@ const processCharacterClass = (characterClassItem, regenerateOptions) => {
 	return characterClassItem;
 };
 
-const processTerm = (item, regenerateOptions) => {
+const updateNamedReference = (item, index) => {
+	delete item.name;
+	item.matchIndex = index;
+};
+
+const processTerm = (item, regenerateOptions, groups) => {
 	switch (item.type) {
 		case 'dot':
 			update(
@@ -208,12 +213,31 @@ const processTerm = (item, regenerateOptions) => {
 				).toString(regenerateOptions)
 			);
 			break;
+		case 'group':
+			groups.lastIndex++;
+			if (item.name) {
+				const name = item.name.value;
+				const index = groups.lastIndex;
+				delete item.name;
+
+				groups.names[name] = index;
+				if (groups.onNamedGroup) {
+					// Indirect call is needed to not leak 'groups'
+					(0, groups.onNamedGroup)(name, index);
+				}
+
+				if (groups.unmatchedReferences[name]) {
+					groups.unmatchedReferences[name].forEach(reference => {
+						updateNamedReference(reference, index);
+					});
+				}
+			}
+			/* falls through */
 		case 'alternative':
 		case 'disjunction':
-		case 'group':
 		case 'quantifier':
 			item.body = item.body.map(term => {
-				return processTerm(term, regenerateOptions);
+				return processTerm(term, regenerateOptions, groups);
 			});
 			break;
 		case 'value':
@@ -227,10 +251,25 @@ const processTerm = (item, regenerateOptions) => {
 			}
 			update(item, set.toString(regenerateOptions));
 			break;
+		case 'reference':
+			if (item.name) {
+				const name = item.name.value;
+				const index = groups.names[name];
+				if (index) {
+					updateNamedReference(item, index);
+					break;
+				}
+
+				if (!groups.unmatchedReferences[name]) {
+					groups.unmatchedReferences[name] = [];
+				}
+				// Keep track of references used before the correspondig group.
+				groups.unmatchedReferences[name].push(item);
+			}
+			break;
 		case 'anchor':
 		case 'empty':
 		case 'group':
-		case 'reference':
 			// Nothing to do here.
 			break;
 		// The `default` clause is only here as a safeguard; it should never be
@@ -250,7 +289,8 @@ const config = {
 };
 const rewritePattern = (pattern, flags, options) => {
 	const regjsparserFeatures = {
-		'unicodePropertyEscape': options && options.unicodePropertyEscape
+		'unicodePropertyEscape': options && options.unicodePropertyEscape,
+		'namedGroups': options && options.namedGroups
 	};
 	config.ignoreCase = flags && flags.includes('i');
 	config.unicode = flags && flags.includes('u');
@@ -261,9 +301,15 @@ const rewritePattern = (pattern, flags, options) => {
 		'hasUnicodeFlag': config.useUnicodeFlag,
 		'bmpOnly': !config.unicode
 	};
+	const groups = {
+		'onNamedGroup': options && options.onNamedGroup,
+		'lastIndex': 0,
+		'names': Object.create(null), // { [name]: index }
+		'unmatchedReferences': Object.create(null) // { [name]: Array<reference> }
+	};
 	const tree = parse(pattern, flags, regjsparserFeatures);
-	// Note: `processTerm` mutates `tree`.
-	processTerm(tree, regenerateOptions);
+	// Note: `processTerm` mutates `tree` and `groups`.
+	processTerm(tree, regenerateOptions, groups);
 	return generate(tree);
 };
 
