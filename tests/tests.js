@@ -740,7 +740,7 @@ describe('dotAllFlag', () => {
 	}
 });
 
-const namedGroupsFixtures = [
+const namedGroupFixtures = [
 	{
 		'pattern': '(?<name>)\\k<name>',
 		'flags': '',
@@ -783,8 +783,8 @@ const namedGroupsFixtures = [
 	}
 ];
 
-describe('namedGroups', () => {
-	for (const fixture of namedGroupsFixtures) {
+describe('namedGroup', () => {
+	for (const fixture of namedGroupFixtures) {
 		const pattern = fixture.pattern;
 		const flags = fixture.flags;
 		const expected = fixture.expected;
@@ -792,7 +792,7 @@ describe('namedGroups', () => {
 		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
 			const groups = [];
 			const transpiled = rewritePattern(pattern, flags, {
-				'namedGroups': true,
+				'namedGroup': true,
 				'onNamedGroup': (name, index) => {
 					groups.push([ name, index ]);
 				}
