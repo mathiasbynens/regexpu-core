@@ -159,16 +159,6 @@ const unicodePropertyEscapeFixtures = [
 		]
 	},
 	// http://unicode.org/reports/tr18/#RL2.7
-	// {
-	// 	'path': 'Block/Alphabetic_Presentation_Forms',
-	// 	'expressions': [
-	// 		'blk=Alphabetic_PF',
-	// 		'blk=Alphabetic_Presentation_Forms',
-	// 		'Block=Alphabetic_PF',
-	// 		'Block=Alphabetic_Presentation_Forms'
-	// 	]
-	// },
-	// http://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Bidi_Mirrored',
 		'expressions': [
@@ -461,64 +451,55 @@ const unicodePropertyEscapeFixtures = [
 	// 		'Bidi_Paired_Bracket_Type=Open'
 	// 	]
 	// },
-	// {
-	// 	'path': 'Block/Superscripts_And_Subscripts',
-	// 	'expressions': [
-	// 		'blk=Super_And_Sub',
-	// 		'blk=Superscripts_And_Subscripts',
-	// 		'Block=Super_And_Sub',
-	// 		'Block=Superscripts_And_Subscripts'
-	// 	]
-	// },
 	// http://unicode.org/reports/tr51/
 	{
-		'path': 'Emoji',
+		'path': 'Binary_Property/Emoji',
 		'expressions': [
 			'Emoji'
 		]
 	},
 	// http://unicode.org/reports/tr51/
 	{
-		'path': 'Emoji_Component',
+		'path': 'Binary_Property/Emoji_Component',
 		'expressions': [
 			'Emoji_Component'
 		]
 	},
 	// http://unicode.org/reports/tr51/
 	{
-		'path': 'Emoji_Modifier',
+		'path': 'Binary_Property/Emoji_Modifier',
 		'expressions': [
 			'Emoji_Modifier'
 		]
 	},
 	// http://unicode.org/reports/tr51/
 	{
-		'path': 'Emoji_Modifier_Base',
+		'path': 'Binary_Property/Emoji_Modifier_Base',
 		'expressions': [
 			'Emoji_Modifier_Base'
 		]
 	},
 	// http://unicode.org/reports/tr51/
 	{
-		'path': 'Emoji_Presentation',
+		'path': 'Binary_Property/Emoji_Presentation',
 		'expressions': [
 			'Emoji_Presentation'
 		]
 	},
 	// http://unicode.org/reports/tr51/proposed.html
-	{
-		'path': 'Extended_Pictographic',
-		'expressions': [
-			'Extended_Pictographic'
-		]
-	},
+	// TODO: uncomment once Unicode 11 is released and
+	// `Extended_Pictographic` makes it into the ECMAScript spec.
+	// {
+	// 	'path': 'Binary_Property/Extended_Pictographic',
+	// 	'expressions': [
+	// 		'Extended_Pictographic'
+	// 	]
+	// },
 ];
 
 const getPropertyValuePattern = (path) => {
-	const codePoints =
-		(path == 'Extended_Pictographic' || path.startsWith('Emoji')) ?
-		require(`unicode-tr51/${ path }.js`) :
-		require(`unicode-10.0.0/${ path }/code-points.js`);
+	const codePoints = require(`unicode-11.0.0/${
+		path }/code-points.js`);
 	return {
 		'p': regenerate(codePoints).toString(),
 		'P': UNICODE_SET.clone().remove(codePoints).toString()
