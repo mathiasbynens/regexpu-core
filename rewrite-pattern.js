@@ -278,7 +278,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 				if (!groups.unmatchedReferences[name]) {
 					groups.unmatchedReferences[name] = [];
 				}
-				// Keep track of references used before the correspondig group.
+				// Keep track of references used before the corresponding group.
 				groups.unmatchedReferences[name].push(item);
 			}
 			break;
