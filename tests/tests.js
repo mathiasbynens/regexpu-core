@@ -740,7 +740,7 @@ describe('dotAllFlag', () => {
 	}
 });
 
-const namedGroupsFeatures = [
+const namedGroupsFixtures = [
 	{
 		'pattern': '(?<name>)\\k<name>',
 		'flags': '',
@@ -784,7 +784,7 @@ const namedGroupsFeatures = [
 ];
 
 describe('namedGroups', () => {
-	for (const fixture of namedGroupsFeatures) {
+	for (const fixture of namedGroupsFixtures) {
 		const pattern = fixture.pattern;
 		const flags = fixture.flags;
 		const expected = fixture.expected;
@@ -793,7 +793,9 @@ describe('namedGroups', () => {
 			const groups = [];
 			const transpiled = rewritePattern(pattern, flags, {
 				'namedGroups': true,
-				'onNamedGroup': (name, index) => { groups.push([ name, index ]) }
+				'onNamedGroup': (name, index) => {
+					groups.push([ name, index ]);
+				}
 			});
 			assert.strictEqual(transpiled, expected);
 			if (expectedGroups) {
@@ -816,7 +818,7 @@ describe('namedGroups', () => {
 
 	it('multiple groups with the same name are disallowed', () => {
 		assert.throws(() => {
-			rewritePattern("(?<name>)(?<name>)", '', {
+			rewritePattern('(?<name>)(?<name>)', '', {
 				'namedGroups': true
 			});
 		});
@@ -824,7 +826,7 @@ describe('namedGroups', () => {
 
 	it('named references must reference a group', () => {
 		assert.throws(() => {
-			rewritePattern("\\k<name>", '', {
+			rewritePattern('\\k<name>', '', {
 				'namedGroups': true
 			});
 		});
