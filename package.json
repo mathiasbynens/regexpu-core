@@ -48,7 +48,7 @@
 		"cover": "istanbul cover --report html node_modules/.bin/_mocha tests -- -u exports -R spec"
 	},
 	"dependencies": {
-		"regenerate": "^1.3.3",
+		"regenerate": "^1.4.0",
 		"regenerate-unicode-properties": "^6.0.0",
 		"regjsgen": "^0.4.0",
 		"regjsparser": "^0.3.0",
