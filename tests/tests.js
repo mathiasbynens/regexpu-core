@@ -810,7 +810,7 @@ describe('namedGroup', () => {
 		const expected = '()';
 		assert.doesNotThrow(() => {
 			transpiled = rewritePattern('(?<name>)', '', {
-				'namedGroups': true
+				'namedGroup': true
 			});
 		});
 		assert.strictEqual(transpiled, expected);
@@ -819,7 +819,7 @@ describe('namedGroup', () => {
 	it('multiple groups with the same name are disallowed', () => {
 		assert.throws(() => {
 			rewritePattern('(?<name>)(?<name>)', '', {
-				'namedGroups': true
+				'namedGroup': true
 			});
 		});
 	});
@@ -827,7 +827,7 @@ describe('namedGroup', () => {
 	it('named references must reference a group', () => {
 		assert.throws(() => {
 			rewritePattern('\\k<name>', '', {
-				'namedGroups': true
+				'namedGroup': true
 			});
 		});
 	});

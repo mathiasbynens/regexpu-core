@@ -236,8 +236,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 
 				groups.names[name] = index;
 				if (groups.onNamedGroup) {
-					// Indirect call is needed to not leak 'groups'
-					(0, groups.onNamedGroup)(name, index);
+					groups.onNamedGroup.call(null, name, index);
 				}
 
 				if (groups.unmatchedReferences[name]) {
