@@ -180,7 +180,19 @@ const processCharacterClass = (characterClassItem, regenerateOptions) => {
 	return characterClassItem;
 };
 
-const processTerm = (item, regenerateOptions) => {
+const updateNamedReference = (item, index) => {
+	delete item.name;
+	item.matchIndex = index;
+};
+
+const assertNoUnmatchedReferences = (groups) => {
+	const unmatchedReferencesNames = Object.keys(groups.unmatchedReferences);
+	if (unmatchedReferencesNames.length > 0) {
+		throw new Error(`Unknown group names: ${unmatchedReferencesNames}`);
+	}
+};
+
+const processTerm = (item, regenerateOptions, groups) => {
 	switch (item.type) {
 		case 'dot':
 			update(
@@ -208,12 +220,38 @@ const processTerm = (item, regenerateOptions) => {
 				).toString(regenerateOptions)
 			);
 			break;
+		case 'group':
+			groups.lastIndex++;
+			if (item.name) {
+				const name = item.name.value;
+
+				if (groups.names[name]) {
+					throw new Error(
+						`Multiple groups with the same name (${ name }) are not allowed.`
+					);
+				}
+
+				const index = groups.lastIndex;
+				delete item.name;
+
+				groups.names[name] = index;
+				if (groups.onNamedGroup) {
+					groups.onNamedGroup.call(null, name, index);
+				}
+
+				if (groups.unmatchedReferences[name]) {
+					groups.unmatchedReferences[name].forEach(reference => {
+						updateNamedReference(reference, index);
+					});
+					delete groups.unmatchedReferences[name];
+				}
+			}
+			/* falls through */
 		case 'alternative':
 		case 'disjunction':
-		case 'group':
 		case 'quantifier':
 			item.body = item.body.map(term => {
-				return processTerm(term, regenerateOptions);
+				return processTerm(term, regenerateOptions, groups);
 			});
 			break;
 		case 'value':
@@ -227,10 +265,25 @@ const processTerm = (item, regenerateOptions) => {
 			}
 			update(item, set.toString(regenerateOptions));
 			break;
+		case 'reference':
+			if (item.name) {
+				const name = item.name.value;
+				const index = groups.names[name];
+				if (index) {
+					updateNamedReference(item, index);
+					break;
+				}
+
+				if (!groups.unmatchedReferences[name]) {
+					groups.unmatchedReferences[name] = [];
+				}
+				// Keep track of references used before the corresponding group.
+				groups.unmatchedReferences[name].push(item);
+			}
+			break;
 		case 'anchor':
 		case 'empty':
 		case 'group':
-		case 'reference':
 			// Nothing to do here.
 			break;
 		// The `default` clause is only here as a safeguard; it should never be
@@ -250,7 +303,8 @@ const config = {
 };
 const rewritePattern = (pattern, flags, options) => {
 	const regjsparserFeatures = {
-		'unicodePropertyEscape': options && options.unicodePropertyEscape
+		'unicodePropertyEscape': options && options.unicodePropertyEscape,
+		'namedGroups': options && options.namedGroup
 	};
 	config.ignoreCase = flags && flags.includes('i');
 	config.unicode = flags && flags.includes('u');
@@ -261,9 +315,16 @@ const rewritePattern = (pattern, flags, options) => {
 		'hasUnicodeFlag': config.useUnicodeFlag,
 		'bmpOnly': !config.unicode
 	};
+	const groups = {
+		'onNamedGroup': options && options.onNamedGroup,
+		'lastIndex': 0,
+		'names': Object.create(null), // { [name]: index }
+		'unmatchedReferences': Object.create(null) // { [name]: Array<reference> }
+	};
 	const tree = parse(pattern, flags, regjsparserFeatures);
-	// Note: `processTerm` mutates `tree`.
-	processTerm(tree, regenerateOptions);
+	// Note: `processTerm` mutates `tree` and `groups`.
+	processTerm(tree, regenerateOptions, groups);
+	assertNoUnmatchedReferences(groups);
 	return generate(tree);
 };
 

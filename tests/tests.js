@@ -739,3 +739,96 @@ describe('dotAllFlag', () => {
 		});
 	}
 });
+
+const namedGroupFixtures = [
+	{
+		'pattern': '(?<name>)\\k<name>',
+		'flags': '',
+		'expected': '()\\1',
+		'expectedGroups': [
+			['name', 1]
+		]
+	},
+	{
+		'pattern': '(?<name1>)(?<name2>)\\k<name1>\\k<name2>',
+		'flags': '',
+		'expected': '()()\\1\\2',
+		'expectedGroups': [
+			['name1', 1],
+			['name2', 2]
+		]
+	},
+	{
+		'pattern': '()(?<name>)\\k<name>',
+		'flags': '',
+		'expected': '()()\\2',
+		'expectedGroups': [
+			['name', 2]
+		]
+	},
+	{
+		'pattern': '(?<name>)()\\1',
+		'flags': '',
+		'expected': '()()\\1'
+	},
+	{
+		'pattern': '\\k<name>\\k<name>(?<name>)\\k<name>',
+		'flags': '',
+		'expected': '\\1\\1()\\1'
+	},
+	{
+		'pattern': '(?<name>\\k<name>)',
+		'flags': '',
+		'expected': '(\\1)'
+	}
+];
+
+describe('namedGroup', () => {
+	for (const fixture of namedGroupFixtures) {
+		const pattern = fixture.pattern;
+		const flags = fixture.flags;
+		const expected = fixture.expected;
+		const expectedGroups = fixture.expectedGroups;
+		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
+			const groups = [];
+			const transpiled = rewritePattern(pattern, flags, {
+				'namedGroup': true,
+				'onNamedGroup': (name, index) => {
+					groups.push([ name, index ]);
+				}
+			});
+			assert.strictEqual(transpiled, expected);
+			if (expectedGroups) {
+				assert.deepStrictEqual(groups, expectedGroups);
+			}
+		});
+	}
+
+	it('onNamedGroup is optional', () => {
+		let transpiled;
+		const pattern = '(?<name>)';
+		const expected = '()';
+		assert.doesNotThrow(() => {
+			transpiled = rewritePattern('(?<name>)', '', {
+				'namedGroup': true
+			});
+		});
+		assert.strictEqual(transpiled, expected);
+	});
+
+	it('multiple groups with the same name are disallowed', () => {
+		assert.throws(() => {
+			rewritePattern('(?<name>)(?<name>)', '', {
+				'namedGroup': true
+			});
+		});
+	});
+
+	it('named references must reference a group', () => {
+		assert.throws(() => {
+			rewritePattern('\\k<name>', '', {
+				'namedGroup': true
+			});
+		});
+	});
+});
