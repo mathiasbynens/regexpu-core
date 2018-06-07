@@ -1,4 +1,4 @@
-# regexpu-core [![Build status](https://travis-ci.org/mathiasbynens/regexpu-core.svg?branch=master)](https://travis-ci.org/mathiasbynens/regexpu-core) [![Code coverage status](https://img.shields.io/codecov/c/github/mathiasbynens/regexpu-core.svg)](https://codecov.io/gh/mathiasbynens/regexpu-core) [![Dependency status](https://gemnasium.com/mathiasbynens/regexpu-core.svg)](https://gemnasium.com/mathiasbynens/regexpu-core)
+# regexpu-core [![Build status](https://travis-ci.org/mathiasbynens/regexpu-core.svg?branch=master)](https://travis-ci.org/mathiasbynens/regexpu-core) [![Code coverage status](https://img.shields.io/codecov/c/github/mathiasbynens/regexpu-core.svg)](https://codecov.io/gh/mathiasbynens/regexpu-core)
 
 _regexpu_ is a source code transpiler that enables the use of ES6 Unicode regular expressions in JavaScript-of-today (ES5).
 

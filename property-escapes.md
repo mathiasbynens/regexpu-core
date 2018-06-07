@@ -113,6 +113,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Cyrillic}
 \p{Script_Extensions=Deseret}
 \p{Script_Extensions=Devanagari}
+\p{Script_Extensions=Dogra}
 \p{Script_Extensions=Duployan}
 \p{Script_Extensions=Egyptian_Hieroglyphs}
 \p{Script_Extensions=Elbasan}
@@ -123,9 +124,11 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Grantha}
 \p{Script_Extensions=Greek}
 \p{Script_Extensions=Gujarati}
+\p{Script_Extensions=Gunjala_Gondi}
 \p{Script_Extensions=Gurmukhi}
 \p{Script_Extensions=Han}
 \p{Script_Extensions=Hangul}
+\p{Script_Extensions=Hanifi_Rohingya}
 \p{Script_Extensions=Hanunoo}
 \p{Script_Extensions=Hatran}
 \p{Script_Extensions=Hebrew}
@@ -153,11 +156,13 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Lycian}
 \p{Script_Extensions=Lydian}
 \p{Script_Extensions=Mahajani}
+\p{Script_Extensions=Makasar}
 \p{Script_Extensions=Malayalam}
 \p{Script_Extensions=Mandaic}
 \p{Script_Extensions=Manichaean}
 \p{Script_Extensions=Marchen}
 \p{Script_Extensions=Masaram_Gondi}
+\p{Script_Extensions=Medefaidrin}
 \p{Script_Extensions=Meetei_Mayek}
 \p{Script_Extensions=Mende_Kikakui}
 \p{Script_Extensions=Meroitic_Cursive}
@@ -180,6 +185,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Old_North_Arabian}
 \p{Script_Extensions=Old_Permic}
 \p{Script_Extensions=Old_Persian}
+\p{Script_Extensions=Old_Sogdian}
 \p{Script_Extensions=Old_South_Arabian}
 \p{Script_Extensions=Old_Turkic}
 \p{Script_Extensions=Oriya}
@@ -200,6 +206,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Siddham}
 \p{Script_Extensions=SignWriting}
 \p{Script_Extensions=Sinhala}
+\p{Script_Extensions=Sogdian}
 \p{Script_Extensions=Sora_Sompeng}
 \p{Script_Extensions=Soyombo}
 \p{Script_Extensions=Sundanese}
@@ -290,41 +297,3 @@ $ node -e 'require("regenerate-unicode-properties").get("Binary_Property").forEa
 ```
 
 Note that property name aliases may be used as well, e.g. `\p{AHex}`, although IMHO it’s more readable to stick to the canonical property names listed above.
-
-### Unsupported properties
-
-The abovementioned list of properties and values goes a long way towards fulfilling [UTR18 requirement RL2.7](http://unicode.org/reports/tr18/#RL2.7). However, the following properties are not currently supported:
-
-* `Age`
-* `Bidi_Class`
-* `Bidi_Mirroring_Glyph`
-* `Bidi_Paired_Bracket_Type`
-* `Bidi_Paired_Bracket`
-* `Block`
-* `Canonical_Combining_Class`
-* `Case_Folding`
-* `Decomposition_Mapping`
-* `Decomposition_Type`
-* `East_Asian_Width`
-* `Grapheme_Cluster_Break`
-* `Hangul_Syllable_Type`
-* `Joining_Group`
-* `Joining_Type`
-* `Line_Break`
-* `Lowercase_Mapping`
-* `Name` & `Name_Alias`
-* `NFC_Quick_Check`
-* `NFD_Quick_Check`
-* `NFKC_Casefold`
-* `NFKC_Quick_Check`
-* `NFKD_Quick_Check`
-* `Numeric_Type`
-* `Numeric_Value`
-* `Sentence_Break`
-* `Simple_Case_Folding`
-* `Simple_Lowercase_Mapping`
-* `Simple_Titlecase_Mapping`
-* `Simple_Uppercase_Mapping`
-* `Titlecase_Mapping`
-* `Uppercase_Mapping`
-* `Word_Break`
