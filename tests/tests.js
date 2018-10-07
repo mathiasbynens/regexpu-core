@@ -832,3 +832,31 @@ describe('namedGroup', () => {
 		});
 	});
 });
+
+const lookBehindFixtures = [
+	{
+		'pattern': '(?<=a)b',
+		'flags': '',
+		'expected': '(?<=a)b'
+	},
+	{
+		'pattern': '(?<=.)a',
+		'flags': '',
+		'expected': '(?<=[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF])a'
+	}
+]
+
+describe('lookBehind', () => {
+	for (const fixture of lookBehindFixtures) {
+		const pattern = fixture.pattern;
+		const flags = fixture.flags;
+		const expected = fixture.expected;
+		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
+			const groups = [];
+			const transpiled = rewritePattern(pattern, flags, {
+				'lookBehind': true
+			});
+			assert.strictEqual(transpiled, expected);
+		});
+	}
+})

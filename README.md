@@ -86,6 +86,17 @@ rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
 // → '(?:\\uD811[\\uDC00-\\uDE46])'
 ```
 
+#### `lookBehind` (default: `false`)
+
+Setting this option to `true` enables experimental support for [look behind](https://github.com/tc39/proposal-regexp-lookbehind).
+
+```js
+rewritePattern('(?<=.)a', '', {
+  'lookBehind': true
+});
+// → '(?<=[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF])a'
+```
+
 #### `namedGroup` (default: `false`)
 
 Setting this option to `true` enables experimental support for [named capture groups](https://github.com/tc39/proposal-regexp-named-groups).
