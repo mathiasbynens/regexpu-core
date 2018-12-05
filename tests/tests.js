@@ -780,6 +780,11 @@ const namedGroupFixtures = [
 		'pattern': '(?<name>\\k<name>)',
 		'flags': '',
 		'expected': '(\\1)'
+	},
+	{
+		'pattern': '(?<$𐒤>a)b\\k<$𐒤>',
+		'flags': '',
+		'expected': '(a)b\\1'
 	}
 ];
 
