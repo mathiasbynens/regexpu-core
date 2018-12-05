@@ -838,7 +838,7 @@ describe('namedGroup', () => {
 	});
 });
 
-const lookBehindFixtures = [
+const lookbehindFixtures = [
 	{
 		'pattern': '(?<=a)b',
 		'flags': '',
@@ -851,15 +851,15 @@ const lookBehindFixtures = [
 	}
 ]
 
-describe('lookBehind', () => {
-	for (const fixture of lookBehindFixtures) {
+describe('lookbehind', () => {
+	for (const fixture of lookbehindFixtures) {
 		const pattern = fixture.pattern;
 		const flags = fixture.flags;
 		const expected = fixture.expected;
 		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
 			const groups = [];
 			const transpiled = rewritePattern(pattern, flags, {
-				'lookBehind': true
+				'lookbehind': true
 			});
 			assert.strictEqual(transpiled, expected);
 		});

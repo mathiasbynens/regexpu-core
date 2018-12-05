@@ -86,13 +86,13 @@ rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
 // → '(?:\\uD811[\\uDC00-\\uDE46])'
 ```
 
-#### `lookBehind` (default: `false`)
+#### `lookbehind` (default: `false`)
 
-Setting this option to `true` enables experimental support for [look behind](https://github.com/tc39/proposal-regexp-lookbehind).
+Setting this option to `true` enables experimental support for [lookbehind assertions](https://github.com/tc39/proposal-regexp-lookbehind).
 
 ```js
 rewritePattern('(?<=.)a', '', {
-  'lookBehind': true
+  'lookbehind': true
 });
 // → '(?<=[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF])a'
 ```
