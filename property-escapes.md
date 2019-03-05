@@ -117,6 +117,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Duployan}
 \p{Script_Extensions=Egyptian_Hieroglyphs}
 \p{Script_Extensions=Elbasan}
+\p{Script_Extensions=Elymaic}
 \p{Script_Extensions=Ethiopic}
 \p{Script_Extensions=Georgian}
 \p{Script_Extensions=Glagolitic}
@@ -174,10 +175,12 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Multani}
 \p{Script_Extensions=Myanmar}
 \p{Script_Extensions=Nabataean}
+\p{Script_Extensions=Nandinagari}
 \p{Script_Extensions=New_Tai_Lue}
 \p{Script_Extensions=Newa}
 \p{Script_Extensions=Nko}
 \p{Script_Extensions=Nushu}
+\p{Script_Extensions=Nyiakeng_Puachue_Hmong}
 \p{Script_Extensions=Ogham}
 \p{Script_Extensions=Ol_Chiki}
 \p{Script_Extensions=Old_Hungarian}
@@ -228,6 +231,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Tirhuta}
 \p{Script_Extensions=Ugaritic}
 \p{Script_Extensions=Vai}
+\p{Script_Extensions=Wancho}
 \p{Script_Extensions=Warang_Citi}
 \p{Script_Extensions=Yi}
 \p{Script_Extensions=Zanabazar_Square}

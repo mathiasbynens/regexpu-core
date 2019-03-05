@@ -22,7 +22,7 @@ describe('rewritePattern', () => {
 });
 
 const unicodePropertyEscapeFixtures = [
-	// http://unicode.org/reports/tr18/#RL1.2 item 1
+	// https://unicode.org/reports/tr18/#RL1.2 item 1
 	{
 		'path': 'General_Category/Uppercase_Letter',
 		'expressions': [
@@ -34,7 +34,7 @@ const unicodePropertyEscapeFixtures = [
 			'Uppercase_Letter'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 2a
+	// https://unicode.org/reports/tr18/#RL1.2 item 2a
 	{
 		'path': 'Script/Greek',
 		'expressions': [
@@ -53,7 +53,7 @@ const unicodePropertyEscapeFixtures = [
 			'Script=Hiragana'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 2b
+	// https://unicode.org/reports/tr18/#RL1.2 item 2b
 	{
 		'path': 'Script_Extensions/Greek',
 		'expressions': [
@@ -63,7 +63,7 @@ const unicodePropertyEscapeFixtures = [
 			'Script_Extensions=Greek'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 3
+	// https://unicode.org/reports/tr18/#RL1.2 item 3
 	{
 		'path': 'Binary_Property/Alphabetic',
 		'expressions': [
@@ -71,7 +71,7 @@ const unicodePropertyEscapeFixtures = [
 			'Alphabetic'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 4
+	// https://unicode.org/reports/tr18/#RL1.2 item 4
 	{
 		'path': 'Binary_Property/Uppercase',
 		'expressions': [
@@ -79,7 +79,7 @@ const unicodePropertyEscapeFixtures = [
 			'Uppercase'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 5
+	// https://unicode.org/reports/tr18/#RL1.2 item 5
 	{
 		'path': 'Binary_Property/Lowercase',
 		'expressions': [
@@ -87,7 +87,7 @@ const unicodePropertyEscapeFixtures = [
 			'Lowercase'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 6
+	// https://unicode.org/reports/tr18/#RL1.2 item 6
 	{
 		'path': 'Binary_Property/White_Space',
 		'expressions': [
@@ -95,7 +95,7 @@ const unicodePropertyEscapeFixtures = [
 			'White_Space'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 7
+	// https://unicode.org/reports/tr18/#RL1.2 item 7
 	{
 		'path': 'Binary_Property/Noncharacter_Code_Point',
 		'expressions': [
@@ -103,7 +103,7 @@ const unicodePropertyEscapeFixtures = [
 			'Noncharacter_Code_Point'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 8
+	// https://unicode.org/reports/tr18/#RL1.2 item 8
 	{
 		'path': 'Binary_Property/Default_Ignorable_Code_Point',
 		'expressions': [
@@ -111,28 +111,28 @@ const unicodePropertyEscapeFixtures = [
 			'Default_Ignorable_Code_Point'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 9a
+	// https://unicode.org/reports/tr18/#RL1.2 item 9a
 	{
 		'path': 'Binary_Property/Any',
 		'expressions': [
 			'Any'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 9b
+	// https://unicode.org/reports/tr18/#RL1.2 item 9b
 	{
 		'path': 'Binary_Property/ASCII',
 		'expressions': [
 			'ASCII'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL1.2 item 9c
+	// https://unicode.org/reports/tr18/#RL1.2 item 9c
 	{
 		'path': 'Binary_Property/Assigned',
 		'expressions': [
 			'Assigned'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/ASCII_Hex_Digit',
 		'expressions': [
@@ -140,7 +140,7 @@ const unicodePropertyEscapeFixtures = [
 			'AHex'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	// {
 	// 	'path': 'Bidi_Class/Arabic_Letter',
 	// 	'expressions': [
@@ -150,7 +150,7 @@ const unicodePropertyEscapeFixtures = [
 	// 		'Bidi_Class=Arabic_Letter'
 	// 	]
 	// },
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Bidi_Control',
 		'expressions': [
@@ -158,7 +158,7 @@ const unicodePropertyEscapeFixtures = [
 			'Bidi_Control'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Bidi_Mirrored',
 		'expressions': [
@@ -166,7 +166,7 @@ const unicodePropertyEscapeFixtures = [
 			'Bidi_Mirrored'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Case_Ignorable',
 		'expressions': [
@@ -174,14 +174,14 @@ const unicodePropertyEscapeFixtures = [
 			'Case_Ignorable',
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Cased',
 		'expressions': [
 			'Cased'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_NFKC_Casefolded',
 		'expressions': [
@@ -189,7 +189,7 @@ const unicodePropertyEscapeFixtures = [
 			'Changes_When_NFKC_Casefolded'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_Casefolded',
 		'expressions': [
@@ -197,7 +197,7 @@ const unicodePropertyEscapeFixtures = [
 			'Changes_When_Casefolded'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_Casemapped',
 		'expressions': [
@@ -205,7 +205,7 @@ const unicodePropertyEscapeFixtures = [
 			'Changes_When_Casemapped'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_Lowercased',
 		'expressions': [
@@ -213,7 +213,7 @@ const unicodePropertyEscapeFixtures = [
 			'Changes_When_Lowercased'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_Titlecased',
 		'expressions': [
@@ -221,7 +221,7 @@ const unicodePropertyEscapeFixtures = [
 			'Changes_When_Titlecased'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Changes_When_Uppercased',
 		'expressions': [
@@ -229,14 +229,14 @@ const unicodePropertyEscapeFixtures = [
 			'Changes_When_Uppercased'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Dash',
 		'expressions': [
 			'Dash'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Deprecated',
 		'expressions': [
@@ -244,7 +244,7 @@ const unicodePropertyEscapeFixtures = [
 			'Deprecated'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Diacritic',
 		'expressions': [
@@ -252,7 +252,7 @@ const unicodePropertyEscapeFixtures = [
 			'Diacritic'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Extender',
 		'expressions': [
@@ -260,7 +260,7 @@ const unicodePropertyEscapeFixtures = [
 			'Extender'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Grapheme_Base',
 		'expressions': [
@@ -268,7 +268,7 @@ const unicodePropertyEscapeFixtures = [
 			'Grapheme_Base'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Grapheme_Extend',
 		'expressions': [
@@ -276,7 +276,7 @@ const unicodePropertyEscapeFixtures = [
 			'Grapheme_Extend'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Hex_Digit',
 		'expressions': [
@@ -284,7 +284,7 @@ const unicodePropertyEscapeFixtures = [
 			'Hex_Digit'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/ID_Continue',
 		'expressions': [
@@ -292,7 +292,7 @@ const unicodePropertyEscapeFixtures = [
 			'ID_Continue'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/ID_Start',
 		'expressions': [
@@ -300,7 +300,7 @@ const unicodePropertyEscapeFixtures = [
 			'ID_Start'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Ideographic',
 		'expressions': [
@@ -308,7 +308,7 @@ const unicodePropertyEscapeFixtures = [
 			'Ideographic'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/IDS_Binary_Operator',
 		'expressions': [
@@ -316,7 +316,7 @@ const unicodePropertyEscapeFixtures = [
 			'IDS_Binary_Operator'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/IDS_Trinary_Operator',
 		'expressions': [
@@ -324,7 +324,7 @@ const unicodePropertyEscapeFixtures = [
 			'IDS_Trinary_Operator'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Join_Control',
 		'expressions': [
@@ -332,7 +332,7 @@ const unicodePropertyEscapeFixtures = [
 			'Join_Control'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Logical_Order_Exception',
 		'expressions': [
@@ -340,14 +340,14 @@ const unicodePropertyEscapeFixtures = [
 			'Logical_Order_Exception'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Math',
 		'expressions': [
 			'Math'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Pattern_Syntax',
 		'expressions': [
@@ -355,7 +355,7 @@ const unicodePropertyEscapeFixtures = [
 			'Pattern_Syntax'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Pattern_White_Space',
 		'expressions': [
@@ -363,7 +363,7 @@ const unicodePropertyEscapeFixtures = [
 			'Pattern_White_Space'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Quotation_Mark',
 		'expressions': [
@@ -371,7 +371,7 @@ const unicodePropertyEscapeFixtures = [
 			'Quotation_Mark'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Radical',
 		'expressions': [
@@ -385,7 +385,7 @@ const unicodePropertyEscapeFixtures = [
 			'Regional_Indicator'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Soft_Dotted',
 		'expressions': [
@@ -393,7 +393,7 @@ const unicodePropertyEscapeFixtures = [
 			'Soft_Dotted'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Sentence_Terminal',
 		'expressions': [
@@ -401,7 +401,7 @@ const unicodePropertyEscapeFixtures = [
 			'Sentence_Terminal'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Terminal_Punctuation',
 		'expressions': [
@@ -409,7 +409,7 @@ const unicodePropertyEscapeFixtures = [
 			'Terminal_Punctuation'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Unified_Ideograph',
 		'expressions': [
@@ -417,7 +417,7 @@ const unicodePropertyEscapeFixtures = [
 			'Unified_Ideograph'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/Variation_Selector',
 		'expressions': [
@@ -425,7 +425,7 @@ const unicodePropertyEscapeFixtures = [
 			'Variation_Selector'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/XID_Continue',
 		'expressions': [
@@ -433,7 +433,7 @@ const unicodePropertyEscapeFixtures = [
 			'XID_Continue'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	{
 		'path': 'Binary_Property/XID_Start',
 		'expressions': [
@@ -441,7 +441,7 @@ const unicodePropertyEscapeFixtures = [
 			'XID_Start'
 		]
 	},
-	// http://unicode.org/reports/tr18/#RL2.7
+	// https://unicode.org/reports/tr18/#RL2.7
 	// {
 	// 	'path': 'Bidi_Paired_Bracket_Type/Open',
 	// 	'expressions': [
@@ -451,54 +451,52 @@ const unicodePropertyEscapeFixtures = [
 	// 		'Bidi_Paired_Bracket_Type=Open'
 	// 	]
 	// },
-	// http://unicode.org/reports/tr51/
+	// https://unicode.org/reports/tr51/
 	{
 		'path': 'Binary_Property/Emoji',
 		'expressions': [
 			'Emoji'
 		]
 	},
-	// http://unicode.org/reports/tr51/
+	// https://unicode.org/reports/tr51/
 	{
 		'path': 'Binary_Property/Emoji_Component',
 		'expressions': [
 			'Emoji_Component'
 		]
 	},
-	// http://unicode.org/reports/tr51/
+	// https://unicode.org/reports/tr51/
 	{
 		'path': 'Binary_Property/Emoji_Modifier',
 		'expressions': [
 			'Emoji_Modifier'
 		]
 	},
-	// http://unicode.org/reports/tr51/
+	// https://unicode.org/reports/tr51/
 	{
 		'path': 'Binary_Property/Emoji_Modifier_Base',
 		'expressions': [
 			'Emoji_Modifier_Base'
 		]
 	},
-	// http://unicode.org/reports/tr51/
+	// https://unicode.org/reports/tr51/
 	{
 		'path': 'Binary_Property/Emoji_Presentation',
 		'expressions': [
 			'Emoji_Presentation'
 		]
 	},
-	// http://unicode.org/reports/tr51/proposed.html
-	// TODO: uncomment once Unicode 11 is released and
-	// `Extended_Pictographic` makes it into the ECMAScript spec.
-	// {
-	// 	'path': 'Binary_Property/Extended_Pictographic',
-	// 	'expressions': [
-	// 		'Extended_Pictographic'
-	// 	]
-	// },
+	// https://unicode.org/reports/tr51/proposed.html
+	{
+		'path': 'Binary_Property/Extended_Pictographic',
+		'expressions': [
+			'Extended_Pictographic'
+		]
+	},
 ];
 
 const getPropertyValuePattern = (path) => {
-	const codePoints = require(`unicode-11.0.0/${
+	const codePoints = require(`unicode-12.0.0/${
 		path }/code-points.js`);
 	return {
 		'p': regenerate(codePoints).toString(),
