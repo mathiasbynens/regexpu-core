@@ -570,6 +570,10 @@ describe('unicodePropertyEscapes', () => {
 			rewritePattern('(?:\\p{Script_Extensions=Anatolian_Hieroglyphs})', 'u', features),
 			'(?:(?:\\uD811[\\uDC00-\\uDE46]))'
 		);
+		assert.equal(
+			rewritePattern('(?:\\p{Script_Extensions=Wancho})', 'u', features),
+			'(?:(?:\\uD838[\\uDEC0-\\uDEF9\\uDEFF]))'
+		);
 	});
 	it('throws without the `u` flag', () => {
 		assert.throws(() => {

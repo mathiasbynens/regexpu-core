@@ -53,7 +53,7 @@
 		"regjsgen": "^0.5.0",
 		"regjsparser": "^0.6.0",
 		"unicode-match-property-ecmascript": "^1.0.4",
-		"unicode-match-property-value-ecmascript": "^1.0.2"
+		"unicode-match-property-value-ecmascript": "^1.1.0"
 	},
 	"devDependencies": {
 		"codecov": "^3.2.0",
