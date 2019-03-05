@@ -1,6 +1,6 @@
 {
 	"name": "regexpu-core",
-	"version": "4.5.1",
+	"version": "4.5.2",
 	"description": "regexpu’s core functionality (i.e. `rewritePattern(pattern, flag)`), capable of translating ES6 Unicode regular expressions to ES5.",
 	"homepage": "https://mths.be/regexpu",
 	"main": "rewrite-pattern.js",
