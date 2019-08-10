@@ -4,7 +4,7 @@ const fs = require('fs');
 const jsesc = require('jsesc');
 const regenerate = require('regenerate');
 
-const Zs = require('unicode-12.0.0/General_Category/Space_Separator/code-points.js');
+const Zs = require('unicode-12.1.0/General_Category/Space_Separator/code-points.js');
 
 const iuMappings = require('../data/iu-mappings.js');
 
