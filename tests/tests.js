@@ -787,23 +787,40 @@ const namedGroupFixtures = [
 		'pattern': '(?<$𐒤>a)b\\k<$𐒤>',
 		'flags': '',
 		'expected': '(a)b\\1'
+	},
+	{
+		'pattern': '(?<=a)(?<!b)(?=c)(?!d)(?:e)(?<name>f)\\k<name>',
+		'flags': '',
+		'expected': '(?<=a)(?<!b)(?=c)(?!d)(?:e)(f)\\1',
+		'expectedGroups': [
+			['name', 1]
+		],
+		'options': {
+			'lookbehind': true
+		}
 	}
 ];
 
 describe('namedGroup', () => {
 	for (const fixture of namedGroupFixtures) {
-		const pattern = fixture.pattern;
-		const flags = fixture.flags;
-		const expected = fixture.expected;
-		const expectedGroups = fixture.expectedGroups;
+		const {
+			pattern,
+			flags,
+			expected,
+			expectedGroups,
+			options = {}
+		} = fixture;
+		const groups = [];
+
+		Object.assign(options, {
+			'namedGroup': true,
+			'onNamedGroup': (name, index) => {
+				groups.push([ name, index ]);
+			}
+		})
+
 		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
-			const groups = [];
-			const transpiled = rewritePattern(pattern, flags, {
-				'namedGroup': true,
-				'onNamedGroup': (name, index) => {
-					groups.push([ name, index ]);
-				}
-			});
+			const transpiled = rewritePattern(pattern, flags, options);
 			assert.strictEqual(transpiled, expected);
 			if (expectedGroups) {
 				assert.deepStrictEqual(groups, expectedGroups);
