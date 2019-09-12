@@ -36,7 +36,7 @@ const getCharacterClassEscapeSet = (character, unicode, ignoreCase) => {
 	return ESCAPE_SETS.REGULAR.get(character);
 };
 
-const getUnicodeDotSet = dotAll => {
+const getUnicodeDotSet = (dotAll) => {
 	return dotAll ? UNICODE_SET : DOT_SET_UNICODE;
 };
 
@@ -194,6 +194,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 					getUnicodeDotSet(config.dotAll).toString(regenerateOptions)
 				);
 			} else if (config.dotAll) {
+				// TODO: consider changing this at the regenerate level.
 				update(item, '[\\s\\S]');
 			}
 			break;
