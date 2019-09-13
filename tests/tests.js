@@ -583,14 +583,6 @@ describe('unicodePropertyEscapes', () => {
 			rewritePattern('\\P{ASCII_Hex_Digit}', '', features);
 		}, Error);
 	});
-	it('throws without the `unicodePropertyEscape` feature enabled', () => {
-		assert.throws(() => {
-			rewritePattern('\\p{ASCII_Hex_Digit}', 'u');
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{ASCII_Hex_Digit}', 'u');
-		}, Error);
-	});
 	it('throws on unknown binary properties', () => {
 		assert.throws(() => {
 			rewritePattern('\\p{UnknownBinaryProperty}', 'u', features);
@@ -687,6 +679,12 @@ describe('unicodePropertyEscapes', () => {
 				'useUnicodeFlag': true
 			}),
 			'[\\u{14400}-\\u{14646}]'
+		);
+	});
+	it('should not transpile unicode property when unicodePropertyEscape is not enabled', () => {
+		assert.equal(
+			rewritePattern('\\p{ASCII_Hex_Digit}\\P{ASCII_Hex_Digit}', 'u'),
+			'\\p{ASCII_Hex_Digit}\\P{ASCII_Hex_Digit}'
 		);
 	});
 	assert.equal(
@@ -829,7 +827,6 @@ describe('namedGroup', () => {
 
 	it('onNamedGroup is optional', () => {
 		let transpiled;
-		const pattern = '(?<name>)';
 		const expected = '()';
 		assert.doesNotThrow(() => {
 			transpiled = rewritePattern('(?<name>)', '', {
@@ -854,6 +851,15 @@ describe('namedGroup', () => {
 			});
 		});
 	});
+
+	it('should not transpile when namedGroup is not enabled', () => {
+		let transpiled;
+		const expected = '(?<name>)';
+		assert.doesNotThrow(() => {
+			transpiled = rewritePattern('(?<name>)', '');
+		});
+		assert.strictEqual(expected, transpiled);
+	})
 });
 
 const lookbehindFixtures = [
