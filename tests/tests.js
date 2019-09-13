@@ -817,7 +817,7 @@ describe('namedGroup', () => {
 			'onNamedGroup': (name, index) => {
 				groups.push([ name, index ]);
 			}
-		})
+		});
 
 		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
 			const transpiled = rewritePattern(pattern, flags, options);
