@@ -705,12 +705,12 @@ const dotAllFlagFixtures = [
 	{
 		'pattern': '.',
 		'flags': 's',
-		'expected': BMP_PATTERN
+		'expected': '[\\s\\S]'
 	},
 	{
 		'pattern': '.',
 		'flags': 'gimsy',
-		'expected': BMP_PATTERN
+		'expected': '[\\s\\S]'
 	},
 	{
 		'pattern': '.',
@@ -734,10 +734,9 @@ describe('dotAllFlag', () => {
 		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
 			const transpiled = rewritePattern(pattern, flags, features);
 			const expected = fixture.expected;
-			assert(
-				transpiled == expected ||
-				transpiled == '(?:' + expected + ')'
-			);
+			if (transpiled != '(?:' + expected + ')') {
+				assert.strictEqual(transpiled, expected);
+			}
 		});
 	}
 });
@@ -849,7 +848,7 @@ const lookbehindFixtures = [
 	{
 		'pattern': '(?<=.)a',
 		'flags': '',
-		'expected': '(?<=[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF])a'
+		'expected': '(?<=.)a'
 	}
 ]
 
