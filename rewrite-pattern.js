@@ -219,7 +219,9 @@ const processTerm = (item, regenerateOptions, groups) => {
 			);
 			break;
 		case 'group':
-			groups.lastIndex++;
+			if (item.behavior == 'normal') {
+				groups.lastIndex++;
+			}
 			if (item.name) {
 				const name = item.name.value;
 
