@@ -310,7 +310,7 @@ const rewritePattern = (pattern, flags, options) => {
 	const regjsparserFeatures = {
 		'unicodePropertyEscape': config.unicode,
 		'namedGroups': true,
-		'lookbehind': true
+		'lookbehind': options && options.lookbehind
 	};
 	config.ignoreCase = flags && flags.includes('i');
 	const supportDotAllFlag = options && options.dotAllFlag;
