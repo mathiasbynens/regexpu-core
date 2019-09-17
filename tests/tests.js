@@ -737,6 +737,12 @@ describe('unicodePropertyEscapes', () => {
 			'\\u03B8'
 		);
 	});
+	it('should not replace `-` symbol when not in character class range', () => {
+		assert.equal(
+			rewritePattern('-'),
+			'-'
+		)
+	})
 });
 
 const dotAllFlagFixtures = [
