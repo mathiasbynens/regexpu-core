@@ -677,8 +677,8 @@ const processTerm = (item, regenerateOptions, groups) => {
 			break;
 		case 'value':
 			const codePoint = item.codePoint;
-			if (item.kind === "symbol" && codePoint < 0x80) {
-				// skip regenerate when it is an ASCII symbol
+			if (item.kind === "symbol" && codePoint >= 0x20 && codePoint <= 0x7E) {
+				// skip regenerate when it is a printable ASCII symbol
 				break;
 			}
 			const set = regenerate(codePoint);
