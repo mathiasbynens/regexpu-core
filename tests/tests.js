@@ -764,11 +764,11 @@ describe('useDotAllFlag', () => {
 	}
 	it('should throw when both `useDotAllFlag` and `dotAll` is true', () => {
 		assert.throws(() => {
-			rewritePattern(".", "s", {
+			rewritePattern('.', 's', {
 				useDotAllFlag: true,
 				dotAllFlag: true
 			});
-		}, Error, "`useDotAllFlag` and `dotAllFlag` could not be both true!")
+		}, Error, '`useDotAllFlag` and `dotAllFlag` cannot both be true!')
 	})
 })
 

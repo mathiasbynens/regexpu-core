@@ -323,7 +323,7 @@ const rewritePattern = (pattern, flags, options) => {
 	config.useUnicodeFlag = options && options.useUnicodeFlag;
 	config.unicodePropertyEscape = options && options.unicodePropertyEscape;
 	if (supportDotAllFlag && config.useDotAllFlag) {
-		throw new Error("`useDotAllFlag` and `dotAllFlag` could not be both true!")
+		throw new Error('`useDotAllFlag` and `dotAllFlag` cannot both be true!');
 	}
 	const regenerateOptions = {
 		'hasUnicodeFlag': config.useUnicodeFlag,
