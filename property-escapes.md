@@ -9,7 +9,7 @@ rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
 // → '(?:\\uD811[\\uDC00-\\uDE46])'
 ```
 
-If you’re targeting ES6 environments exclusively, consider enabling [the `useUnicodeFlag` option](README.md#useunicodeflag-default-false) for simpler (but not necessarily more compact) output.
+If you’re targeting ES2015 environments exclusively, consider enabling [the `useUnicodeFlag` option](README.md#useunicodeflag-default-false) for simpler (but not necessarily more compact) output.
 
 ```js
 rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
@@ -106,6 +106,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Chakma}
 \p{Script_Extensions=Cham}
 \p{Script_Extensions=Cherokee}
+\p{Script_Extensions=Chorasmian}
 \p{Script_Extensions=Common}
 \p{Script_Extensions=Coptic}
 \p{Script_Extensions=Cuneiform}
@@ -113,6 +114,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Cyrillic}
 \p{Script_Extensions=Deseret}
 \p{Script_Extensions=Devanagari}
+\p{Script_Extensions=Dives_Akuru}
 \p{Script_Extensions=Dogra}
 \p{Script_Extensions=Duployan}
 \p{Script_Extensions=Egyptian_Hieroglyphs}
@@ -144,6 +146,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Katakana}
 \p{Script_Extensions=Kayah_Li}
 \p{Script_Extensions=Kharoshthi}
+\p{Script_Extensions=Khitan_Small_Script}
 \p{Script_Extensions=Khmer}
 \p{Script_Extensions=Khojki}
 \p{Script_Extensions=Khudawadi}
@@ -233,6 +236,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Vai}
 \p{Script_Extensions=Wancho}
 \p{Script_Extensions=Warang_Citi}
+\p{Script_Extensions=Yezidi}
 \p{Script_Extensions=Yi}
 \p{Script_Extensions=Zanabazar_Square}
 ```

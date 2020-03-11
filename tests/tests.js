@@ -493,10 +493,19 @@ const unicodePropertyEscapeFixtures = [
 			'Extended_Pictographic'
 		]
 	},
+	{
+		'path': 'Script_Extensions/Yezidi',
+		'expressions': [
+			'scx=Yezi',
+			'scx=Yezidi',
+			'Script_Extensions=Yezi',
+			'Script_Extensions=Yezidi',
+		]
+	},
 ];
 
 const getPropertyValuePattern = (path) => {
-	const codePoints = require(`unicode-12.1.0/${
+	const codePoints = require(`unicode-13.0.0/${
 		path }/code-points.js`);
 	return {
 		'p': regenerate(codePoints).toString(),
