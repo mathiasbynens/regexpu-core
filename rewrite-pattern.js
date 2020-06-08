@@ -174,8 +174,10 @@ const processCharacterClass = (characterClassItem, regenerateOptions) => {
 };
 
 const updateNamedReference = (item, index) => {
-	delete item.name;
-	item.matchIndex = index;
+	if (config.namedGroup) {
+		delete item.name;
+		item.matchIndex = index;
+	}
 };
 
 const assertNoUnmatchedReferences = (groups) => {
@@ -224,7 +226,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 			if (item.behavior == 'normal') {
 				groups.lastIndex++;
 			}
-			if (item.name && config.namedGroup) {
+			if (item.name) {
 				const name = item.name.value;
 
 				if (groups.names[name]) {
@@ -234,7 +236,9 @@ const processTerm = (item, regenerateOptions, groups) => {
 				}
 
 				const index = groups.lastIndex;
-				delete item.name;
+				if (config.namedGroup) {
+					delete item.name;
+				}
 
 				groups.names[name] = index;
 				if (groups.onNamedGroup) {
