@@ -174,8 +174,10 @@ const processCharacterClass = (characterClassItem, regenerateOptions) => {
 };
 
 const updateNamedReference = (item, index) => {
-	delete item.name;
-	item.matchIndex = index;
+	if (config.convertNamedGroupNames) {
+		delete item.name;
+		item.matchIndex = index;
+	}
 };
 
 const assertNoUnmatchedReferences = (groups) => {
@@ -224,8 +226,12 @@ const processTerm = (item, regenerateOptions, groups) => {
 			if (item.behavior == 'normal') {
 				groups.lastIndex++;
 			}
-			if (item.name && config.namedGroup) {
+			if (item.name) {
 				const name = item.name.value;
+
+				if (!config.namedGroup) {
+					throw new Error(`Named group (${ name }) are not allowed`);
+				}
 
 				if (groups.names[name]) {
 					throw new Error(
@@ -234,7 +240,9 @@ const processTerm = (item, regenerateOptions, groups) => {
 				}
 
 				const index = groups.lastIndex;
-				delete item.name;
+				if (config.convertNamedGroupNames) {
+					delete item.name;
+				}
 
 				groups.names[name] = index;
 				if (groups.onNamedGroup) {
@@ -303,6 +311,7 @@ const config = {
 	'dotAll': false,
 	'useUnicodeFlag': false,
 	'unicodePropertyEscape': false,
+	'convertNamedGroupNames': true,
 	'namedGroup': false
 };
 const rewritePattern = (pattern, flags, options) => {
@@ -316,6 +325,7 @@ const rewritePattern = (pattern, flags, options) => {
 	const supportDotAllFlag = options && options.dotAllFlag;
 	config.dotAll = supportDotAllFlag && flags && flags.includes('s');
 	config.namedGroup = options && options.namedGroup;
+	config.convertNamedGroupNames = options && options.convertNamedGroupNames !== false;
 	config.useUnicodeFlag = options && options.useUnicodeFlag;
 	config.unicodePropertyEscape = options && options.unicodePropertyEscape;
 	const regenerateOptions = {

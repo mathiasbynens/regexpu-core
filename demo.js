@@ -16,3 +16,8 @@ console.log(processedPattern);
 
 // throws
 new RegExp(processedPattern, 'u');
+
+console.log(rewritePattern('(?<name>.)\\k<name>', '', {
+	'namedGroup': true,
+	'convertNamedGroupNames': false,
+}))

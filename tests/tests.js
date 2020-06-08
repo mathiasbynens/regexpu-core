@@ -869,6 +869,19 @@ describe('namedGroup', () => {
 		});
 		assert.strictEqual(expected, transpiled);
 	})
+
+	it('should not transpile when convertNamedGroupNames is false', () => {
+		let transpiled;
+		const expected = '(?<name>)';
+		assert.doesNotThrow(() => {
+			transpiled = rewritePattern('(?<name>)', '', {
+				'namedGroup': true,
+				'convertNamedGroupNames': false
+			});
+		});
+		assert.strictEqual(expected, transpiled);
+	})
+
 });
 
 const lookbehindFixtures = [
