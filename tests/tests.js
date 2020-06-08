@@ -819,7 +819,6 @@ describe('namedGroup', () => {
 		const groups = [];
 
 		Object.assign(options, {
-			'namedGroup': true,
 			'onNamedGroup': (name, index) => {
 				groups.push([ name, index ]);
 			}
@@ -832,15 +831,32 @@ describe('namedGroup', () => {
 				assert.deepStrictEqual(groups, expectedGroups);
 			}
 		});
+
+		it('should not transpile `/' + pattern + '/' + flags + '` correctly', () => {
+
+			const groups = [];
+
+			Object.assign(options, {
+				'namedGroup': true,
+				'onNamedGroup': (name, index) => {
+					groups.push([ name, index ]);
+				}
+			});
+
+			const transpiled = rewritePattern(pattern, flags, options);
+			assert.strictEqual(transpiled, pattern);
+			if (expectedGroups) {
+				assert.deepStrictEqual(groups, expectedGroups);
+			}
+		});
+
 	}
 
 	it('onNamedGroup is optional', () => {
 		let transpiled;
 		const expected = '()';
 		assert.doesNotThrow(() => {
-			transpiled = rewritePattern('(?<name>)', '', {
-				'namedGroup': true
-			});
+			transpiled = rewritePattern('(?<name>)', '');
 		});
 		assert.strictEqual(transpiled, expected);
 	});
@@ -861,14 +877,26 @@ describe('namedGroup', () => {
 		});
 	});
 
-	it('should not transpile when namedGroup is not enabled', () => {
+	it('should transpile when namedGroup is not enabled', () => {
 		let transpiled;
-		const expected = '(?<name>)';
+		const expected = '()';
 		assert.doesNotThrow(() => {
 			transpiled = rewritePattern('(?<name>)', '');
 		});
 		assert.strictEqual(expected, transpiled);
 	})
+
+	it('should not transpile when namedGroup is enabled', () => {
+		let transpiled;
+		const expected = '(?<name>)';
+		assert.doesNotThrow(() => {
+			transpiled = rewritePattern('(?<name>)', '', {
+				'namedGroup': true
+			});
+		});
+		assert.strictEqual(expected, transpiled);
+	})
+
 });
 
 const lookbehindFixtures = [
