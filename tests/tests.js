@@ -872,27 +872,33 @@ describe('namedGroup', () => {
 
 	it('should not throw when namedGroup is not enabled', () => {
 		let transpiled;
+		const expected = '(?<name>.)\\k<name>';
 		assert.doesNotThrow(() => {
 			transpiled = rewritePattern('(?<name>.)\\k<name>', '');
 		});
+		assert.strictEqual(expected, transpiled);
 	})
 
 	it('should not throw when namedGroup is true', () => {
 		let transpiled;
+		const expected = '(.)\\1';
 		assert.doesNotThrow(() => {
 			transpiled = rewritePattern('(?<name>.)\\k<name>', '', {
 				namedGroup: true
 			});
 		});
+		assert.strictEqual(expected, transpiled);
 	})
 
 	it('should not throw when namedGroup is false', () => {
 		let transpiled;
+		const expected = '(?<name>.)\\k<name>';
 		assert.doesNotThrow(() => {
 			transpiled = rewritePattern('(?<name>.)\\k<name>', '', {
 				namedGroup: false
 			});
 		});
+		assert.strictEqual(expected, transpiled);
 	})
 
 });
