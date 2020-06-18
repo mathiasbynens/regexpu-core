@@ -188,7 +188,9 @@ const assertNoUnmatchedReferences = (groups) => {
 const processTerm = (item, regenerateOptions, groups) => {
 	switch (item.type) {
 		case 'dot':
-			if (config.unicode) {
+			if (config.useDotAllFlag) {
+				break;
+			} else if (config.unicode) {
 				update(
 					item,
 					getUnicodeDotSet(config.dotAll).toString(regenerateOptions)
@@ -301,6 +303,7 @@ const config = {
 	'ignoreCase': false,
 	'unicode': false,
 	'dotAll': false,
+	'useDotAllFlag': false,
 	'useUnicodeFlag': false,
 	'unicodePropertyEscape': false,
 	'namedGroup': false
@@ -316,8 +319,12 @@ const rewritePattern = (pattern, flags, options) => {
 	const supportDotAllFlag = options && options.dotAllFlag;
 	config.dotAll = supportDotAllFlag && flags && flags.includes('s');
 	config.namedGroup = options && options.namedGroup;
+	config.useDotAllFlag = options && options.useDotAllFlag;
 	config.useUnicodeFlag = options && options.useUnicodeFlag;
 	config.unicodePropertyEscape = options && options.unicodePropertyEscape;
+	if (supportDotAllFlag && config.useDotAllFlag) {
+		throw new Error('`useDotAllFlag` and `dotAllFlag` cannot both be true!');
+	}
 	const regenerateOptions = {
 		'hasUnicodeFlag': config.useUnicodeFlag,
 		'bmpOnly': !config.unicode

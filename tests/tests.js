@@ -748,6 +748,39 @@ describe('dotAllFlag', () => {
 	}
 });
 
+const useDotAllFlagFixtures = [
+	{
+		'pattern': '.',
+		'flags': 'su',
+		'expected': '.'
+	}
+]
+
+describe('useDotAllFlag', () => {
+	const features = {
+		'useDotAllFlag': true
+	};
+	for (const fixture of useDotAllFlagFixtures) {
+		const pattern = fixture.pattern;
+		const flags = fixture.flags;
+		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
+			const transpiled = rewritePattern(pattern, flags, features);
+			const expected = fixture.expected;
+			if (transpiled != '(?:' + expected + ')') {
+				assert.strictEqual(transpiled, expected);
+			}
+		});
+	}
+	it('should throw when both `useDotAllFlag` and `dotAll` is true', () => {
+		assert.throws(() => {
+			rewritePattern('.', 's', {
+				useDotAllFlag: true,
+				dotAllFlag: true
+			});
+		}, Error, '`useDotAllFlag` and `dotAllFlag` cannot both be true!')
+	})
+})
+
 const namedGroupFixtures = [
 	{
 		'pattern': '(?<name>)\\k<name>',
