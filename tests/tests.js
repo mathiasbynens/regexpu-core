@@ -869,6 +869,32 @@ describe('namedGroup', () => {
 		});
 		assert.strictEqual(expected, transpiled);
 	})
+
+	it('should not throw when namedGroup is not enabled', () => {
+		let transpiled;
+		assert.doesNotThrow(() => {
+			transpiled = rewritePattern('(?<name>.)\\k<name>', '');
+		});
+	})
+
+	it('should not throw when namedGroup is true', () => {
+		let transpiled;
+		assert.doesNotThrow(() => {
+			transpiled = rewritePattern('(?<name>.)\\k<name>', '', {
+				namedGroup: true
+			});
+		});
+	})
+
+	it('should not throw when namedGroup is false', () => {
+		let transpiled;
+		assert.doesNotThrow(() => {
+			transpiled = rewritePattern('(?<name>.)\\k<name>', '', {
+				namedGroup: false
+			});
+		});
+	})
+
 });
 
 const lookbehindFixtures = [
