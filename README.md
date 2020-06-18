@@ -103,7 +103,7 @@ Setting this option to `true` enables support for [named capture groups](https:/
 
 ```js
 rewritePattern('(?<name>.)\k<name>', '', {
-  'namedGroups': true
+  'namedGroup': true
 });
 // → '(.)\1'
 ```
@@ -115,7 +115,7 @@ the name of the group, and its index.
 
 ```js
 rewritePattern('(?<name>.)\k<name>', '', {
-  'namedGroups': true,
+  'namedGroup': true,
   onNamedGroup(name, index) {
     console.log(name, index);
     // → 'name', 1
