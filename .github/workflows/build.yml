@@ -1,0 +1,32 @@
+on:
+  push:
+    branches:
+      - master
+      - main
+  schedule:
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
+#            ┌───────────── minute (0 - 59)
+#            │ ┌───────────── hour (0 - 23)
+#            │ │ ┌───────────── day of the month (1 - 31)
+#            │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+#            │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+#            │ │ │ │ │
+#            │ │ │ │ │
+#            │ │ │ │ │
+#            * * * * *
+    - cron: '0 0 1 * *'
+
+jobs:
+  build:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@master
+    - name: setup git config
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+    - run: |
+        yarn run ci:build
+        yarn run ci:test

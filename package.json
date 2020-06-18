@@ -43,6 +43,7 @@
 		"data/iu-mappings.js"
 	],
 	"scripts": {
+		"ci:build": "npm run build",
 		"ci:test": "npm test",
 		"build": "node scripts/iu-mappings.js && node scripts/character-class-escape-sets.js",
 		"test": "mocha tests",
