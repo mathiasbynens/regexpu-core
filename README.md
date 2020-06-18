@@ -135,6 +135,18 @@ rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
 // → '[\\u{14400}-\\u{14646}]'
 ```
 
+#### `useDotAllFlag` (default: `false`)
+
+Setting this option to `true` enables the use of the `s` flag in the output pattern. This makes it possible to preserve the `.` while transforming other features such as named groups.
+
+```js
+rewritePattern(`(?<quote>"|').*?\\k<quote>`, 'su', {
+  'namedGroup': true,
+  'useDotAllFlag': true,
+});
+// → ("|').*?\1
+```
+
 ## Author
 
 | [![twitter/mathias](https://gravatar.com/avatar/24e08a9ea84deb17ae121074d0f17125?s=70)](https://twitter.com/mathias "Follow @mathias on Twitter") |
