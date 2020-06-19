@@ -1,7 +1,6 @@
 on:
   push:
     branches:
-      - master
       - main
   schedule:
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
@@ -28,5 +27,5 @@ jobs:
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
     - run: |
-        yarn run ci:build
-        yarn run ci:test
+        npm run ci:build
+        npm run ci:test
