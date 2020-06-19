@@ -5,9 +5,9 @@ node_js:
   - '12'
   - node
 script:
-#  - 'if [ "${TRAVIS_NODE_VERSION}" = "12" ]; then
-#       npm run build;
-#     fi'
+  - 'if [ "${TRAVIS_NODE_VERSION}" = "12" ]; then
+       npm run build;
+     fi'
   - 'npm run ci:test'
 after_script:
   - 'istanbul cover --report html node_modules/.bin/_mocha tests -- -u exports -R spec && codecov'
