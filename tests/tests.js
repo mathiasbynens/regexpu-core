@@ -1004,13 +1004,7 @@ const characterClassFixtures = [
 		flags: 'u',
 		expected: '(?!\\u212A)[\\s\\S]',
 		useUnicodeFlag: true
-	},
-	{
-		pattern: '[^\u212a]', // KELVIN SIGN
-		flags: 'u',
-		expected: '(?!\\u212A)[\\s\\S]',
-		useUnicodeFlag: true
-	},
+	}
 ];
 
 describe('character classes', () => {
