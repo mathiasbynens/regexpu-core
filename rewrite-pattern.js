@@ -129,7 +129,7 @@ const caseFold = (codePoint) => {
 };
 
 const processCharacterClass = (characterClassItem, regenerateOptions) => {
-	let set = regenerate();
+	const set = regenerate();
 	for (const item of characterClassItem.body) {
 		switch (item.type) {
 			case 'value':
@@ -167,9 +167,10 @@ const processCharacterClass = (characterClassItem, regenerateOptions) => {
 		}
 	}
 	if (characterClassItem.negative) {
-		set = (config.unicode ? UNICODE_SET : BMP_SET).clone().remove(set);
+		update(characterClassItem, `(?!${set.toString(regenerateOptions)})[\\s\\S]`)
+	} else {
+		update(characterClassItem, set.toString(regenerateOptions));
 	}
-	update(characterClassItem, set.toString(regenerateOptions));
 	return characterClassItem;
 };
 

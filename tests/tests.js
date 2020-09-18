@@ -560,6 +560,10 @@ describe('unicodePropertyEscapes', () => {
 			'[0-9A-F_a-f]'
 		);
 		assert.equal(
+			rewritePattern('[^\\p{ASCII_Hex_Digit}_]', 'u', features),
+			'(?:(?![0-9A-F_a-f])[\\s\\S])'
+		);
+		assert.equal(
 			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', features),
 			'(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
 		);
@@ -696,16 +700,18 @@ describe('unicodePropertyEscapes', () => {
 			'\\p{ASCII_Hex_Digit}\\P{ASCII_Hex_Digit}'
 		);
 	});
-	assert.equal(
-		rewritePattern('\u03B8', 'iu'),
-		'[\\u03B8\\u03F4]'
-	);
-	assert.equal(
-		rewritePattern('\u03B8', 'iu', {
-			'useUnicodeFlag': true
-		}),
-		'\\u03B8'
-	);
+	it('should transpile to minimal case-insensitive set', () => {
+		assert.equal(
+			rewritePattern('\u03B8', 'iu'),
+			'[\\u03B8\\u03F4]'
+		);
+		assert.equal(
+			rewritePattern('\u03B8', 'iu', {
+				'useUnicodeFlag': true
+			}),
+			'\\u03B8'
+		);
+	});
 });
 
 const dotAllFlagFixtures = [
@@ -931,3 +937,91 @@ describe('lookbehind', () => {
 		});
 	}
 })
+
+const characterClassFixtures = [
+	{
+		pattern: '[^K]', // LATIN CAPITAL LETTER K
+		flags: 'iu',
+		expected: '(?![K\\u212A])[\\s\\S]'
+	},
+	{
+		pattern: '[^k]', // LATIN SMALL LETTER K
+		flags: 'iu',
+		expected: '(?![k\\u212A])[\\s\\S]'
+	},
+	{
+		pattern: '[^\u212a]', // KELVIN SIGN
+		flags: 'iu',
+		expected: '(?![K\\u212A])[\\s\\S]'
+	},
+	{
+		pattern: '[^K]', // LATIN CAPITAL LETTER K
+		flags: 'iu',
+		expected: '(?!K)[\\s\\S]',
+		useUnicodeFlag: true
+	},
+	{
+		pattern: '[^k]', // LATIN SMALL LETTER K
+		flags: 'iu',
+		expected: '(?!k)[\\s\\S]',
+		useUnicodeFlag: true
+	},
+	{
+		pattern: '[^\u212a]', // KELVIN SIGN
+		flags: 'iu',
+		expected: '(?!\\u212A)[\\s\\S]',
+		useUnicodeFlag: true
+	},
+	{
+		pattern: '[^K]', // LATIN CAPITAL LETTER K
+		flags: 'u',
+		expected: '(?!K)[\\s\\S]'
+	},
+	{
+		pattern: '[^k]', // LATIN SMALL LETTER K
+		flags: 'u',
+		expected: '(?!k)[\\s\\S]'
+	},
+	{
+		pattern: '[^\u212a]', // KELVIN SIGN
+		flags: 'u',
+		expected: '(?!\\u212A)[\\s\\S]'
+	},
+	{
+		pattern: '[^K]', // LATIN CAPITAL LETTER K
+		flags: 'u',
+		expected: '(?!K)[\\s\\S]',
+		useUnicodeFlag: true
+	},
+	{
+		pattern: '[^k]', // LATIN SMALL LETTER K
+		flags: 'u',
+		expected: '(?!k)[\\s\\S]',
+		useUnicodeFlag: true
+	},
+	{
+		pattern: '[^\u212a]', // KELVIN SIGN
+		flags: 'u',
+		expected: '(?!\\u212A)[\\s\\S]',
+		useUnicodeFlag: true
+	}
+];
+
+describe('character classes', () => {
+	for (const fixture of characterClassFixtures) {
+		const pattern = fixture.pattern;
+		const flags = fixture.flags;
+		const useUnicodeFlag = fixture.useUnicodeFlag;
+		it('rewrites `/' + pattern + '/' + flags + '` with' + (useUnicodeFlag ? '' : 'out') + ' unicode correctly', () => {
+			const transpiled = rewritePattern(pattern, flags, {
+				'useUnicodeFlag': useUnicodeFlag
+			});
+			const expected = fixture.expected;
+			const features = fixture.features;
+			if (transpiled != '(?:' + expected + ')') {
+				assert.strictEqual(transpiled, expected);
+			}
+		});
+	}
+});
+
