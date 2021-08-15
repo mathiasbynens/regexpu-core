@@ -129,12 +129,14 @@ const caseFold = (codePoint) => {
 };
 
 const processCharacterClass = (characterClassItem, regenerateOptions) => {
+	let transformed = config.transform.unicodeFlag;
+	const negative = characterClassItem.negative;
 	const set = regenerate();
 	for (const item of characterClassItem.body) {
 		switch (item.type) {
 			case 'value':
 				set.add(item.codePoint);
-				if (config.ignoreCase && config.unicode && !config.useUnicodeFlag) {
+				if (config.flags.ignoreCase && config.transform.unicodeFlag) {
 					const folded = caseFold(item.codePoint);
 					if (folded) {
 						set.add(folded);
@@ -145,19 +147,22 @@ const processCharacterClass = (characterClassItem, regenerateOptions) => {
 				const min = item.min.codePoint;
 				const max = item.max.codePoint;
 				set.addRange(min, max);
-				if (config.ignoreCase && config.unicode && !config.useUnicodeFlag) {
+				if (config.flags.ignoreCase && config.transform.unicodeFlag) {
 					set.iuAddRange(min, max);
 				}
 				break;
 			case 'characterClassEscape':
 				set.add(getCharacterClassEscapeSet(
 					item.value,
-					config.unicode,
-					config.ignoreCase
+					config.flags.unicode,
+					config.flags.ignoreCase
 				));
 				break;
 			case 'unicodePropertyEscape':
 				set.add(getUnicodePropertyEscapeSet(item.value, item.negative));
+				if (config.transform.unicodePropertyEscapes) {
+					transformed = true;
+				}
 				break;
 			// The `default` clause is only here as a safeguard; it should never be
 			// reached. Code coverage tools should ignore it.
@@ -166,10 +171,12 @@ const processCharacterClass = (characterClassItem, regenerateOptions) => {
 				throw new Error(`Unknown term type: ${ item.type }`);
 		}
 	}
-	if (characterClassItem.negative) {
-		update(characterClassItem, `(?!${set.toString(regenerateOptions)})[\\s\\S]`)
-	} else {
-		update(characterClassItem, set.toString(regenerateOptions));
+	if (transformed) {
+		if (negative) {
+			update(characterClassItem, `(?!${set.toString(regenerateOptions)})[\\s\\S]`)
+		} else {
+			update(characterClassItem, set.toString(regenerateOptions));
+		}
 	}
 	return characterClassItem;
 };
@@ -189,14 +196,12 @@ const assertNoUnmatchedReferences = (groups) => {
 const processTerm = (item, regenerateOptions, groups) => {
 	switch (item.type) {
 		case 'dot':
-			if (config.useDotAllFlag) {
-				break;
-			} else if (config.unicode) {
+			if (config.transform.unicodeFlag) {
 				update(
 					item,
-					getUnicodeDotSet(config.dotAll).toString(regenerateOptions)
+					getUnicodeDotSet(config.flags.dotAll).toString(regenerateOptions)
 				);
-			} else if (config.dotAll) {
+			} else if (config.transform.dotAllFlag) {
 				// TODO: consider changing this at the regenerate level.
 				update(item, '[\\s\\S]');
 			}
@@ -205,7 +210,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 			item = processCharacterClass(item, regenerateOptions);
 			break;
 		case 'unicodePropertyEscape':
-			if (config.unicodePropertyEscape) {
+			if (config.transform.unicodePropertyEscapes) {
 				update(
 					item,
 					getUnicodePropertyEscapeSet(item.value, item.negative)
@@ -214,20 +219,22 @@ const processTerm = (item, regenerateOptions, groups) => {
 			}
 			break;
 		case 'characterClassEscape':
-			update(
-				item,
-				getCharacterClassEscapeSet(
-					item.value,
-					config.unicode,
-					config.ignoreCase
-				).toString(regenerateOptions)
-			);
+			if (config.transform.unicodeFlag) {
+				update(
+					item,
+					getCharacterClassEscapeSet(
+						item.value,
+						/* config.transform.unicodeFlag implies config.flags.unicode */ true,
+						config.flags.ignoreCase
+					).toString(regenerateOptions)
+				);
+			}
 			break;
 		case 'group':
 			if (item.behavior == 'normal') {
 				groups.lastIndex++;
 			}
-			if (item.name && config.namedGroup) {
+			if (item.name && config.transform.namedGroups) {
 				const name = item.name.value;
 
 				if (groups.names[name]) {
@@ -262,7 +269,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 		case 'value':
 			const codePoint = item.codePoint;
 			const set = regenerate(codePoint);
-			if (config.ignoreCase && config.unicode && !config.useUnicodeFlag) {
+			if (config.flags.ignoreCase && config.transform.unicodeFlag) {
 				const folded = caseFold(codePoint);
 				if (folded) {
 					set.add(folded);
@@ -300,35 +307,76 @@ const processTerm = (item, regenerateOptions, groups) => {
 	return item;
 };
 
-const config = {
-	'ignoreCase': false,
-	'unicode': false,
-	'dotAll': false,
-	'useDotAllFlag': false,
-	'useUnicodeFlag': false,
-	'unicodePropertyEscape': false,
-	'namedGroup': false
+// Enable every stable RegExp feature by default
+const regjsparserFeatures = {
+	'unicodePropertyEscape': true,
+	'namedGroups': true,
+	'lookbehind': true
 };
-const rewritePattern = (pattern, flags, options) => {
-	config.unicode = flags && flags.includes('u');
-	const regjsparserFeatures = {
-		'unicodePropertyEscape': config.unicode,
-		'namedGroups': true,
-		'lookbehind': options && options.lookbehind
-	};
-	config.ignoreCase = flags && flags.includes('i');
-	const supportDotAllFlag = options && options.dotAllFlag;
-	config.dotAll = supportDotAllFlag && flags && flags.includes('s');
-	config.namedGroup = options && options.namedGroup;
-	config.useDotAllFlag = options && options.useDotAllFlag;
-	config.useUnicodeFlag = options && options.useUnicodeFlag;
-	config.unicodePropertyEscape = options && options.unicodePropertyEscape;
-	if (supportDotAllFlag && config.useDotAllFlag) {
-		throw new Error('`useDotAllFlag` and `dotAllFlag` cannot both be true!');
+
+const config = {
+	'flags': {
+		'ignoreCase': false,
+		'unicode': false,
+		'dotAll': false,
+	},
+	'transform': {
+		'dotAllFlag': false,
+		'unicodeFlag': false,
+		'unicodePropertyEscapes': false,
+		'namedGroups': false,
+	},
+	get useUnicodeFlag() {
+		return this.flags.unicode && !this.transform.unicodeFlag;
 	}
+};
+
+const validateOptions = (options) => {
+	if (!options) return;
+
+	for (const key of Object.keys(options)) {
+		const value = options[key];
+		switch (key) {
+			case 'dotAllFlag':
+			case 'unicodeFlag':
+			case 'unicodePropertyEscapes':
+			case 'namedGroups':
+				if (value != null && value !== false && value !== 'transform') {
+					throw new Error(`.${key} must be false (default) or 'transform'.`);
+				}
+				break;
+			case 'onNamedGroup':
+				if (value != null && typeof value !== 'function') {
+					throw new Error('.onNamedGroup must be a function.');
+				}
+				break;
+			default:
+				throw new Error(`.${key} is not a valid regexpu-core option.`);
+		}
+	}
+};
+
+const hasFlag = (flags, flag) => flags ? flags.includes(flag) : false;
+const transform = (options, name) => options ? options[name] === 'transform' : false;
+
+const rewritePattern = (pattern, flags, options) => {
+	validateOptions(options);
+
+	config.flags.unicode = hasFlag(flags, 'u');
+	config.flags.ignoreCase = hasFlag(flags, 'i');
+	config.flags.dotAll = hasFlag(flags, 's');
+
+	config.transform.dotAllFlag = config.flags.dotAll && transform(options, 'dotAllFlag');
+	config.transform.unicodeFlag = config.flags.unicode && transform(options, 'unicodeFlag');
+	// unicodeFlag: 'transform' implies unicodePropertyEscapes: 'transform'
+	config.transform.unicodePropertyEscapes = config.flags.unicode && (
+		transform(options, 'unicodeFlag') || transform(options, 'unicodePropertyEscapes')
+	);
+	config.transform.namedGroups = transform(options, 'namedGroups');
+
 	const regenerateOptions = {
-		'hasUnicodeFlag': config.useUnicodeFlag,
-		'bmpOnly': !config.unicode
+		'hasUnicodeFlag': config.flags.unicode && !config.transform.unicodeFlag,
+		'bmpOnly': !config.flags.unicode
 	};
 	const groups = {
 		'onNamedGroup': options && options.onNamedGroup,
@@ -336,6 +384,7 @@ const rewritePattern = (pattern, flags, options) => {
 		'names': Object.create(null), // { [name]: index }
 		'unmatchedReferences': Object.create(null) // { [name]: Array<reference> }
 	};
+
 	const tree = parse(pattern, flags, regjsparserFeatures);
 	// Note: `processTerm` mutates `tree` and `groups`.
 	processTerm(tree, regenerateOptions, groups);

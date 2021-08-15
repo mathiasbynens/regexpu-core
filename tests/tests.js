@@ -10,13 +10,24 @@ const BMP_PATTERN = BMP_SET.toString({ 'bmpOnly': true });
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 const UNICODE_PATTERN = UNICODE_SET.toString();
 
-describe('rewritePattern', () => {
+describe('rewritePattern { unicodeFlag }', () => {
+	const options = {
+		'unicodeFlag': 'transform'
+	};
 	for (const fixture of fixtures) {
 		const pattern = fixture.pattern;
 		for (const flag of fixture.flags) {
-			it('rewrites `/' + pattern + '/' + flag + '` correctly', () => {
-				assert.equal(rewritePattern(pattern, flag), fixture.transpiled);
-			});
+			if (flag.includes('u')) {
+				it('rewrites `/' + pattern + '/' + flag + '` correctly', () => {
+					assert.equal(rewritePattern(pattern, flag, options), fixture.transpiled);
+				});
+			} else {
+				it('leaves `/' + pattern + '/' + flag + '` as-is', () => {
+					// TODO: Update regexpu-fixtures
+					const expected = pattern.replace(/^\uD834\uDF06/g, "\\uD834\\uDF06");
+					assert.equal(rewritePattern(pattern, flag, options), expected);
+				});
+			}
 		}
 	}
 });
@@ -522,7 +533,8 @@ const getPropertyValuePattern = (path) => {
 
 describe('unicodePropertyEscapes', () => {
 	const features = {
-		'unicodePropertyEscape': true
+		'unicodePropertyEscapes': 'transform',
+		'unicodeFlag': 'transform'
 	};
 	for (const fixture of unicodePropertyEscapeFixtures) {
 		const expected = getPropertyValuePattern(fixture.path);
@@ -684,16 +696,21 @@ describe('unicodePropertyEscapes', () => {
 			rewritePattern('\\P{_-_lOwEr_C-A_S-E_-_}', 'u', features);
 		}, Error);
 	});
-	it('simplifies the output using Unicode code point escapes when `useUnicodeFlag` is enabled', () => {
+	it('simplifies the output using Unicode code point escapes when not transforming the u flag', () => {
 		assert.equal(
 			rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
-				'unicodePropertyEscape': true,
-				'useUnicodeFlag': true
+				'unicodePropertyEscapes': 'transform',
+			}),
+			'[\\u{14400}-\\u{14646}]'
+		);
+		assert.equal(
+			rewritePattern('[\\p{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', {
+				'unicodePropertyEscapes': 'transform',
 			}),
 			'[\\u{14400}-\\u{14646}]'
 		);
 	});
-	it('should not transpile unicode property when unicodePropertyEscape is not enabled', () => {
+	it('should not transpile unicode property when unicodePropertyEscapes is not enabled', () => {
 		assert.equal(
 			rewritePattern('\\p{ASCII_Hex_Digit}\\P{ASCII_Hex_Digit}', 'u'),
 			'\\p{ASCII_Hex_Digit}\\P{ASCII_Hex_Digit}'
@@ -701,13 +718,13 @@ describe('unicodePropertyEscapes', () => {
 	});
 	it('should transpile to minimal case-insensitive set', () => {
 		assert.equal(
-			rewritePattern('\u03B8', 'iu'),
+			rewritePattern('\u03B8', 'iu', {
+				'unicodeFlag': 'transform'
+			}),
 			'[\\u03B8\\u03F4]'
 		);
 		assert.equal(
-			rewritePattern('\u03B8', 'iu', {
-				'useUnicodeFlag': true
-			}),
+			rewritePattern('\u03B8', 'iu'),
 			'\\u03B8'
 		);
 	});
@@ -726,65 +743,52 @@ const dotAllFlagFixtures = [
 	},
 	{
 		'pattern': '.',
+		'flags': 's',
+		'expected': '[\\s\\S]',
+		'options': { unicodeFlag: 'transform' }
+	},
+	{
+		'pattern': '.',
+		'flags': 'gimsy',
+		'expected': '[\\s\\S]',
+		'options': { unicodeFlag: 'transform' }
+	},
+	{
+		'pattern': '.',
 		'flags': 'su',
-		'expected': UNICODE_PATTERN
+		'expected': UNICODE_PATTERN,
+		'options': { unicodeFlag: 'transform' }
 	},
 	{
 		'pattern': '.',
 		'flags': 'gimsuy',
-		'expected': UNICODE_PATTERN
+		'expected': UNICODE_PATTERN,
+		'options': { unicodeFlag: 'transform' }
 	}
 ];
 
 describe('dotAllFlag', () => {
-	const features = {
-		'dotAllFlag': true
-	};
 	for (const fixture of dotAllFlagFixtures) {
 		const pattern = fixture.pattern;
 		const flags = fixture.flags;
+		const options = Object.assign({
+			'dotAllFlag': 'transform'
+		}, fixture.options);
 		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
-			const transpiled = rewritePattern(pattern, flags, features);
+			const transpiled = rewritePattern(pattern, flags, options);
 			const expected = fixture.expected;
 			if (transpiled != '(?:' + expected + ')') {
 				assert.strictEqual(transpiled, expected);
 			}
 		});
 	}
+
+	it('not transformed', () => {
+		it('leaves `/./su` as-is', () => {
+			assert.equal(rewritePattern('.', 'su'), '.');
+		});
+	});
 });
-
-const useDotAllFlagFixtures = [
-	{
-		'pattern': '.',
-		'flags': 'su',
-		'expected': '.'
-	}
-]
-
-describe('useDotAllFlag', () => {
-	const features = {
-		'useDotAllFlag': true
-	};
-	for (const fixture of useDotAllFlagFixtures) {
-		const pattern = fixture.pattern;
-		const flags = fixture.flags;
-		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
-			const transpiled = rewritePattern(pattern, flags, features);
-			const expected = fixture.expected;
-			if (transpiled != '(?:' + expected + ')') {
-				assert.strictEqual(transpiled, expected);
-			}
-		});
-	}
-	it('should throw when both `useDotAllFlag` and `dotAll` is true', () => {
-		assert.throws(() => {
-			rewritePattern('.', 's', {
-				useDotAllFlag: true,
-				dotAllFlag: true
-			});
-		}, Error, '`useDotAllFlag` and `dotAllFlag` cannot both be true!')
-	})
-})
 
 const namedGroupFixtures = [
 	{
@@ -838,10 +842,7 @@ const namedGroupFixtures = [
 		'expected': '(?<=a)(?<!b)(?=c)(?!d)(?:e)(f)\\1',
 		'expectedGroups': [
 			['name', 1]
-		],
-		'options': {
-			'lookbehind': true
-		}
+		]
 	}
 ];
 
@@ -857,7 +858,7 @@ describe('namedGroup', () => {
 		const groups = [];
 
 		Object.assign(options, {
-			'namedGroup': true,
+			namedGroups: 'transform',
 			'onNamedGroup': (name, index) => {
 				groups.push([ name, index ]);
 			}
@@ -877,7 +878,7 @@ describe('namedGroup', () => {
 		const expected = '()';
 		assert.doesNotThrow(() => {
 			transpiled = rewritePattern('(?<name>)', '', {
-				'namedGroup': true
+				namedGroups: 'transform'
 			});
 		});
 		assert.strictEqual(transpiled, expected);
@@ -886,7 +887,7 @@ describe('namedGroup', () => {
 	it('multiple groups with the same name are disallowed', () => {
 		assert.throws(() => {
 			rewritePattern('(?<name>)(?<name>)', '', {
-				'namedGroup': true
+				namedGroups: 'transform'
 			});
 		});
 	});
@@ -894,7 +895,7 @@ describe('namedGroup', () => {
 	it('named references must reference a group', () => {
 		assert.throws(() => {
 			rewritePattern('\\k<name>', '', {
-				'namedGroup': true
+				namedGroups: 'transform'
 			});
 		});
 	});
@@ -909,100 +910,78 @@ describe('namedGroup', () => {
 	})
 });
 
-const lookbehindFixtures = [
-	{
-		'pattern': '(?<=a)b',
-		'flags': '',
-		'expected': '(?<=a)b'
-	},
-	{
-		'pattern': '(?<=.)a',
-		'flags': '',
-		'expected': '(?<=.)a'
-	}
-]
-
-describe('lookbehind', () => {
-	for (const fixture of lookbehindFixtures) {
-		const pattern = fixture.pattern;
-		const flags = fixture.flags;
-		const expected = fixture.expected;
-		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
-			const groups = [];
-			const transpiled = rewritePattern(pattern, flags, {
-				'lookbehind': true
-			});
-			assert.strictEqual(transpiled, expected);
-		});
-	}
-})
-
 const characterClassFixtures = [
 	{
 		pattern: '[^K]', // LATIN CAPITAL LETTER K
 		flags: 'iu',
-		expected: '(?![K\\u212A])[\\s\\S]'
+		expected: '(?![K\\u212A])[\\s\\S]',
+		'options': { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^k]', // LATIN SMALL LETTER K
 		flags: 'iu',
-		expected: '(?![k\\u212A])[\\s\\S]'
+		expected: '(?![k\\u212A])[\\s\\S]',
+		'options': { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^\u212a]', // KELVIN SIGN
 		flags: 'iu',
-		expected: '(?![K\\u212A])[\\s\\S]'
+		expected: '(?![K\\u212A])[\\s\\S]',
+		'options': { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^K]', // LATIN CAPITAL LETTER K
 		flags: 'iu',
-		expected: '(?!K)[\\s\\S]',
-		useUnicodeFlag: true
+		expected: '[^K]',
+		'options': {}
 	},
 	{
 		pattern: '[^k]', // LATIN SMALL LETTER K
 		flags: 'iu',
-		expected: '(?!k)[\\s\\S]',
-		useUnicodeFlag: true
+		expected: '[^k]',
+		'options': {}
 	},
 	{
 		pattern: '[^\u212a]', // KELVIN SIGN
 		flags: 'iu',
-		expected: '(?!\\u212A)[\\s\\S]',
-		useUnicodeFlag: true
-	},
-	{
-		pattern: '[^K]', // LATIN CAPITAL LETTER K
-		flags: 'u',
-		expected: '(?!K)[\\s\\S]'
-	},
-	{
-		pattern: '[^k]', // LATIN SMALL LETTER K
-		flags: 'u',
-		expected: '(?!k)[\\s\\S]'
-	},
-	{
-		pattern: '[^\u212a]', // KELVIN SIGN
-		flags: 'u',
-		expected: '(?!\\u212A)[\\s\\S]'
+		expected: '[^\u212a]',
+		'options': {}
 	},
 	{
 		pattern: '[^K]', // LATIN CAPITAL LETTER K
 		flags: 'u',
 		expected: '(?!K)[\\s\\S]',
-		useUnicodeFlag: true
+		'options': { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^k]', // LATIN SMALL LETTER K
 		flags: 'u',
 		expected: '(?!k)[\\s\\S]',
-		useUnicodeFlag: true
+		'options': { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^\u212a]', // KELVIN SIGN
 		flags: 'u',
 		expected: '(?!\\u212A)[\\s\\S]',
-		useUnicodeFlag: true
+		'options': { unicodeFlag: 'transform' }
+	},
+	{
+		pattern: '[^K]', // LATIN CAPITAL LETTER K
+		flags: 'u',
+		expected: '[^K]',
+		'options': {}
+	},
+	{
+		pattern: '[^k]', // LATIN SMALL LETTER K
+		flags: 'u',
+		expected: '[^k]',
+		'options': {}
+	},
+	{
+		pattern: '[^\u212a]', // KELVIN SIGN
+		flags: 'u',
+		expected: '[^\u212a]',
+		'options': {}
 	}
 ];
 
@@ -1010,13 +989,11 @@ describe('character classes', () => {
 	for (const fixture of characterClassFixtures) {
 		const pattern = fixture.pattern;
 		const flags = fixture.flags;
-		const useUnicodeFlag = fixture.useUnicodeFlag;
-		it('rewrites `/' + pattern + '/' + flags + '` with' + (useUnicodeFlag ? '' : 'out') + ' unicode correctly', () => {
-			const transpiled = rewritePattern(pattern, flags, {
-				'useUnicodeFlag': useUnicodeFlag
-			});
+		const options = fixture.options;
+		const transformUnicodeFlag = options.unicodeFlag === 'transform';
+		it('rewrites `/' + pattern + '/' + flags + '` with' + (transformUnicodeFlag ? 'out' : '') + ' unicode correctly', () => {
+			const transpiled = rewritePattern(pattern, flags, options);
 			const expected = fixture.expected;
-			const features = fixture.features;
 			if (transpiled != '(?:' + expected + ')') {
 				assert.strictEqual(transpiled, expected);
 			}
