@@ -588,14 +588,6 @@ describe('unicodePropertyEscapes', () => {
 			'(?:(?:\\uD838[\\uDEC0-\\uDEF9\\uDEFF]))'
 		);
 	});
-	it('throws without the `u` flag', () => {
-		assert.throws(() => {
-			rewritePattern('\\p{ASCII_Hex_Digit}', '', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{ASCII_Hex_Digit}', '', features);
-		}, Error);
-	});
 	it('throws on unknown binary properties', () => {
 		assert.throws(() => {
 			rewritePattern('\\p{UnknownBinaryProperty}', 'u', features);
