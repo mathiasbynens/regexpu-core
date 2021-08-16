@@ -311,7 +311,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 const regjsparserFeatures = {
 	'unicodePropertyEscape': true,
 	'namedGroups': true,
-	'lookbehind': true
+	'lookbehind': true,
 };
 
 const config = {

@@ -24,7 +24,7 @@ describe('rewritePattern { unicodeFlag }', () => {
 			} else {
 				it('leaves `/' + pattern + '/' + flag + '` as-is', () => {
 					// TODO: Update regexpu-fixtures
-					const expected = pattern.replace(/^\uD834\uDF06/g, "\\uD834\\uDF06");
+					const expected = pattern.replace(/^\uD834\uDF06/g, '\\uD834\\uDF06');
 					assert.equal(rewritePattern(pattern, flag, options), expected);
 				});
 			}
