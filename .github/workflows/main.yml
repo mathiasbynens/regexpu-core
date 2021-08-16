@@ -19,13 +19,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Set up Node.js
+      - name: Set up Node.js 16
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node }}
+          # Always build using the same Node.js version, to ensure consistent
+          # results from scripts/iu-mappings.js.
+          # This version should be the same as the one used in the
+          # publish-on-tag workflow.
+          node-version: 16
       - name: Install dependencies
         run: npm install
       - name: Build
         run: npm run build
+      - name: Set up Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
       - name: Test
         run: npm test
