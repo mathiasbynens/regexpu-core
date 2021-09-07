@@ -5,15 +5,11 @@ const parse = require('regjsparser').parse;
 const generate = require('regjsgen').generate;
 const regenerate = require('regenerate');
 
-const pattern = String.raw`\w`;
+const pattern = String.raw`[[a-h]&&[f-z]]`;
 
-console.log(generate(parse(pattern)));
-
-const processedPattern = rewritePattern(pattern, 'ui', {
-	'unicodeFlag': 'transform'
+const processedPattern = rewritePattern(pattern, 'v', {
+	'unicodeSetFlag': 'transform'
 });
 
 console.log(processedPattern);
 
-// throws
-new RegExp(processedPattern, 'u');
