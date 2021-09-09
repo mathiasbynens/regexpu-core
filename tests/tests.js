@@ -1114,6 +1114,169 @@ const unicodeSetFixtures = [
 		expected: '(?:[\\0-`f-h\\{-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
 		options: TRANSFORM_U
 	},
+	{
+		pattern: '[\\q{A|AB|B|ABC|BC}ab]',
+		expected: '(?:ABC|AB|BC|[ABab])'
+	},
+	{
+		pattern: '[\\q{A|AB}a\\q{B|ABC|BC}b]',
+		expected: '(?:ABC|AB|BC|[ABab])'
+	},
+	{
+		pattern: '[\\q{A|AB}ab\\q{B|ABC|BC}]',
+		expected: '(?:ABC|AB|BC|[ABab])'
+	},
+	{
+		pattern: '[[\\q{A|AB}a]b\\q{B|ABC|BC}]',
+		expected: '(?:ABC|AB|BC|[ABab])'
+	},
+	{
+		pattern: '[\\q{👩🏿‍✈️|🚲|🇧🇪}]',
+		expected: '(?:👩🏿‍✈️|🇧🇪|\\u{1F6B2})'
+	},
+	{
+		pattern: '[ab\\q{}]',
+		expected: '(?:[ab]|)'
+	},
+	{
+		pattern: '[ab\\q{|}]',
+		expected: '(?:[ab]|)'
+	},
+	{
+		pattern: '[ab\\q{|A|AB}]',
+		expected: '(?:AB|[Aab]|)'
+	},
+	{
+		pattern: '[\\q{sA}asb]',
+		flags: 'iv',
+		expected: '(?:sA|[abs])'
+	},
+	{
+		pattern: '[\\q{sA}asb]',
+		flags: 'iv',
+		options: TRANSFORM_U,
+		expected: '(?:[s\\u017F]A|[abs\\u017F])'
+	},
+	{
+		pattern: '[[ab\\q{cd}]--a]',
+		expected: '(?:cd|b)'
+	},
+	{
+		pattern: '[[ab\\q{cd}]--[ab]]',
+		expected: '(?:cd)'
+	},
+	{
+		pattern: '[[ab\\q{cd}]--[cd]]',
+		expected: '(?:cd|[ab])'
+	},
+	{
+		pattern: '[[ab\\q{cd}]--\\q{cd}]',
+		expected: '[ab]'
+	},
+	{
+		pattern: '[[ab\\q{cd}]--[a\\q{cd}]]',
+		expected: 'b'
+	},
+	{
+		pattern: '[[ab\\q{cd}]--[ab\\q{cd}]]',
+		expected: '[]'
+	},
+	{
+		pattern: '[[ab]--[ab\\q{cd}]]',
+		expected: '[]'
+	},
+	{
+		pattern: '[\\q{cd}--[ab\\q{cd}]]',
+		expected: '[]'
+	},
+	{
+		pattern: '[\\q{cd}--[ab\\q{dc}]]',
+		expected: '(?:cd)'
+	},
+	{
+		pattern: '[\\q{ab|cd|abc}--\\q{abc|cd}]',
+		expected: '(?:ab)'
+	},
+	{
+		pattern: '[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}]',
+		expected: '(?:ab)'
+	},
+	{
+		pattern: '[a&&\\q{a}]',
+		expected: 'a'
+	},
+	{
+		pattern: '[a&&\\q{ab}]',
+		expected: '[]'
+	},
+	{
+		pattern: '[\\q{ab}&&\\q{ab}]',
+		expected: '(?:ab)'
+	},
+	{
+		pattern: '[\\q{ab|cd|abc}&&\\q{ab|bc|abc}]',
+		expected: '(?:abc|ab)'
+	},
+	{
+		pattern: '[[a\\q{ab}]&&\\q{ab}]',
+		expected: '(?:ab)'
+	},
+	{
+		pattern: '[[a\\q{ab}]&&a]',
+		expected: 'a'
+	},
+	{
+		pattern: '[^\\q{a}]',
+		expected: '[^a]'
+	},
+	{
+		pattern: '[^\\q{abc}]',
+		throws: /Cannot negate set containing strings/
+	},
+	{
+		pattern: '[^\\q{}]',
+		throws: /Cannot negate set containing strings/
+	},
+	{
+		pattern: '[^\\q{a|}]',
+		throws: /Cannot negate set containing strings/
+	},
+	{
+		pattern: '[^\\q{}--\\q{}]',
+		throws: /Cannot negate set containing strings/
+	},
+	{
+		pattern: '[^\\q{ab}--\\q{ab}]',
+		throws: /Cannot negate set containing strings/
+	},
+	{
+		pattern: '[^\\q{a}--\\q{ab}]',
+		expected: '[^a]'
+	},
+	{
+		pattern: '[^[\\q{ab}--\\q{ab}]]',
+		throws: /Cannot negate set containing strings/
+	},
+	{
+		pattern: '[^\\q{}&&a]',
+		expected: '[^]'
+	},
+	{
+		pattern: '[^\\q{ab}&&a]',
+		expected: '[^]'
+	},
+	{
+		pattern: '[^\\q{}&&\\q{}]',
+		throws: /Cannot negate set containing strings/
+	},
+	{
+		pattern: '[^\\q{ab}&&\\q{ab}]',
+		throws: /Cannot negate set containing strings/
+	},
+	{
+		pattern: '[^\\q{}&&\\q{ab}]',
+		throws: /Cannot negate set containing strings/
+	}
 ];
 
 describe('unicodeSets (v) flag', () => {
@@ -1122,13 +1285,29 @@ describe('unicodeSets (v) flag', () => {
 		const flags = fixture.flags || 'v';
 		const options = fixture.options || { unicodeSetsFlag: 'transform' };
 		const transformUnicodeFlag = options.unicodeFlag === 'transform';
-		it('rewrites `/' + pattern + '/' + flags + '` correctly ' + (transformUnicodeFlag ? 'without ' : '') + 'using the u flag', () => {
-			const transpiled = rewritePattern(pattern, flags, options);
-			const expected = fixture.expected;
-			if (transpiled != '(?:' + expected + ')') {
-				assert.strictEqual(transpiled, expected);
+
+		const inputRE = `/${pattern}/${flags}`;
+
+		const expected = fixture.expected;
+		const throws = fixture.throws;
+
+		if (throws) {
+			if (expected) {
+				throw new Error(`TEST ERROR: ${inputRE} cannot both throw and have an expected output.`);
 			}
-		});
+			it(`throws for \`${inputRE}\` ${transformUnicodeFlag ? 'without ' : ''}using the u flag`, () => {
+				assert.throws(() => {
+					rewritePattern(pattern, flags, options);
+				}, throws);
+			});
+		} else {
+			it(`rewrites \`${inputRE}\` correctly ${transformUnicodeFlag ? 'without ' : ''}using the u flag`, () => {
+				const transpiled = rewritePattern(pattern, flags, options);
+				if (transpiled != '(?:' + expected + ')') {
+					assert.strictEqual(transpiled, expected);
+				}
+			});
+		}
 	}
 });
 
