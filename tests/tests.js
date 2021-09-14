@@ -502,10 +502,17 @@ const unicodePropertyEscapeFixtures = [
 			'Script_Extensions=Yezidi',
 		]
 	},
+	{
+		'path': 'Script_Extensions/Toto',
+		'expressions': [
+			'scx=Toto',
+			'Script_Extensions=Toto',
+		]
+	},
 ];
 
 const getPropertyValuePattern = (path) => {
-	const codePoints = require(`unicode-13.0.0/${
+	const codePoints = require(`@unicode/unicode-14.0.0/${
 		path }/code-points.js`);
 	return {
 		'p': regenerate(codePoints).toString(),

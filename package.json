@@ -49,19 +49,19 @@
 	},
 	"dependencies": {
 		"regenerate": "^1.4.2",
-		"regenerate-unicode-properties": "^8.2.0",
+		"regenerate-unicode-properties": "^9.0.0",
 		"regjsgen": "^0.5.2",
-		"regjsparser": "^0.6.4",
-		"unicode-match-property-ecmascript": "^1.0.4",
-		"unicode-match-property-value-ecmascript": "^1.2.0"
+		"regjsparser": "^0.7.0",
+		"unicode-match-property-ecmascript": "^2.0.0",
+		"unicode-match-property-value-ecmascript": "^2.0.0"
 	},
 	"devDependencies": {
-		"codecov": "^3.8.0",
+		"codecov": "^3.8.3",
 		"istanbul": "^0.4.5",
 		"jsesc": "^3.0.2",
-		"lodash": "^4.17.20",
-		"mocha": "^8.2.0",
+		"lodash": "^4.17.21",
+		"mocha": "^9.1.1",
 		"regexpu-fixtures": "2.1.4",
-		"unicode-13.0.0": "^0.8.0"
+		"@unicode/unicode-14.0.0": "^1.2.1"
 	}
 }

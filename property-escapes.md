@@ -111,6 +111,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Coptic}
 \p{Script_Extensions=Cuneiform}
 \p{Script_Extensions=Cypriot}
+\p{Script_Extensions=Cypro_Minoan}
 \p{Script_Extensions=Cyrillic}
 \p{Script_Extensions=Deseret}
 \p{Script_Extensions=Devanagari}
@@ -194,6 +195,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Old_Sogdian}
 \p{Script_Extensions=Old_South_Arabian}
 \p{Script_Extensions=Old_Turkic}
+\p{Script_Extensions=Old_Uyghur}
 \p{Script_Extensions=Oriya}
 \p{Script_Extensions=Osage}
 \p{Script_Extensions=Osmanya}
@@ -225,6 +227,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Tai_Viet}
 \p{Script_Extensions=Takri}
 \p{Script_Extensions=Tamil}
+\p{Script_Extensions=Tangsa}
 \p{Script_Extensions=Tangut}
 \p{Script_Extensions=Telugu}
 \p{Script_Extensions=Thaana}
@@ -232,8 +235,10 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Tibetan}
 \p{Script_Extensions=Tifinagh}
 \p{Script_Extensions=Tirhuta}
+\p{Script_Extensions=Toto}
 \p{Script_Extensions=Ugaritic}
 \p{Script_Extensions=Vai}
+\p{Script_Extensions=Vithkuqi}
 \p{Script_Extensions=Wancho}
 \p{Script_Extensions=Warang_Citi}
 \p{Script_Extensions=Yezidi}
