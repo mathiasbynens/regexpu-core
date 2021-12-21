@@ -5,12 +5,13 @@ const parse = require('regjsparser').parse;
 const generate = require('regjsgen').generate;
 const regenerate = require('regenerate');
 
-const pattern = String.raw`-`;
+const pattern = String.raw`\w`;
 
 console.log(generate(parse(pattern)));
-console.log(regenerate('-'.codePointAt(0)).toString())
 
-const processedPattern = rewritePattern(pattern, 'u', { useUnicodeFlag: true });
+const processedPattern = rewritePattern(pattern, 'ui', {
+	'unicodeFlag': 'transform'
+});
 
 console.log(processedPattern);
 

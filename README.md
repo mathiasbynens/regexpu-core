@@ -51,89 +51,99 @@ rewritePattern('foo.bar', 'u');
 
 The optional `options` argument recognizes the following properties:
 
-#### `dotAllFlag` (default: `false`)
+#### Stable regular expression features
 
-Setting this option to `true` enables support for [the `s` (`dotAll`) flag](https://github.com/mathiasbynens/es-regexp-dotall-flag).
+These options can be set to `false` or `'transform'`. When using `'transform'`, the corresponding features are compiled to older syntax that can run in older browsers. When using `false` (the default), they are not compiled and they can be relied upon to compile more modern features.
 
-```js
-rewritePattern('.');
-// → '[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF]'
+- `unicodeFlag` - The `u` flag, enabling support for Unicode code point escapes in the form `\u{...}`.
 
-rewritePattern('.', '', {
-  'dotAllFlag': true
-});
-// → '[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF]'
+  ```js
+  rewritePattern('\\u{ab}', '', {
+    unicodeFlag: 'transform'
+  });
+  // → '\\u{ab}'
 
-rewritePattern('.', 's', {
-  'dotAllFlag': true
-});
-// → '[\\0-\\uFFFF]'
+  rewritePattern('\\u{ab}', 'u', {
+    unicodeFlag: 'transform'
+  });
+  // → '\\xAB'
+  ```
 
-rewritePattern('.', 'su', {
-  'dotAllFlag': true
-});
-// → '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
-```
+- `dotAllFlag` - The [`s` (`dotAll`) flag](https://github.com/mathiasbynens/es-regexp-dotall-flag).
 
-#### `unicodePropertyEscape` (default: `false`)
+  ```js
+  rewritePattern('.', '', {
+    dotAllFlag: 'transform'
+  });
+  // → '[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF]'
 
-Setting this option to `true` enables [support for Unicode property escapes](property-escapes.md):
+  rewritePattern('.', 's', {
+    dotAllFlag: 'transform'
+  });
+  // → '[\\0-\\uFFFF]'
 
-```js
-rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
-  'unicodePropertyEscape': true
-});
-// → '(?:\\uD811[\\uDC00-\\uDE46])'
-```
+  rewritePattern('.', 'su', {
+    dotAllFlag: 'transform'
+  });
+  // → '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+  ```
 
-#### `lookbehind` (default: `false`)
+- `unicodePropertyEscapes` - [Unicode property escapes](property-escapes.md).
 
-Setting this option to `true` enables support for [lookbehind assertions](https://github.com/tc39/proposal-regexp-lookbehind).
+  By default they are compiled to Unicode code point escapes of the form `\u{...}`. If the `unicodeFlag` option is set to `'transform'` they often result in larger output, although there are cases (such as `\p{Lu}`) where it actually _decreases_ the output size.
 
-```js
-rewritePattern('(?<=.)a', '', {
-  'lookbehind': true
-});
-// → '(?<=[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF])a'
-```
+  ```js
+  rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
+    unicodePropertyEscapes: 'transform'
+  });
+  // → '[\\u{14400}-\\u{14646}]'
 
-#### `namedGroup` (default: `false`)
+  rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
+    unicodeFlag: 'transform',
+    unicodePropertyEscapes: 'transform'
+  });
+  // → '(?:\\uD811[\\uDC00-\\uDE46])'
+  ```
 
-Setting this option to `true` enables support for [named capture groups](https://github.com/tc39/proposal-regexp-named-groups).
+- `namedGroups` - [Named capture groups](https://github.com/tc39/proposal-regexp-named-groups).
 
-```js
-rewritePattern('(?<name>.)\k<name>', '', {
-  'namedGroup': true
-});
-// → '(.)\1'
-```
+  ```js
+  rewritePattern('(?<name>.)\\k<name>', '', {
+    namedGroup: "transform"
+  });
+  // → '(.)\1'
+  ```
 
-#### `onNamedGroup`
+<!--
 
-This option is a function that gets called when a named capture group is found. It receives two parameters:
-the name of the group, and its index.
+#### Experimental regular expression features
 
-```js
-rewritePattern('(?<name>.)\k<name>', '', {
-  'namedGroup': true,
-  onNamedGroup(name, index) {
-    console.log(name, index);
-    // → 'name', 1
-  }
-});
-```
+These options can be set to `false`, `'parse'` and `'transform'`. When using `'transform'`, the corresponding features are compiled to older syntax that can run in older browsers. When using `'parse'`, they are parsed and left as-is in the output pattern. When using `false` (the default), they result in a syntax error if used.
 
-#### `useUnicodeFlag` (default: `false`)
+NOTE: Currently regexpu doesn't support any ECMAScript proposal
 
-Setting this option to `true` enables the use of Unicode code point escapes of the form `\u{…}`. Note that in regular expressions, such escape sequences only work correctly when the ES2015 `u` flag is set. Enabling this setting often results in more compact output, although there are cases (such as `\p{Lu}`) where it actually _increases_ the output size.
+-->
 
-```js
-rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
-  'unicodePropertyEscape': true,
-  'useUnicodeFlag': true
-});
-// → '[\\u{14400}-\\u{14646}]'
-```
+#### Miscellaneous options
+
+- `onNamedGroup`
+
+  This option is a function that gets called when a named capture group is found. It receives two parameters:
+  the name of the group, and its index.
+
+  ```js
+  rewritePattern('(?<name>.)\\k<name>', '', {
+    onNamedGroup(name, index) {
+      console.log(name, index);
+      // → 'name', 1
+    }
+  });
+  ```
+
+### Caveats
+
+- [Lookbehind assertions](https://github.com/tc39/proposal-regexp-lookbehind) cannot be transformed to older syntax.
+- When using `namedGroups: 'transform'`, _regexpu-core_ only takes care of the _syntax_: you will still need a runtime wrapper around the regular expression to populate the `.groups` property of `RegExp.prototype.match()`'s result. If you are using _regexpu-core_ via Babel, it's handled automatically.
 
 ## For maintainers
 
