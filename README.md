@@ -114,15 +114,38 @@ These options can be set to `false` or `'transform'`. When using `'transform'`, 
   // → '(.)\1'
   ```
 
-<!--
-
 #### Experimental regular expression features
 
 These options can be set to `false`, `'parse'` and `'transform'`. When using `'transform'`, the corresponding features are compiled to older syntax that can run in older browsers. When using `'parse'`, they are parsed and left as-is in the output pattern. When using `false` (the default), they result in a syntax error if used.
 
-NOTE: Currently regexpu doesn't support any ECMAScript proposal
+Once these features become stable (when the proposals are accepted as part of ECMAScript), they will be parsed by default and thus `'parse'` will behave like `false`.
 
--->
+- `unicodeSetsFlag` - [The `v` (`unicodeSets`) flag](https://github.com/tc39/proposal-regexp-set-notation)
+
+  ```js
+  rewritePattern('[\\p{Emoji}&&\\p{ASCII}]', 'u', {
+    unicodeSetsFlag: 'transform'
+  });
+  // → '[#\*0-9]'
+  ```
+
+  By default, patterns with the `v` flag are transformed to patterns with the `u` flag. If you want to downlevel them more you can set the `unicodeFlag: 'transform'` option.
+
+  ```js
+  rewritePattern('[^[a-h]&&[f-z]]', 'v', {
+    unicodeSetsFlag: 'transform'
+  });
+  // → '[^f-h]' (to be used with /u)
+  ```
+
+  ```js
+  rewritePattern('[^[a-h]&&[f-z]]', 'v', {
+    unicodeSetsFlag: 'transform',
+    unicodeFlag: 'transform'
+  });
+  // → '(?:(?![f-h])[\s\S])' (to be used without /u)
+  ```
+
 
 #### Miscellaneous options
 
