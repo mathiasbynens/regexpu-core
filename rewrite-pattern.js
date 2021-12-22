@@ -410,18 +410,18 @@ const config = {
 	'flags': {
 		'ignoreCase': false,
 		'unicode': false,
-		'unicodeSet': false,
+		'unicodeSets': false,
 		'dotAll': false,
 	},
 	'transform': {
 		'dotAllFlag': false,
 		'unicodeFlag': false,
-		'unicodeSetFlag': false,
+		'unicodeSetsFlag': false,
 		'unicodePropertyEscapes': false,
 		'namedGroups': false,
 	},
 	get useUnicodeFlag() {
-		return (this.flags.unicode || this.flags.unicodeSet) && !this.transform.unicodeFlag;
+		return (this.flags.unicode || this.flags.unicodeSets) && !this.transform.unicodeFlag;
 	}
 };
 
@@ -439,7 +439,7 @@ const validateOptions = (options) => {
 					throw new Error(`.${key} must be false (default) or 'transform'.`);
 				}
 				break;
-			case 'unicodeSetFlag':
+			case 'unicodeSetsFlag':
 				if (value != null && value !== false && value !== 'parse' && value !== 'transform') {
 					throw new Error(`.${key} must be false (default), 'parse' or 'transform'.`);
 				}
@@ -462,13 +462,13 @@ const rewritePattern = (pattern, flags, options) => {
 	validateOptions(options);
 
 	config.flags.unicode = hasFlag(flags, 'u');
-	config.flags.unicodeSet = hasFlag(flags, 'v');
+	config.flags.unicodeSets = hasFlag(flags, 'v');
 	config.flags.ignoreCase = hasFlag(flags, 'i');
 	config.flags.dotAll = hasFlag(flags, 's');
 
 	config.transform.dotAllFlag = config.flags.dotAll && transform(options, 'dotAllFlag');
-	config.transform.unicodeFlag = (config.flags.unicode || config.flags.unicodeSet) && transform(options, 'unicodeFlag');
-	config.transform.unicodeSetFlag = config.flags.unicodeSet && transform(options, 'unicodeSetFlag');
+	config.transform.unicodeFlag = (config.flags.unicode || config.flags.unicodeSets) && transform(options, 'unicodeFlag');
+	config.transform.unicodeSetsFlag = config.flags.unicodeSets && transform(options, 'unicodeSetsFlag');
 
 	// unicodeFlag: 'transform' implies unicodePropertyEscapes: 'transform'
 	config.transform.unicodePropertyEscapes = config.flags.unicode && (
@@ -477,7 +477,7 @@ const rewritePattern = (pattern, flags, options) => {
 	config.transform.namedGroups = transform(options, 'namedGroups');
 
 	const regjsparserFeatures = {
-		'unicodeSet': Boolean(options && options.unicodeSetFlag),
+		'unicodeSet': Boolean(options && options.unicodeSetsFlag),
 
 		// Enable every stable RegExp feature by default
 		'unicodePropertyEscape': true,
