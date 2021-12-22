@@ -1001,7 +1001,7 @@ describe('character classes', () => {
 	}
 });
 
-const TRANSFORM_U = { unicodeFlag: 'transform', unicodeSetFlag: 'transform' };
+const TRANSFORM_U = { unicodeFlag: 'transform', unicodeSetsFlag: 'transform' };
 
 const unicodeSetFixtures = [
 	{
@@ -1116,11 +1116,11 @@ const unicodeSetFixtures = [
 	},
 ];
 
-describe('unicode set (v) flag', () => {
+describe('unicodeSets (v) flag', () => {
 	for (const fixture of unicodeSetFixtures) {
 		const pattern = fixture.pattern;
 		const flags = fixture.flags || 'v';
-		const options = fixture.options || { unicodeSetFlag: 'transform' };
+		const options = fixture.options || { unicodeSetsFlag: 'transform' };
 		const transformUnicodeFlag = options.unicodeFlag === 'transform';
 		it('rewrites `/' + pattern + '/' + flags + '` correctly ' + (transformUnicodeFlag ? 'without ' : '') + 'using the u flag', () => {
 			const transpiled = rewritePattern(pattern, flags, options);

@@ -8,7 +8,7 @@ const regenerate = require('regenerate');
 const pattern = String.raw`[[a-h]&&[f-z]]`;
 
 const processedPattern = rewritePattern(pattern, 'v', {
-	'unicodeSetFlag': 'transform'
+	'unicodeSetsFlag': 'transform'
 });
 
 console.log(processedPattern);
