@@ -139,41 +139,122 @@ const buildHandler = (action) => {
 	switch (action) {
 		case 'union':
 			return {
-				single: (set, cp) => set ? set.add(cp) : regenerate(cp),
-				regSet: (set, set2) => set ? set.add(set2) : set2,
-				range: (set, start, end) => {
-					if (!set) set = regenerate();
-					set.addRange(start, end);
-					return set;
+				single: (data, cp) => {
+					data.singleChars.add(cp);
 				},
-				iuRange: (set, start, end) => {
-					if (!set) set = regenerate();
-					set.iuAddRange(start, end);
-					return set;
+				regSet: (data, set2) => {
+					data.singleChars.add(set2);
+				},
+				range: (data, start, end) => {
+					data.singleChars.addRange(start, end);
+				},
+				iuRange: (data, start, end) => {
+					data.singleChars.iuAddRange(start, end);
+				},
+				nested: (data, nestedData) => {
+					data.singleChars.add(nestedData.singleChars);
+					for (const str of nestedData.longStrings) data.longStrings.add(str);
+					if (nestedData.maybeIncludesStrings) data.maybeIncludesStrings = true;
 				}
 			};
-		case 'union-negative':
-			return {
-				single: (set, cp) => set && set.contains(cp) ? UNICODE_SET.clone() : UNICODE_SET.clone().remove(cp),
-				regSet: (set, set2) => UNICODE_SET.clone().remove(set2).add(set || []),
-				range: (set, start, end) => UNICODE_SET.clone().removeRange(start, end).add(set || []),
-				iuRange: (set, start, end) => UNICODE_SET.clone().iuRemoveRange(start, end).add(set || [])
+		case 'union-negative': {
+			const regSet = (data, set2) => {
+				data.singleChars = UNICODE_SET.clone().remove(set2).add(data.singleChars);
 			};
-		case 'intersection':
-			const regSet = (set, set2) => set ? set.intersection(set2) : set2;
 			return {
-				single: (set, cp) => !set || set.contains(cp) ? regenerate(cp) : regenerate(),
+				single: (data, cp) => {
+					const unicode = UNICODE_SET.clone();
+					data.singleChars = data.singleChars.contains(cp) ? unicode : unicode.remove(cp);
+				},
 				regSet: regSet,
-				range: (set, start, end) => regSet(set, regenerate().addRange(start, end)),
-				iuRange: (set, start, end) => regSet(set, regenerate().iuAddRange(start, end))
+				range: (data, start, end) => {
+					data.singleChars = UNICODE_SET.clone().removeRange(start, end).add(data.singleChars);
+				},
+				iuRange: (data, start, end) => {
+					data.singleChars = UNICODE_SET.clone().iuRemoveRange(start, end).add(data.singleChars);
+				},
+				nested: (data, nestedData) => {
+					regSet(data, nestedData.singleChars);
+					if (nestedData.maybeIncludesStrings) throw new Error("ASSERTION ERROR");
+				}
 			};
-		case 'subtraction':
+		}
+		case 'intersection': {
+			const regSet = (data, set2) => {
+				if (data.first) data.singleChars = set2;
+				else data.singleChars.intersection(set2);
+			};
 			return {
-				single: (set, cp) => set ? set.remove(cp) : regenerate(cp),
-				regSet: (set, set2) => set ? set.remove(set2) : set2,
-				range: (set, start, end) => set ? set.removeRange(start, end) : regenerate().addRange(start, end),
-				iuRange: (set, start, end) => set ? set.iuRemoveRange(start, end) : regenerate().iuAddRange(start, end)
+				single: (data, cp) => {
+					data.singleChars = data.first || data.singleChars.contains(cp) ? regenerate(cp) : regenerate();
+					data.longStrings.clear();
+					data.maybeIncludesStrings = false;
+				},
+				regSet: (data, set) => {
+					regSet(data, set);
+					data.longStrings.clear();
+					data.maybeIncludesStrings = false;
+				},
+				range: (data, start, end) => {
+					if (data.first) data.singleChars.addRange(start, end);
+					else data.singleChars.intersection(regenerate().addRange(start, end));
+					data.longStrings.clear();
+					data.maybeIncludesStrings = false;
+				},
+				iuRange: (data, start, end) => {
+					if (data.first) data.singleChars.iuAddRange(start, end);
+					else data.singleChars.intersection(regenerate().iuAddRange(start, end));
+					data.longStrings.clear();
+					data.maybeIncludesStrings = false;
+				},
+				nested: (data, nestedData) => {
+					regSet(data, nestedData.singleChars);
+
+					if (data.first) {
+						data.longStrings = nestedData.longStrings;
+						data.maybeIncludesStrings = nestedData.maybeIncludesStrings;
+					} else {
+						for (const str of data.longStrings) {
+							if (!nestedData.longStrings.has(str)) data.longStrings.delete(str);
+						}
+						if (!nestedData.maybeIncludesStrings) data.maybeIncludesStrings = false;
+					}
+				}
 			};
+		}
+		case 'subtraction': {
+			const regSet = (data, set2) => {
+				if (data.first) data.singleChars.add(set2);
+				else data.singleChars.remove(set2);
+			};
+			return {
+				single: (data, cp) => {
+					if (data.first) data.singleChars.add(cp);
+					else data.singleChars.remove(cp);
+				},
+				regSet: regSet,
+				range: (data, start, end) => {
+					if (data.first) data.singleChars.addRange(start, end);
+					else data.singleChars.removeRange(start, end);
+				},
+				iuRange: (data, start, end) => {
+					if (data.first) data.singleChars.iuAddRange(start, end);
+					else data.singleChars.iuRemoveRange(start, end);
+				},
+				nested: (data, nestedData) => {
+					regSet(data, nestedData.singleChars);
+
+					if (data.first) {
+						data.longStrings = nestedData.longStrings;
+						data.maybeIncludesStrings = nestedData.maybeIncludesStrings;
+					} else {
+						for (const str of data.longStrings) {
+							if (nestedData.longStrings.has(str)) data.longStrings.delete(str);
+						}
+					}
+				}
+			};
+		}
 		// The `default` clause is only here as a safeguard; it should never be
 		// reached. Code coverage tools should ignore it.
 		/* istanbul ignore next */
@@ -182,9 +263,57 @@ const buildHandler = (action) => {
 	}
 };
 
-const computeCharacterClass = (characterClassItem) => {
-	let transformed = config.transform.unicodeFlag;
-	let set;
+const getCharacterClassEmptyData = () => ({
+	transformed: config.transform.unicodeFlag,
+	singleChars: regenerate(),
+	longStrings: new Set(),
+	hasEmptyString: false,
+	first: true,
+	maybeIncludesStrings: false
+});
+
+const maybeFold = (codePoint) => {
+	if (config.flags.ignoreCase && config.transform.unicodeFlag) {
+		const folded = caseFold(codePoint);
+		if (folded) {
+			return [codePoint, folded];
+		}
+	}
+	return [codePoint];
+};
+
+const computeClassStrings = (classStrings, regenerateOptions) => {
+	let data = getCharacterClassEmptyData();
+
+	for (const string of classStrings.strings) {
+		if (string.characters.length === 1) {
+			maybeFold(string.characters[0].codePoint).forEach((cp) => {
+				data.singleChars.add(cp);
+			});
+		} else {
+			let stringifiedString;
+			if (config.flags.ignoreCase && config.transform.unicodeFlag) {
+				stringifiedString = "";
+				for (const ch of string.characters) {
+					let set = regenerate(ch.codePoint);
+					const folded = caseFold(ch.codePoint);
+					if (folded) set.add(folded);
+					stringifiedString += set.toString(regenerateOptions);
+				}
+			} else {
+				stringifiedString = string.characters.map(ch => generate(ch)).join("")
+			}
+
+			data.longStrings.add(stringifiedString);
+			data.maybeIncludesStrings = true;
+		}
+	}
+
+	return data;
+}
+
+const computeCharacterClass = (characterClassItem, regenerateOptions) => {
+	let data = getCharacterClassEmptyData();
 
 	let handlePositive;
 	let handleNegative;
@@ -212,40 +341,40 @@ const computeCharacterClass = (characterClassItem) => {
 	for (const item of characterClassItem.body) {
 		switch (item.type) {
 			case 'value':
-				set = handlePositive.single(set, item.codePoint);
-				if (config.flags.ignoreCase && config.transform.unicodeFlag) {
-					const folded = caseFold(item.codePoint);
-					if (folded) {
-						set = handlePositive.single(set, folded);
-					}
-				}
+				maybeFold(item.codePoint).forEach((cp) => {
+					handlePositive.single(data, cp);
+				});
 				break;
 			case 'characterClassRange':
 				const min = item.min.codePoint;
 				const max = item.max.codePoint;
-				set = handlePositive.range(set, min, max);
+				handlePositive.range(data, min, max);
 				if (config.flags.ignoreCase && config.transform.unicodeFlag) {
-					set = handlePositive.iuRange(set, min, max);
+					handlePositive.iuRange(data, min, max);
 				}
 				break;
 			case 'characterClassEscape':
-				set = handlePositive.regSet(set, getCharacterClassEscapeSet(
+				handlePositive.regSet(data, getCharacterClassEscapeSet(
 					item.value,
 					config.flags.unicode,
 					config.flags.ignoreCase
 				));
 				break;
 			case 'unicodePropertyEscape':
-				set = handlePositive.regSet(set, getUnicodePropertyEscapeSet(item.value, item.negative));
+				handlePositive.regSet(data, getUnicodePropertyEscapeSet(item.value, item.negative));
 				if (config.transform.unicodePropertyEscapes) {
-					transformed = true;
+					data.transformed = true;
 				}
 				break;
 			case 'characterClass':
 				const handler = item.negative ? handleNegative : handlePositive;
-				const res = computeCharacterClass(item);
-				set = handler.regSet(set, res.set);
-				transformed = true;
+				const res = computeCharacterClass(item, regenerateOptions);
+				handler.nested(data, res);
+				data.transformed = true;
+				break;
+			case 'classStrings':
+				handlePositive.nested(data, computeClassStrings(item, regenerateOptions));
+				data.transformed = true;
 				break;
 			// The `default` clause is only here as a safeguard; it should never be
 			// reached. Code coverage tools should ignore it.
@@ -253,28 +382,37 @@ const computeCharacterClass = (characterClassItem) => {
 			default:
 				throw new Error(`Unknown term type: ${ item.type }`);
 		}
+
+		data.first = false;
 	}
 
-	if (!set) { // /[]/
-		set = regenerate();
+	if (characterClassItem.negative && data.maybeIncludesStrings) {
+		throw new SyntaxError("Cannot negate set containing strings");
 	}
 
-	return { set, transformed };
+	return data;
 }
 
 const processCharacterClass = (characterClassItem, regenerateOptions) => {
 	const negative = characterClassItem.negative;
-	const { set, transformed } = computeCharacterClass(characterClassItem);
+	const { singleChars, transformed, longStrings } = computeCharacterClass(characterClassItem, regenerateOptions);
 	if (transformed) {
-		const setStr = set.toString(regenerateOptions);
+		const setStr = singleChars.toString(regenerateOptions);
+
 		if (negative) {
 			if (config.useUnicodeFlag) {
-				update(characterClassItem, `[^${setStr.slice(1, -1)}]`)
+				update(characterClassItem, `[^${setStr[0] === "[" ? setStr.slice(1, -1) : setStr}]`)
 			} else {
 				update(characterClassItem, `(?!${setStr})[\\s\\S]`)
 			}
 		} else {
-			update(characterClassItem, setStr);
+			const hasEmptyString = longStrings.has("");
+			const pieces = Array.from(longStrings).sort((a, b) => b.length - a.length);
+			if (setStr !== "[]" || longStrings.size === 0) {
+				pieces.splice(pieces.length - (hasEmptyString ? 1 : 0), 0, setStr);
+			}
+
+			update(characterClassItem, pieces.join("|"));
 		}
 	}
 	return characterClassItem;
