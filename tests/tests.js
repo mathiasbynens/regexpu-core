@@ -1001,3 +1001,134 @@ describe('character classes', () => {
 	}
 });
 
+const TRANSFORM_U = { unicodeFlag: 'transform', unicodeSetsFlag: 'transform' };
+
+const unicodeSetFixtures = [
+	{
+		pattern: '[[a-h]&&[f-z]]',
+		expected: '[f-h]'
+	},
+	{
+		pattern: '[[a-h]&&[f-z]&&[p-z]]',
+		expected: '[]'
+	},
+	{
+		pattern: '[[a-h]&&[b]]',
+		expected: 'b'
+	},
+	{
+		pattern: '[[a-h]&&b]',
+		expected: 'b'
+	},
+	{
+		pattern: '[[g-z]&&b]',
+		expected: '[]'
+	},
+	{
+		pattern: '[[a-h]&&[^f-z]]',
+		expected: '[a-e]'
+	},
+	{
+		pattern: '[[a-h]&&[^f-z]&&[p-z]]',
+		expected: '[]'
+	},
+	{
+		pattern: '[[a-h]&&[^f-z]&&[^p-z]]',
+		expected: '[a-e]'
+	},
+	{
+		pattern: '[[a-h]&&[^b]]',
+		expected: '[ac-h]'
+	},
+	{
+		pattern: '[[a-h]--[f-z]]',
+		expected: '[a-e]'
+	},
+	{
+		pattern: '[[a-h]--[f-z]--[p-z]]',
+		expected: '[a-e]'
+	},
+	{
+		pattern: '[[a-z]--[d-k]--[s-w]]',
+		expected: '[a-cl-rx-z]'
+	},
+	{
+		pattern: '[[a-h]--[b]]',
+		expected: '[ac-h]'
+	},
+	{
+		pattern: '[[b]--[a-h]]',
+		expected: '[]'
+	},
+	{
+		pattern: '[[a-h]--b]',
+		expected: '[ac-h]'
+	},
+	{
+		pattern: '[b--[a-h]]',
+		expected: '[]'
+	},
+	{
+		pattern: '[[g-z]--b]',
+		expected: '[g-z]'
+	},
+	{
+		pattern: '[b--[g-z]]',
+		expected: 'b'
+	},
+	{
+		pattern: '[[a-h]--[^f-z]]',
+		expected: '[f-h]'
+	},
+	{
+		pattern: '[[a-h]--[^f-z]--[p-z]]',
+		expected: '[f-h]'
+	},
+	{
+		pattern: '[[a-h]--[^f-z]--[^p-z]]',
+		expected: '[]'
+	},
+	{
+		pattern: '[[a-h]--[^b]]',
+		expected: 'b'
+	},
+	{
+		pattern: '[[a-z][f-h]]',
+		expected: '[a-z]'
+	},
+	{
+		pattern: '[^[a-z][f-h]]',
+		expected: '[^a-z]'
+	},
+	{
+		pattern: '[^[a-z][f-h]]',
+		expected: '(?:(?![a-z])[\\s\\S])',
+		options: TRANSFORM_U
+	},
+	{
+		pattern: '[[^a-z][f-h]]',
+		expected: '[\\0-`f-h\\{-\\u{10FFFF}]'
+	},
+	{
+		pattern: '[[^a-z][f-h]]',
+		expected: '(?:[\\0-`f-h\\{-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
+		options: TRANSFORM_U
+	},
+];
+
+describe('unicodeSets (v) flag', () => {
+	for (const fixture of unicodeSetFixtures) {
+		const pattern = fixture.pattern;
+		const flags = fixture.flags || 'v';
+		const options = fixture.options || { unicodeSetsFlag: 'transform' };
+		const transformUnicodeFlag = options.unicodeFlag === 'transform';
+		it('rewrites `/' + pattern + '/' + flags + '` correctly ' + (transformUnicodeFlag ? 'without ' : '') + 'using the u flag', () => {
+			const transpiled = rewritePattern(pattern, flags, options);
+			const expected = fixture.expected;
+			if (transpiled != '(?:' + expected + ')') {
+				assert.strictEqual(transpiled, expected);
+			}
+		});
+	}
+});
+
