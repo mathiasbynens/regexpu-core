@@ -59,8 +59,13 @@ const handleLoneUnicodePropertyNameOrValue = (value) => {
 		const category = unicodeMatchPropertyValue(property, value);
 		return getUnicodePropertyValueSet(property, category);
 	} catch (exception) {}
-	// It’s not a `General_Category` value, so check if it’s a binary
-	// property. Note: `unicodeMatchProperty` throws on invalid properties.
+	// It’s not a `General_Category` value, so check if it’s a property
+	// of strings.
+	try {
+		return getUnicodePropertyValueSet('Property_of_Strings', value);
+	} catch (exception) {}
+	// Lastly, check if it’s a binary property of single code points.
+	// Note: `unicodeMatchProperty` throws on invalid properties.
 	const property = unicodeMatchProperty(value);
 	return getUnicodePropertyValueSet(property);
 };
@@ -78,9 +83,29 @@ const getUnicodePropertyEscapeSet = (value, isNegative) => {
 		set = getUnicodePropertyValueSet(property, value);
 	}
 	if (isNegative) {
-		return UNICODE_SET.clone().remove(set);
+		if (set.strings) {
+			throw new Error('Cannot negate Unicode property of strings');
+		}
+		return {
+			characters: UNICODE_SET.clone().remove(set.characters),
+			strings: new Set()
+		};
 	}
-	return set.clone();
+	return {
+		characters: set.characters.clone(),
+		strings: new Set(set.strings || [])
+	};
+};
+
+const getUnicodePropertyEscapeCharacterClassData = (property, isNegative) => {
+	const set = getUnicodePropertyEscapeSet(property, isNegative);
+	const data = getCharacterClassEmptyData();
+	data.singleChars = set.characters;
+	if (set.strings.size > 0) {
+		data.longStrings = set.strings;
+		data.maybeIncludesStrings = true;
+	}
+	return data;
 };
 
 // Given a range of code points, add any case-folded code points in that range
@@ -175,7 +200,7 @@ const buildHandler = (action) => {
 				},
 				nested: (data, nestedData) => {
 					regSet(data, nestedData.singleChars);
-					if (nestedData.maybeIncludesStrings) throw new Error("ASSERTION ERROR");
+					if (nestedData.maybeIncludesStrings) throw new Error('ASSERTION ERROR');
 				}
 			};
 		}
@@ -293,7 +318,7 @@ const computeClassStrings = (classStrings, regenerateOptions) => {
 		} else {
 			let stringifiedString;
 			if (config.flags.ignoreCase && config.transform.unicodeFlag) {
-				stringifiedString = "";
+				stringifiedString = '';
 				for (const ch of string.characters) {
 					let set = regenerate(ch.codePoint);
 					const folded = caseFold(ch.codePoint);
@@ -301,7 +326,7 @@ const computeClassStrings = (classStrings, regenerateOptions) => {
 					stringifiedString += set.toString(regenerateOptions);
 				}
 			} else {
-				stringifiedString = string.characters.map(ch => generate(ch)).join("")
+				stringifiedString = string.characters.map(ch => generate(ch)).join('')
 			}
 
 			data.longStrings.add(stringifiedString);
@@ -361,10 +386,12 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				));
 				break;
 			case 'unicodePropertyEscape':
-				handlePositive.regSet(data, getUnicodePropertyEscapeSet(item.value, item.negative));
-				if (config.transform.unicodePropertyEscapes) {
-					data.transformed = true;
-				}
+				const nestedData = getUnicodePropertyEscapeCharacterClassData(item.value, item.negative);
+				handlePositive.nested(data, nestedData);
+				data.transformed =
+					data.transformed ||
+					config.transform.unicodePropertyEscapes ||
+					(config.transform.unicodeSetsFlag && nestedData.maybeIncludesStrings);
 				break;
 			case 'characterClass':
 				const handler = item.negative ? handleNegative : handlePositive;
@@ -387,32 +414,36 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 	}
 
 	if (characterClassItem.negative && data.maybeIncludesStrings) {
-		throw new SyntaxError("Cannot negate set containing strings");
+		throw new SyntaxError('Cannot negate set containing strings');
 	}
 
 	return data;
 }
 
-const processCharacterClass = (characterClassItem, regenerateOptions) => {
+const processCharacterClass = (
+	characterClassItem,
+	regenerateOptions,
+	computed = computeCharacterClass(characterClassItem, regenerateOptions),
+) => {
 	const negative = characterClassItem.negative;
-	const { singleChars, transformed, longStrings } = computeCharacterClass(characterClassItem, regenerateOptions);
+	const { singleChars, transformed, longStrings } = computed;
 	if (transformed) {
 		const setStr = singleChars.toString(regenerateOptions);
 
 		if (negative) {
 			if (config.useUnicodeFlag) {
-				update(characterClassItem, `[^${setStr[0] === "[" ? setStr.slice(1, -1) : setStr}]`)
+				update(characterClassItem, `[^${setStr[0] === '[' ? setStr.slice(1, -1) : setStr}]`)
 			} else {
 				update(characterClassItem, `(?!${setStr})[\\s\\S]`)
 			}
 		} else {
-			const hasEmptyString = longStrings.has("");
+			const hasEmptyString = longStrings.has('');
 			const pieces = Array.from(longStrings).sort((a, b) => b.length - a.length);
-			if (setStr !== "[]" || longStrings.size === 0) {
+			if (setStr !== '[]' || longStrings.size === 0) {
 				pieces.splice(pieces.length - (hasEmptyString ? 1 : 0), 0, setStr);
 			}
 
-			update(characterClassItem, pieces.join("|"));
+			update(characterClassItem, pieces.join('|'));
 		}
 	}
 	return characterClassItem;
@@ -447,11 +478,21 @@ const processTerm = (item, regenerateOptions, groups) => {
 			item = processCharacterClass(item, regenerateOptions);
 			break;
 		case 'unicodePropertyEscape':
-			if (config.transform.unicodePropertyEscapes) {
+			const data = getUnicodePropertyEscapeCharacterClassData(item.value, item.negative);
+			if (data.maybeIncludesStrings) {
+				if (!config.flags.unicodeSets) {
+					throw new Error(
+						'Properties of strings are only supported when using the unicodeSets (v) flag.'
+					);
+				}
+				if (config.transform.unicodeSetsFlag) {
+					data.transformed = true;
+					item = processCharacterClass(item, regenerateOptions, data);
+				}
+			} else if (config.transform.unicodePropertyEscapes) {
 				update(
 					item,
-					getUnicodePropertyEscapeSet(item.value, item.negative)
-						.toString(regenerateOptions)
+					data.singleChars.toString(regenerateOptions)
 				);
 			}
 			break;

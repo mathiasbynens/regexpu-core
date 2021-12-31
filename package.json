@@ -49,7 +49,7 @@
 	},
 	"dependencies": {
 		"regenerate": "^1.4.2",
-		"regenerate-unicode-properties": "^9.0.0",
+		"regenerate-unicode-properties": "^10.0.1",
 		"regjsgen": "^0.6.0",
 		"regjsparser": "^0.8.2",
 		"unicode-match-property-ecmascript": "^2.0.0",
