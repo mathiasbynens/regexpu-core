@@ -37,3 +37,16 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Test
         run: npm test
+
+  node-6-compat:
+    runs-on: ubuntu-latest
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Node.js 6
+        uses: actions/setup-node@v1
+        with:
+          node-version: 6
+      - name: Install dependencies
+        run: npm install
+      - name: Run demo.js
+        run: node demo.js
