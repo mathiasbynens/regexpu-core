@@ -190,6 +190,9 @@ Once these features become stable (when the proposals are accepted as part of EC
 
     Our CI then automatically publishes the new release to npm.
 
+1. Once the release has been published to npm, update [`regexpu`](https://github.com/mathiasbynens/regexpu) to make use of it, and [cut a new release of `regexpu` as well](https://github.com/mathiasbynens/regexpu#how-to-publish-a-new-release).
+
+
 ## Author
 
 | [![twitter/mathias](https://gravatar.com/avatar/24e08a9ea84deb17ae121074d0f17125?s=70)](https://twitter.com/mathias "Follow @mathias on Twitter") |
