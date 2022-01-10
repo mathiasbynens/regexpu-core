@@ -423,7 +423,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 const processCharacterClass = (
 	characterClassItem,
 	regenerateOptions,
-	computed = computeCharacterClass(characterClassItem, regenerateOptions),
+	computed = computeCharacterClass(characterClassItem, regenerateOptions)
 ) => {
 	const negative = characterClassItem.negative;
 	const { singleChars, transformed, longStrings } = computed;
