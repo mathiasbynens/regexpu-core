@@ -39,13 +39,15 @@ const getUnicodeDotSet = (dotAll) => {
 };
 
 const getUnicodePropertyValueSet = (property, value) => {
-	const path = value ? `${property}/${value}` : `Binary_Property/${property}`;
+	const path = value ?
+		`${ property }/${ value }` :
+		`Binary_Property/${ property }`;
 	try {
 		return unicodeProperties[path]();
 	} catch (exception) {
 		throw new Error(
-			`Failed to recognize value \`${value}\` for property ` +
-				`\`${property}\`.`
+			`Failed to recognize value \`${ value }\` for property ` +
+			`\`${ property }\`.`
 		);
 	}
 };

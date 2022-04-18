@@ -1,10 +1,9 @@
 "use strict";
 
 const fs = require("fs");
+const unicodeProperties = require("regenerate-unicode-properties");
 
 const writeRequires = function () {
-	const unicodeProperties = require("regenerate-unicode-properties");
-
 	const requires = [];
 
 	for (let [k, v] of unicodeProperties) {
@@ -16,7 +15,6 @@ const writeRequires = function () {
 			);
 		});
 	}
-	// console.log(requires.join("\n"));
 	fs.writeFileSync(
 		"unicode-properties.js",
 		`module.exports = {\n${requires.join("\n")}\n}\n`
