@@ -39,6 +39,7 @@
 	"files": [
 		"LICENSE-MIT.txt",
 		"rewrite-pattern.js",
+		"unicode-properties.js",
 		"data/character-class-escape-sets.js",
 		"data/iu-mappings.js"
 	],
