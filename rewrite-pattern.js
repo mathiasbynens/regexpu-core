@@ -597,8 +597,8 @@ const processTerm = (item, regenerateOptions, groups) => {
 					};
 				}
 
-				// This named reference comes before the grup where it's defined,
-				// so it will always be an empty match.
+				// This named reference comes before the group where it’s defined,
+				// so it’s always an empty match.
 				groups.unmatchedReferences[name] = true;
 				return {
 					'type': 'group',
