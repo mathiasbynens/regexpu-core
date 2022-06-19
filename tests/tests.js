@@ -822,7 +822,7 @@ const namedGroupFixtures = [
 	{
 		'pattern': '\\k<name>\\k<name>(?<name>)\\k<name>',
 		'flags': '',
-		'expected': '\\1\\1()\\1'
+		'expected': '(?:)(?:)()\\1'
 	},
 	{
 		'pattern': '(?<name>\\k<name>)',
@@ -841,10 +841,28 @@ const namedGroupFixtures = [
 		'expectedGroups': [
 			['name', 1]
 		]
+	},
+	{
+		'pattern': '(?:(?<a>x)|(?<a>y))\\k<a>',
+		'flags': '',
+		'expected': '(?:(x)|(y))\\1\\2',
+		'expectedGroups': [
+			['a', 1],
+			['a', 2]
+		]
+	},
+	{
+		'pattern': '(?:(?<a>x)\\k<a>|(?<a>y)\\k<a>)',
+		'flags': '',
+		'expected': '(?:(x)\\1|(y)\\1\\2)',
+		'expectedGroups': [
+			['a', 1],
+			['a', 2]
+		]
 	}
 ];
 
-describe('namedGroup', () => {
+describe('namedGroups', () => {
 	for (const fixture of namedGroupFixtures) {
 		const {
 			pattern,
@@ -882,9 +900,35 @@ describe('namedGroup', () => {
 		assert.strictEqual(transpiled, expected);
 	});
 
-	it('multiple groups with the same name are disallowed', () => {
+	it('multiple groups with the same name in the same disjunction are disallowed', () => {
 		assert.throws(() => {
 			rewritePattern('(?<name>)(?<name>)', '', {
+				namedGroups: 'transform'
+			});
+		});
+
+		assert.throws(() => {
+			rewritePattern('(?<name>)(?:a|(?<name>))', '', {
+				namedGroups: 'transform'
+			});
+		});
+
+		assert.throws(() => {
+			rewritePattern('(?:b|(?<name>))(?:a|(?<name>))', '', {
+				namedGroups: 'transform'
+			});
+		});
+	});
+
+	it('multiple groups with the same name in the different disjunctions are allowed', () => {
+		assert.doesNotThrow(() => {
+			rewritePattern('(?<name>)|(?<name>)', '', {
+				namedGroups: 'transform'
+			});
+		});
+
+		assert.doesNotThrow(() => {
+			rewritePattern('(?:b|(?<name>))|(?:a|(?<name>))', '', {
 				namedGroups: 'transform'
 			});
 		});
@@ -898,7 +942,7 @@ describe('namedGroup', () => {
 		});
 	});
 
-	it('should not transpile when namedGroup is not enabled', () => {
+	it('should not transpile when namedGroups is not enabled', () => {
 		let transpiled;
 		const expected = '(?<name>)';
 		assert.doesNotThrow(() => {
