@@ -109,7 +109,7 @@ These options can be set to `false` or `'transform'`. When using `'transform'`, 
 
   ```js
   rewritePattern('(?<name>.)\\k<name>', '', {
-    namedGroup: "transform"
+    namedGroups: 'transform'
   });
   // → '(.)\1'
   ```

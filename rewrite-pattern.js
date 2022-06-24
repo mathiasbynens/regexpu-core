@@ -8,6 +8,19 @@ const unicodeMatchPropertyValue = require('unicode-match-property-value-ecmascri
 const iuMappings = require('./data/iu-mappings.js');
 const ESCAPE_SETS = require('./data/character-class-escape-sets.js');
 
+function flatMap(array, callback) {
+	const result = [];
+	array.forEach(item => {
+		const res = callback(item);
+		if (Array.isArray(res)) {
+			result.push.apply(result, res);
+		} else {
+			result.push(res);
+		}
+	});
+	return result;
+}
+
 // Prepare a Regenerate set containing all code points, used for negative
 // character classes (if any).
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
@@ -449,11 +462,6 @@ const processCharacterClass = (
 	return characterClassItem;
 };
 
-const updateNamedReference = (item, index) => {
-	delete item.name;
-	item.matchIndex = index;
-};
-
 const assertNoUnmatchedReferences = (groups) => {
 	const unmatchedReferencesNames = Object.keys(groups.unmatchedReferences);
 	if (unmatchedReferencesNames.length > 0) {
@@ -515,33 +523,47 @@ const processTerm = (item, regenerateOptions, groups) => {
 			if (item.name && config.transform.namedGroups) {
 				const name = item.name.value;
 
-				if (groups.names[name]) {
+				if (groups.namesConflicts[name]) {
 					throw new Error(
-						`Multiple groups with the same name (${ name }) are not allowed.`
+						`Group '${ name }' has already been defined in this context.`
 					);
 				}
+				groups.namesConflicts[name] = true;
 
 				const index = groups.lastIndex;
 				delete item.name;
 
-				groups.names[name] = index;
+				if (!groups.names[name]) {
+					groups.names[name] = [];
+				}
+				groups.names[name].push(index);
+
 				if (groups.onNamedGroup) {
 					groups.onNamedGroup.call(null, name, index);
 				}
 
 				if (groups.unmatchedReferences[name]) {
-					groups.unmatchedReferences[name].forEach(reference => {
-						updateNamedReference(reference, index);
-					});
 					delete groups.unmatchedReferences[name];
 				}
 			}
 			/* falls through */
-		case 'alternative':
-		case 'disjunction':
 		case 'quantifier':
 			item.body = item.body.map(term => {
 				return processTerm(term, regenerateOptions, groups);
+			});
+			break;
+		case 'disjunction':
+			const outerNamesConflicts = groups.namesConflicts;
+			item.body = item.body.map(term => {
+				groups.namesConflicts = Object.create(outerNamesConflicts);
+				return processTerm(term, regenerateOptions, groups);
+			});
+			break;
+		case 'alternative':
+			item.body = flatMap(item.body, term => {
+				const res = processTerm(term, regenerateOptions, groups);
+				// Alternatives cannot contain alternatives; flatten them.
+				return res.type === 'alternative' ? res.body : res;
 			});
 			break;
 		case 'value':
@@ -558,17 +580,32 @@ const processTerm = (item, regenerateOptions, groups) => {
 		case 'reference':
 			if (item.name) {
 				const name = item.name.value;
-				const index = groups.names[name];
-				if (index) {
-					updateNamedReference(item, index);
-					break;
+				const indexes = groups.names[name];
+				if (indexes) {
+					const body = indexes.map(index => ({
+						'type': 'reference',
+						'matchIndex': index,
+						'raw': '\\' + index,
+					}));
+					if (body.length === 1) {
+						return body[0];
+					}
+					return {
+						'type': 'alternative',
+						'body': body,
+						'raw': body.map(term => term.raw).join(''),
+					};
 				}
 
-				if (!groups.unmatchedReferences[name]) {
-					groups.unmatchedReferences[name] = [];
-				}
-				// Keep track of references used before the corresponding group.
-				groups.unmatchedReferences[name].push(item);
+				// This named reference comes before the group where it’s defined,
+				// so it’s always an empty match.
+				groups.unmatchedReferences[name] = true;
+				return {
+					'type': 'group',
+					'behavior': 'ignore',
+					'body': [],
+					'raw': '(?:)',
+				};
 			}
 			break;
 		case 'anchor':
@@ -672,8 +709,9 @@ const rewritePattern = (pattern, flags, options) => {
 	const groups = {
 		'onNamedGroup': options && options.onNamedGroup,
 		'lastIndex': 0,
-		'names': Object.create(null), // { [name]: index }
-		'unmatchedReferences': Object.create(null) // { [name]: Array<reference> }
+		'names': Object.create(null), // { [name]: Array<index> }
+		'namesConflicts': Object.create(null), // { [name]: true }
+		'unmatchedReferences': Object.create(null) // { [name]: true }
 	};
 
 	const tree = parse(pattern, flags, regjsparserFeatures);
