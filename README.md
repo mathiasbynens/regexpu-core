@@ -185,7 +185,7 @@ Once these features become stable (when the proposals are accepted as part of EC
 1. Push the release commit and tag:
 
     ```sh
-    git push && git push --tags
+    git push --follow-tags
     ```
 
     Our CI then automatically publishes the new release to npm.
