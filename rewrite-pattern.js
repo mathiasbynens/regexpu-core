@@ -21,6 +21,8 @@ function flatMap(array, callback) {
 	return result;
 }
 
+const SPECIAL_CHARS = new Set('\\^$.*+?()[]{}|'.split(''));
+
 // Prepare a Regenerate set containing all code points, used for negative
 // character classes (if any).
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
@@ -106,7 +108,10 @@ const getUnicodePropertyEscapeSet = (value, isNegative) => {
 	}
 	return {
 		characters: set.characters.clone(),
-		strings: new Set(set.strings || [])
+		strings: set.strings
+			// We need to escape strings like *️⃣ to make sure that they can be safelu used in unions
+			? new Set(set.strings.map(str => SPECIAL_CHARS.has(str[0]) ? `\\${str}` : str))
+			: new Set()
 	};
 };
 
@@ -452,6 +457,7 @@ const processCharacterClass = (
 		} else {
 			const hasEmptyString = longStrings.has('');
 			const pieces = Array.from(longStrings).sort((a, b) => b.length - a.length);
+
 			if (setStr !== '[]' || longStrings.size === 0) {
 				pieces.splice(pieces.length - (hasEmptyString ? 1 : 0), 0, setStr);
 			}
