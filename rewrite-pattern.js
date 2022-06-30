@@ -110,7 +110,7 @@ const getUnicodePropertyEscapeSet = (value, isNegative) => {
 		characters: set.characters.clone(),
 		strings: set.strings
 			// We need to escape strings like *️⃣ to make sure that they can be safelu used in unions
-			? new Set(set.strings.map(str => str.replace(SPECIAL_CHARS, "\\$1")))
+			? new Set(set.strings.map(str => str.replace(SPECIAL_CHARS, '\\$1')))
 			: new Set()
 	};
 };
