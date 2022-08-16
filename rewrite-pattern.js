@@ -526,7 +526,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 			if (item.behavior == 'normal') {
 				groups.lastIndex++;
 			}
-			if (item.name && config.transform.namedGroups) {
+			if (item.name) {
 				const name = item.name.value;
 
 				if (groups.namesConflicts[name]) {
@@ -536,9 +536,11 @@ const processTerm = (item, regenerateOptions, groups) => {
 				}
 				groups.namesConflicts[name] = true;
 
-				const index = groups.lastIndex;
-				delete item.name;
+				if (config.transform.namedGroups) {
+					delete item.name;
+				}
 
+				const index = groups.lastIndex;
 				if (!groups.names[name]) {
 					groups.names[name] = [];
 				}
@@ -587,31 +589,36 @@ const processTerm = (item, regenerateOptions, groups) => {
 			if (item.name) {
 				const name = item.name.value;
 				const indexes = groups.names[name];
-				if (indexes) {
-					const body = indexes.map(index => ({
-						'type': 'reference',
-						'matchIndex': index,
-						'raw': '\\' + index,
-					}));
-					if (body.length === 1) {
-						return body[0];
-					}
-					return {
-						'type': 'alternative',
-						'body': body,
-						'raw': body.map(term => term.raw).join(''),
-					};
+				if (!indexes) {
+					groups.unmatchedReferences[name] = true;
 				}
 
-				// This named reference comes before the group where it’s defined,
-				// so it’s always an empty match.
-				groups.unmatchedReferences[name] = true;
-				return {
-					'type': 'group',
-					'behavior': 'ignore',
-					'body': [],
-					'raw': '(?:)',
-				};
+				if (config.transform.namedGroups) {
+					if (indexes) {
+						const body = indexes.map(index => ({
+							'type': 'reference',
+							'matchIndex': index,
+							'raw': '\\' + index,
+						}));
+						if (body.length === 1) {
+							return body[0];
+						}
+						return {
+							'type': 'alternative',
+							'body': body,
+							'raw': body.map(term => term.raw).join(''),
+						};
+					}
+
+					// This named reference comes before the group where it’s defined,
+					// so it’s always an empty match.
+					return {
+						'type': 'group',
+						'behavior': 'ignore',
+						'body': [],
+						'raw': '(?:)',
+					};
+				}
 			}
 			break;
 		case 'anchor':
