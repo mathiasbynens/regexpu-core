@@ -523,7 +523,7 @@ const unicodePropertyEscapeFixtures = [
 ];
 
 const getPropertyValuePattern = (path) => {
-	const codePoints = require(`@unicode/unicode-14.0.0/${
+	const codePoints = require(`@unicode/unicode-15.0.0/${
 		path }/code-points.js`);
 	return {
 		'p': regenerate(codePoints).toString(),
