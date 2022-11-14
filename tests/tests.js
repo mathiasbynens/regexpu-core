@@ -64,6 +64,12 @@ const unicodePropertyEscapeFixtures = [
 			'Script=Hiragana'
 		]
 	},
+	{
+		'path': 'Script/Kawi',
+		'expressions': [
+			'sc=Kawi',
+		]
+	},
 	// https://unicode.org/reports/tr18/#RL1.2 item 2b
 	{
 		'path': 'Script_Extensions/Greek',
