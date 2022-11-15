@@ -699,9 +699,12 @@ const rewritePattern = (pattern, flags, options) => {
 	config.transform.unicodeFlag = (config.flags.unicode || config.flags.unicodeSets) && transform(options, 'unicodeFlag');
 	config.transform.unicodeSetsFlag = config.flags.unicodeSets && transform(options, 'unicodeSetsFlag');
 
-	// unicodeFlag: 'transform' implies unicodePropertyEscapes: 'transform'
-	config.transform.unicodePropertyEscapes = config.flags.unicode && (
-		transform(options, 'unicodeFlag') || transform(options, 'unicodePropertyEscapes')
+	// unicodeFlag or unicodeSetsFlag == 'transform' implies `unicodePropertyEscapes: 'transform'`
+	config.transform.unicodePropertyEscapes =
+	(
+		(config.flags.unicode && transform(options, 'unicodeFlag')) ||
+		(config.flags.unicodeSets && transform(options, 'unicodeSetsFlag')) ||
+		((config.flags.unicode || config.flags.unicodeSets) && transform(options, 'unicodePropertyEscapes'))
 	);
 	config.transform.namedGroups = transform(options, 'namedGroups');
 
