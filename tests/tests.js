@@ -1409,6 +1409,10 @@ const unicodeSetFixtures = [
 		options: TRANSFORM_U
 	},
 	{
+		pattern: '[\\p{ASCII}\\p{Decimal_Number}]',
+		expected: '[\\p{ASCII}\\p{Decimal_Number}]'
+	},
+	{
 		pattern: '[\\p{Lowercase_Letter}]',
 		expected: '[\\p{Lowercase_Letter}]'
 	},
