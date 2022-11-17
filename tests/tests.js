@@ -1409,6 +1409,10 @@ const unicodeSetFixtures = [
 		options: TRANSFORM_U
 	},
 	{
+		pattern: '[\\p{Lowercase_Letter}]',
+		expected: '[\\p{Lowercase_Letter}]'
+	},
+	{
 		pattern: '^[\\p{Script=Arabic}&&\\p{Number}]$',
 		expected: '^[\\u0660-\\u0669\\u06F0-\\u06F9\\u{10E60}-\\u{10E7E}]$'
 	}
