@@ -409,7 +409,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				data.transformed =
 					data.transformed ||
 					config.transform.unicodePropertyEscapes ||
-					(config.transform.unicodeSetsFlag && nestedData.maybeIncludesStrings);
+					(config.transform.unicodeSetsFlag && (nestedData.maybeIncludesStrings || characterClassItem.kind !== "union"));
 				break;
 			case 'characterClass':
 				const handler = item.negative ? handleNegative : handlePositive;
