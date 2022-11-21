@@ -804,30 +804,32 @@ const rewritePattern = (pattern, flags, options) => {
 
 	const tree = parse(pattern, flags, regjsparserFeatures);
 
-	const allDisabledModifiers = Object.create(null)
-	const itemStack = [tree];
-	let node;
-	while (node = itemStack.pop(), node != undefined) {
-		if (Array.isArray(node)) {
-			Array.prototype.push.apply(itemStack, node);
-		} else if (typeof node == 'object' && node != null) {
-			for (const key of Object.keys(node)) {
-				const value = node[key];
-				if (key == "modifierFlags") {
-					if (value.disabling.length > 0){
-						value.disabling.split("").forEach((flag)=>{
-							allDisabledModifiers[flag] = true
-						});
+	if (regjsparserFeatures.modifiers) {
+		const allDisabledModifiers = Object.create(null)
+		const itemStack = [tree];
+		let node;
+		while (node = itemStack.pop(), node != undefined) {
+			if (Array.isArray(node)) {
+				Array.prototype.push.apply(itemStack, node);
+			} else if (typeof node == 'object' && node != null) {
+				for (const key of Object.keys(node)) {
+					const value = node[key];
+					if (key == "modifierFlags") {
+						if (value.disabling.length > 0){
+							value.disabling.split("").forEach((flag)=>{
+								allDisabledModifiers[flag] = true
+							});
+						}
+					} else if (typeof value == 'object' && value != null) {
+						itemStack.push(value);
 					}
-				} else if (typeof value == 'object' && value != null) {
-					itemStack.push(value);
 				}
 			}
 		}
-	}
 
-	for (const flag of Object.keys(allDisabledModifiers)) {
-		config.modifiersData[flag] = true;
+		for (const flag of Object.keys(allDisabledModifiers)) {
+			config.modifiersData[flag] = true;
+		}
 	}
 
 	// Note: `processTerm` mutates `tree` and `groups`.
