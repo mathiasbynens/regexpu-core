@@ -970,7 +970,7 @@ describe('namedGroups', () => {
 		assert.throws(() => rewritePattern('\\k<foo>', ''), /Unknown group names: foo/);
 	});
 
-	it('shold call onNamedGroup even if namedGroups is not enabled', () => {
+	it('should call onNamedGroup even if namedGroups is not enabled', () => {
 		let called = false;
 		rewritePattern('(?<name>)', '', {
 			onNamedGroup() {
@@ -1441,5 +1441,112 @@ describe('unicodeSets (v) flag', () => {
 			rewritePattern('\\p{Basic_Emoji}', 'u')
 		}, /Properties of strings are only supported when using the unicodeSets \(v\) flag/);
 	})
+});
+
+const modifiersFixtures = [
+	// +i
+	{
+		'pattern': '(?i:a)',
+		'expected': '([Aa])',
+	},
+	{
+		'pattern': '(?i:[a-z])',
+		'expected': '([A-Za-z])',
+	},
+	{
+		'pattern': '(?i:[a-z])',
+		'flags': 'u',
+		'options':  { unicodeFlag: 'transform', modifiers: 'transform' },
+		'expected': '([A-Za-z\\u017F\\u212A])',
+	},
+	// +m
+	{
+		'pattern': '(?m:^[a-z])',
+		'expected': '((?:^|(?<=[\\n\\r\\u2028\\u2029]))[a-z])',
+	},
+	{
+		'pattern': '(?m:[a-z]$)',
+		'expected': '([a-z](?:$|(?=[\\n\\r\\u2028\\u2029])))',
+	},
+	// +s
+	{
+		'pattern': '(?s:.)',
+		'expected': '([\\s\\S])',
+	},
+	// -i
+	{
+		'pattern': '(?-i:a)(a)',
+		'flags': 'i',
+		'expected': '(a)([Aa])',
+		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?-i:[a-z])([a-z])',
+		'flags': 'i',
+		'expected': '([a-z])([A-Za-z])',
+		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?-i:[a-z])([a-z])',
+		'flags': 'iu',
+		'options':  { unicodeFlag: 'transform', modifiers: 'transform' },
+		'expected': '([a-z])([A-Za-z\\u017F\\u212A])',
+		'expectedFlags': 'u',
+	},
+	// -m
+	{
+		'pattern': '(?-m:^[a-z])(^[a-z])',
+		'flags': 'm',
+		'expected': '(^[a-z])((?:^|(?<=[\\n\\r\\u2028\\u2029]))[a-z])',
+		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?-m:[a-z]$)([a-z]$)',
+		'flags': 'm',
+		'expected': '([a-z]$)([a-z](?:$|(?=[\\n\\r\\u2028\\u2029])))',
+		'expectedFlags': '',
+	},
+	// +ims
+	{
+		'pattern': '(?ims:^[a-z])',
+		'flags': '',
+		'expected': '((?:^|(?<=[\\n\\r\\u2028\\u2029]))[A-Za-z])',
+		'expectedFlags': '',
+	},
+	// -ims
+	{
+		'pattern': '(?-ims:^[a-z].)(^[a-z].)',
+		'flags': 'ims',
+		'expected': '(^[a-z].)((?:^|(?<=[\\n\\r\\u2028\\u2029]))[A-Za-z][\\s\\S])',
+		'expectedFlags': '',
+	},
+];
+
+describe('modifiers', () => {
+	for (const fixture of modifiersFixtures) {
+		const {
+			pattern,
+			flags = '',
+			expected,
+			options = {}
+		} = fixture;
+
+		let actualFlags = flags;
+
+		Object.assign(options, {
+			modifiers: 'transform',
+			onNewFlags: (newFlags) => {
+				actualFlags = newFlags;
+			}
+		});
+
+		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
+			const transpiled = rewritePattern(pattern, flags, options);
+			assert.strictEqual(transpiled, expected);
+			if (fixture.expectedFlags != undefined) {
+				assert.strictEqual(actualFlags, fixture.expectedFlags);
+			}
+		});
+	}
 });
 
