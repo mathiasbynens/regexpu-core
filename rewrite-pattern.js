@@ -497,7 +497,7 @@ const processCharacterClass = (
 						const astralCharsSet = singleChars.clone().intersection(ASTRAL_SET);
 						// Assumption: singleChars do not contain lone surrogates.
 						// Regex like /[^\ud800]/u is not supported
-						const SurrogateOrBMPSetStr = singleChars
+						const surrogateOrBMPSetStr = singleChars
 							.clone()
 							.remove(astralCharsSet)
 							.addRange(0xd800, 0xdfff)
@@ -512,7 +512,7 @@ const processCharacterClass = (
 						// The transform here does not support lone surrogates.
 						update(
 							characterClassItem,
-							`(?!${SurrogateOrBMPSetStr})[\\s\\S]|${astralNegativeSetStr}`
+							`(?!${surrogateOrBMPSetStr})[\\s\\S]|${astralNegativeSetStr}`
 						);
 					} else {
 						// Generate negative set directly when case folding is not involved.
