@@ -129,7 +129,7 @@ const getUnicodePropertyEscapeCharacterClassData = (property, isNegative) => {
 };
 
 function configNeedCaseFoldAscii() {
-	return !!(config.modifiersData.i);
+	return !!config.modifiersData.i;
 }
 
 function configNeedCaseFoldUnicode() {
@@ -717,9 +717,9 @@ const config = {
 		'modifiers': false,
 	},
 	'modifiersData': {
-		'i': false,
-		's': false,
-		'm': false,
+		'i': undefined,
+		's': undefined,
+		'm': undefined,
 	},
 	get useUnicodeFlag() {
 		return (this.flags.unicode || this.flags.unicodeSets) && !this.transform.unicodeFlag;
@@ -781,9 +781,9 @@ const rewritePattern = (pattern, flags, options) => {
 	config.transform.namedGroups = transform(options, 'namedGroups');
 	config.transform.modifiers = transform(options, 'modifiers');
 
-	config.modifiersData.i = false;
-	config.modifiersData.s = false;
-	config.modifiersData.m = false;
+	config.modifiersData.i = undefined;
+	config.modifiersData.s = undefined;
+	config.modifiersData.m = undefined;
 
 	const regjsparserFeatures = {
 		'unicodeSet': Boolean(options && options.unicodeSetsFlag),
