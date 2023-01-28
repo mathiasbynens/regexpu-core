@@ -1576,12 +1576,12 @@ describe('modifiers', () => {
 				assert.strictEqual(actualFlags, fixture.expectedFlags);
 			}
 		});
-
-		it('No `modifiers:"transform"`', () => {
-			assert.throws(() => {
-				rewritePattern('(?i:a)', '');
-			});
-		})
 	}
+
+	it('No `modifiers:"transform"`', () => {
+		assert.throws(() => {
+			rewritePattern('(?i:a)', '');
+		});
+	})
 });
 
