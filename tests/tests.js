@@ -1458,6 +1458,21 @@ const modifiersFixtures = [
 		'flags': 'u',
 		'options':  { unicodeFlag: 'transform', modifiers: 'transform' },
 		'expected': '([A-Za-z\\u017F\\u212A])',
+		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
+		'flags': 'v',
+		'options':  { unicodeSetsFlag: 'transform', modifiers: 'transform' },
+		'expected': '((?:[Aa][Bb]))',
+		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
+		'flags': 'v',
+		'options':  { unicodeSetsFlag: 'transform', modifiers: 'parse' },
+		'expected': '(?i:(?:ab))',
+		'expectedFlags': '',
 	},
 	// +m
 	{
@@ -1491,7 +1506,21 @@ const modifiersFixtures = [
 		'flags': 'iu',
 		'options':  { unicodeFlag: 'transform', modifiers: 'transform' },
 		'expected': '([a-z])([A-Za-z\\u017F\\u212A])',
-		'expectedFlags': 'u',
+		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?-i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
+		'flags': 'iv',
+		'options':  { unicodeSetsFlag: 'transform', modifiers: 'transform' },
+		'expected': '((?:ab))',
+		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?-i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
+		'flags': 'iv',
+		'options':  { unicodeSetsFlag: 'transform', modifiers: 'parse' },
+		'expected': '(?-i:(?:ab))',
+		'expectedFlags': 'i',
 	},
 	// -m
 	{
@@ -1533,12 +1562,12 @@ describe('modifiers', () => {
 
 		let actualFlags = flags;
 
-		Object.assign(options, {
-			modifiers: 'transform',
-			onNewFlags: (newFlags) => {
-				actualFlags = newFlags;
-			}
-		});
+		options.onNewFlags = (newFlags) => {
+			actualFlags = newFlags;
+		}
+		if(options.modifiers === undefined) {
+			options.modifiers = 'transform';
+		}
 
 		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
 			const transpiled = rewritePattern(pattern, flags, options);

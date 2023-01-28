@@ -1,6 +1,6 @@
 'use strict';
 
-const generate = require('regjsgen').generate;
+const generate = require('@babel/regjsgen').generate;
 const parse = require('regjsparser').parse;
 const regenerate = require('regenerate');
 const unicodeMatchProperty = require('unicode-match-property-ecmascript');
@@ -614,7 +614,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 					delete groups.unmatchedReferences[name];
 				}
 			}
-			if (item.modifierFlags) {
+			if (item.modifierFlags && config.transform.modifiers) {
 				return processModifiers(item, regenerateOptions, groups);
 			}
 			/* falls through */
@@ -716,7 +716,11 @@ const config = {
 		'namedGroups': false,
 		'modifiers': false,
 	},
-	'modifiersData': {},
+	'modifiersData': {
+		'i': false,
+		's': false,
+		'm': false,
+	},
 	get useUnicodeFlag() {
 		return (this.flags.unicode || this.flags.unicodeSets) && !this.transform.unicodeFlag;
 	}
@@ -732,11 +736,11 @@ const validateOptions = (options) => {
 			case 'unicodeFlag':
 			case 'unicodePropertyEscapes':
 			case 'namedGroups':
-			case 'modifiers':
 				if (value != null && value !== false && value !== 'transform') {
 					throw new Error(`.${key} must be false (default) or 'transform'.`);
 				}
 				break;
+			case 'modifiers':
 			case 'unicodeSetsFlag':
 				if (value != null && value !== false && value !== 'parse' && value !== 'transform') {
 					throw new Error(`.${key} must be false (default), 'parse' or 'transform'.`);
@@ -777,7 +781,9 @@ const rewritePattern = (pattern, flags, options) => {
 	config.transform.namedGroups = transform(options, 'namedGroups');
 	config.transform.modifiers = transform(options, 'modifiers');
 
-	config.modifiersData = Object.create(null);
+	config.modifiersData.i = false;
+	config.modifiersData.s = false;
+	config.modifiersData.m = false;
 
 	const regjsparserFeatures = {
 		'unicodeSet': Boolean(options && options.unicodeSetsFlag),
@@ -804,7 +810,7 @@ const rewritePattern = (pattern, flags, options) => {
 
 	const tree = parse(pattern, flags, regjsparserFeatures);
 
-	if (regjsparserFeatures.modifiers) {
+	if (config.transform.modifiers) {
 		const allDisabledModifiers = Object.create(null)
 		const itemStack = [tree];
 		let node;
@@ -837,7 +843,16 @@ const rewritePattern = (pattern, flags, options) => {
 	assertNoUnmatchedReferences(groups);
 
 	const onNewFlags = options && options.onNewFlags;
-	if (onNewFlags) onNewFlags(flags.split("").filter((flag) => !config.modifiersData[flag]).join(""));
+	if (onNewFlags) onNewFlags(flags.split("").filter((flag) => {
+		switch (flag) {
+			case 'u':
+				return !config.transform.unicodeFlag;
+			case 'v':
+				return !config.transform.unicodeSetsFlag;
+			default:
+				return !config.modifiersData[flag];
+		}
+	}).join(""));
 
 	return generate(tree);
 };
