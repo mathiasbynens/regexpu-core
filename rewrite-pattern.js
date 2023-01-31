@@ -749,7 +749,7 @@ const validateOptions = (options) => {
 			case 'onNamedGroup':
 			case 'onNewFlags':
 				if (value != null && typeof value !== 'function') {
-					throw new Error('.onNamedGroup and .onNewFlags must be a function.');
+					throw new Error('.' + key + ' must be a function.');
 				}
 				break;
 			default:
