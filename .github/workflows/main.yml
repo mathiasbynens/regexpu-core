@@ -49,5 +49,7 @@ jobs:
           node-version: 6
       - name: Install dependencies
         run: npm install
-      - name: Run demo.js
-        run: node demo.js
+      - name: Downgrade mocha
+        run: npm install mocha@6 -D --save
+      - name: Test
+        run: npm test

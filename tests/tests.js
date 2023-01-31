@@ -10,6 +10,8 @@ const BMP_PATTERN = BMP_SET.toString({ 'bmpOnly': true });
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 const UNICODE_PATTERN = UNICODE_SET.toString();
 
+const IS_NODE_6 = process.version.startsWith('v6.');
+
 describe('rewritePattern { unicodeFlag }', () => {
 	const options = {
 		'unicodeFlag': 'transform'
@@ -538,6 +540,8 @@ const getPropertyValuePattern = (path) => {
 };
 
 describe('unicodePropertyEscapes', () => {
+	if (IS_NODE_6) return;
+
 	const features = {
 		'unicodePropertyEscapes': 'transform',
 		'unicodeFlag': 'transform'
@@ -1406,6 +1410,8 @@ const unicodeSetFixtures = [
 ];
 
 describe('unicodeSets (v) flag', () => {
+	if (IS_NODE_6) return;
+
 	for (const fixture of unicodeSetFixtures) {
 		const pattern = fixture.pattern;
 		const flags = fixture.flags || 'v';
