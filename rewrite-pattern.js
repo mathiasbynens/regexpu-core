@@ -749,7 +749,7 @@ const validateOptions = (options) => {
 			case 'onNamedGroup':
 			case 'onNewFlags':
 				if (value != null && typeof value !== 'function') {
-					throw new Error('.' + key + ' must be a function.');
+					throw new Error(`.${key} must be a function.`);
 				}
 				break;
 			default:
@@ -811,13 +811,33 @@ const rewritePattern = (pattern, flags, options) => {
 	const tree = parse(pattern, flags, regjsparserFeatures);
 
 	if (config.transform.modifiers) {
-		const results = pattern.match(/(?<=\(\?[a-z]{0,10}-)[a-z]{1,10}/g);
-		if (results) {
-			results.forEach((disabledModifiers) => {
-				disabledModifiers.split("").forEach((modifier) => {
-					if (hasFlag(flags, modifier)) config.modifiersData[modifier] = true;
-				})
-			})
+		if (/\(\?[a-z]*-[a-z]+:/.test(pattern)) {
+			// the pattern _likely_ contain inline disabled modifiers
+			// we need to traverse to make sure that they are actually modifiers and to collect them
+			const allDisabledModifiers = Object.create(null)
+			const itemStack = [tree];
+			let node;
+			while (node = itemStack.pop(), node != undefined) {
+				if (Array.isArray(node)) {
+					Array.prototype.push.apply(itemStack, node);
+				} else if (typeof node == 'object' && node != null) {
+					for (const key of Object.keys(node)) {
+						const value = node[key];
+						if (key == "modifierFlags") {
+							if (value.disabling.length > 0){
+								value.disabling.split("").forEach((flag)=>{
+									allDisabledModifiers[flag] = true
+								});
+							}
+						} else if (typeof value == 'object' && value != null) {
+							itemStack.push(value);
+						}
+					}
+				}
+			}
+			for (const flag of Object.keys(allDisabledModifiers)) {
+				config.modifiersData[flag] = true;
+			}
 		}
 	}
 
