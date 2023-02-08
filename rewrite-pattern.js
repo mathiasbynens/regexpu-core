@@ -1,6 +1,6 @@
 'use strict';
 
-const generate = require('regjsgen').generate;
+const generate = require('@babel/regjsgen').generate;
 const parse = require('regjsparser').parse;
 const regenerate = require('regenerate');
 const unicodeMatchProperty = require('unicode-match-property-ecmascript');
@@ -27,16 +27,18 @@ const SPECIAL_CHARS = /([\\^$.*+?()[\]{}|])/g;
 // character classes (if any).
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 
+const NEWLINE_SET = regenerate().add(
+	// `LineTerminator`s (https://mths.be/es6#sec-line-terminators):
+	0x000A, // Line Feed <LF>
+	0x000D, // Carriage Return <CR>
+	0x2028, // Line Separator <LS>
+	0x2029  // Paragraph Separator <PS>
+);
+
 // Prepare a Regenerate set containing all code points that are supposed to be
 // matched by `/./u`. https://mths.be/es6#sec-atom
 const DOT_SET_UNICODE = UNICODE_SET.clone() // all Unicode code points
-	.remove(
-		// minus `LineTerminator`s (https://mths.be/es6#sec-line-terminators):
-		0x000A, // Line Feed <LF>
-		0x000D, // Carriage Return <CR>
-		0x2028, // Line Separator <LS>
-		0x2029  // Paragraph Separator <PS>
-	);
+	.remove(NEWLINE_SET);
 
 const getCharacterClassEscapeSet = (character, unicode, ignoreCase) => {
 	if (unicode) {
@@ -126,12 +128,23 @@ const getUnicodePropertyEscapeCharacterClassData = (property, isNegative) => {
 	return data;
 };
 
+function configNeedCaseFoldAscii() {
+	return !!config.modifiersData.i;
+}
+
+function configNeedCaseFoldUnicode() {
+	// config.modifiersData.i : undefined | false
+	if (config.modifiersData.i === false) return false;
+	if (!config.transform.unicodeFlag) return false;
+	return Boolean(config.modifiersData.i || config.flags.ignoreCase);
+}
+
 // Given a range of code points, add any case-folded code points in that range
 // to a set.
 regenerate.prototype.iuAddRange = function(min, max) {
 	const $this = this;
 	do {
-		const folded = caseFold(min);
+		const folded = caseFold(min, configNeedCaseFoldAscii(), configNeedCaseFoldUnicode());
 		if (folded) {
 			$this.add(folded);
 		}
@@ -141,7 +154,7 @@ regenerate.prototype.iuAddRange = function(min, max) {
 regenerate.prototype.iuRemoveRange = function(min, max) {
 	const $this = this;
 	do {
-		const folded = caseFold(min);
+		const folded = caseFold(min, configNeedCaseFoldAscii(), configNeedCaseFoldUnicode());
 		if (folded) {
 			$this.remove(folded);
 		}
@@ -150,7 +163,13 @@ regenerate.prototype.iuRemoveRange = function(min, max) {
 };
 
 const update = (item, pattern) => {
-	let tree = parse(pattern, config.useUnicodeFlag ? 'u' : '');
+	let tree = parse(pattern, config.useUnicodeFlag ? 'u' : '', {
+		lookbehind: true,
+		namedGroups: true,
+		unicodePropertyEscape: true,
+		unicodeSet: true,
+		modifiers: true,
+	});
 	switch (tree.type) {
 		case 'characterClass':
 		case 'group':
@@ -174,8 +193,17 @@ const wrap = (tree, pattern) => {
 	};
 };
 
-const caseFold = (codePoint) => {
-	return iuMappings.get(codePoint) || false;
+const caseFold = (codePoint, includeAscii, includeUnicode) => {
+	let folded = (includeUnicode ? iuMappings.get(codePoint) : undefined) || [];
+	if (typeof folded === 'number') folded = [folded];
+	if (includeAscii) {
+		if (codePoint >= 0x41 && codePoint <= 0x5A) {
+			folded.push(codePoint + 0x20);
+		} else if (codePoint >= 0x61 && codePoint <= 0x7A) {
+			folded.push(codePoint - 0x20);
+		}
+	}
+	return folded.length == 0 ? false : folded;
 };
 
 const buildHandler = (action) => {
@@ -316,8 +344,11 @@ const getCharacterClassEmptyData = () => ({
 });
 
 const maybeFold = (codePoint) => {
-	if (config.flags.ignoreCase && config.transform.unicodeFlag) {
-		const folded = caseFold(codePoint);
+	const caseFoldAscii = configNeedCaseFoldAscii();
+	const caseFoldUnicode = configNeedCaseFoldUnicode();
+
+	if (caseFoldAscii || caseFoldUnicode) {
+		const folded = caseFold(codePoint, caseFoldAscii, caseFoldUnicode);
 		if (folded) {
 			return [codePoint, folded];
 		}
@@ -328,6 +359,9 @@ const maybeFold = (codePoint) => {
 const computeClassStrings = (classStrings, regenerateOptions) => {
 	let data = getCharacterClassEmptyData();
 
+	const caseFoldAscii = configNeedCaseFoldAscii();
+	const caseFoldUnicode = configNeedCaseFoldUnicode();
+
 	for (const string of classStrings.strings) {
 		if (string.characters.length === 1) {
 			maybeFold(string.characters[0].codePoint).forEach((cp) => {
@@ -335,11 +369,11 @@ const computeClassStrings = (classStrings, regenerateOptions) => {
 			});
 		} else {
 			let stringifiedString;
-			if (config.flags.ignoreCase && config.transform.unicodeFlag) {
+			if (caseFoldUnicode || caseFoldAscii) {
 				stringifiedString = '';
 				for (const ch of string.characters) {
 					let set = regenerate(ch.codePoint);
-					const folded = caseFold(ch.codePoint);
+					const folded = maybeFold(ch.codePoint);
 					if (folded) set.add(folded);
 					stringifiedString += set.toString(regenerateOptions);
 				}
@@ -381,6 +415,9 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 			throw new Error(`Unknown character class kind: ${ characterClassItem.kind }`);
 	}
 
+	const caseFoldAscii = configNeedCaseFoldAscii();
+	const caseFoldUnicode = configNeedCaseFoldUnicode();
+
 	for (const item of characterClassItem.body) {
 		switch (item.type) {
 			case 'value':
@@ -392,8 +429,9 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				const min = item.min.codePoint;
 				const max = item.max.codePoint;
 				handlePositive.range(data, min, max);
-				if (config.flags.ignoreCase && config.transform.unicodeFlag) {
+				if (caseFoldAscii || caseFoldUnicode) {
 					handlePositive.iuRange(data, min, max);
+					data.transformed = true;
 				}
 				break;
 			case 'characterClassEscape':
@@ -475,15 +513,40 @@ const assertNoUnmatchedReferences = (groups) => {
 	}
 };
 
+const processModifiers = (item, regenerateOptions, groups) => {
+	const enabling = item.modifierFlags.enabling;
+	const disabling = item.modifierFlags.disabling;
+
+	delete item.modifierFlags;
+	item.behavior = 'normal';
+
+	const oldData = Object.assign({}, config.modifiersData);
+
+	enabling.split('').forEach(flag => {
+		config.modifiersData[flag] = true;
+	});
+	disabling.split('').forEach(flag => {
+		config.modifiersData[flag] = false;
+	});
+
+	item.body = item.body.map(term => {
+		return processTerm(term, regenerateOptions, groups);
+	});
+
+	config.modifiersData = oldData;
+
+	return item;
+}
+
 const processTerm = (item, regenerateOptions, groups) => {
 	switch (item.type) {
 		case 'dot':
 			if (config.transform.unicodeFlag) {
 				update(
 					item,
-					getUnicodeDotSet(config.flags.dotAll).toString(regenerateOptions)
+					getUnicodeDotSet(config.flags.dotAll || config.modifiersData.s).toString(regenerateOptions)
 				);
-			} else if (config.transform.dotAllFlag) {
+			} else if (config.transform.dotAllFlag || config.modifiersData.s) {
 				// TODO: consider changing this at the regenerate level.
 				update(item, '[\\s\\S]');
 			}
@@ -554,6 +617,9 @@ const processTerm = (item, regenerateOptions, groups) => {
 					delete groups.unmatchedReferences[name];
 				}
 			}
+			if (item.modifierFlags && config.transform.modifiers) {
+				return processModifiers(item, regenerateOptions, groups);
+			}
 			/* falls through */
 		case 'quantifier':
 			item.body = item.body.map(term => {
@@ -577,12 +643,8 @@ const processTerm = (item, regenerateOptions, groups) => {
 		case 'value':
 			const codePoint = item.codePoint;
 			const set = regenerate(codePoint);
-			if (config.flags.ignoreCase && config.transform.unicodeFlag) {
-				const folded = caseFold(codePoint);
-				if (folded) {
-					set.add(folded);
-				}
-			}
+			const folded = maybeFold(codePoint);
+			set.add(folded);
 			update(item, set.toString(regenerateOptions));
 			break;
 		case 'reference':
@@ -622,8 +684,14 @@ const processTerm = (item, regenerateOptions, groups) => {
 			}
 			break;
 		case 'anchor':
+			if (config.modifiersData.m) {
+				if (item.kind == 'start') {
+					update(item, `(?:^|(?<=${NEWLINE_SET.toString()}))`);
+				} else if (item.kind == 'end') {
+					update(item, `(?:$|(?=${NEWLINE_SET.toString()}))`);
+				}
+			}
 		case 'empty':
-		case 'group':
 			// Nothing to do here.
 			break;
 		// The `default` clause is only here as a safeguard; it should never be
@@ -641,6 +709,7 @@ const config = {
 		'unicode': false,
 		'unicodeSets': false,
 		'dotAll': false,
+		'multiline': false,
 	},
 	'transform': {
 		'dotAllFlag': false,
@@ -648,6 +717,12 @@ const config = {
 		'unicodeSetsFlag': false,
 		'unicodePropertyEscapes': false,
 		'namedGroups': false,
+		'modifiers': false,
+	},
+	'modifiersData': {
+		'i': undefined,
+		's': undefined,
+		'm': undefined,
 	},
 	get useUnicodeFlag() {
 		return (this.flags.unicode || this.flags.unicodeSets) && !this.transform.unicodeFlag;
@@ -668,14 +743,16 @@ const validateOptions = (options) => {
 					throw new Error(`.${key} must be false (default) or 'transform'.`);
 				}
 				break;
+			case 'modifiers':
 			case 'unicodeSetsFlag':
 				if (value != null && value !== false && value !== 'parse' && value !== 'transform') {
 					throw new Error(`.${key} must be false (default), 'parse' or 'transform'.`);
 				}
 				break;
 			case 'onNamedGroup':
+			case 'onNewFlags':
 				if (value != null && typeof value !== 'function') {
-					throw new Error('.onNamedGroup must be a function.');
+					throw new Error(`.${key} must be a function.`);
 				}
 				break;
 			default:
@@ -694,6 +771,7 @@ const rewritePattern = (pattern, flags, options) => {
 	config.flags.unicodeSets = hasFlag(flags, 'v');
 	config.flags.ignoreCase = hasFlag(flags, 'i');
 	config.flags.dotAll = hasFlag(flags, 's');
+	config.flags.multiline = hasFlag(flags, 'm');
 
 	config.transform.dotAllFlag = config.flags.dotAll && transform(options, 'dotAllFlag');
 	config.transform.unicodeFlag = (config.flags.unicode || config.flags.unicodeSets) && transform(options, 'unicodeFlag');
@@ -704,9 +782,15 @@ const rewritePattern = (pattern, flags, options) => {
 		transform(options, 'unicodeFlag') || transform(options, 'unicodePropertyEscapes')
 	);
 	config.transform.namedGroups = transform(options, 'namedGroups');
+	config.transform.modifiers = transform(options, 'modifiers');
+
+	config.modifiersData.i = undefined;
+	config.modifiersData.s = undefined;
+	config.modifiersData.m = undefined;
 
 	const regjsparserFeatures = {
 		'unicodeSet': Boolean(options && options.unicodeSetsFlag),
+		'modifiers': Boolean(options && options.modifiers),
 
 		// Enable every stable RegExp feature by default
 		'unicodePropertyEscape': true,
@@ -728,9 +812,54 @@ const rewritePattern = (pattern, flags, options) => {
 	};
 
 	const tree = parse(pattern, flags, regjsparserFeatures);
+
+	if (config.transform.modifiers) {
+		if (/\(\?[a-z]*-[a-z]+:/.test(pattern)) {
+			// the pattern _likely_ contain inline disabled modifiers
+			// we need to traverse to make sure that they are actually modifiers and to collect them
+			const allDisabledModifiers = Object.create(null)
+			const itemStack = [tree];
+			let node;
+			while (node = itemStack.pop(), node != undefined) {
+				if (Array.isArray(node)) {
+					Array.prototype.push.apply(itemStack, node);
+				} else if (typeof node == 'object' && node != null) {
+					for (const key of Object.keys(node)) {
+						const value = node[key];
+						if (key == 'modifierFlags') {
+							if (value.disabling.length > 0){
+								value.disabling.split("").forEach((flag)=>{
+									allDisabledModifiers[flag] = true
+								});
+							}
+						} else if (typeof value == 'object' && value != null) {
+							itemStack.push(value);
+						}
+					}
+				}
+			}
+			for (const flag of Object.keys(allDisabledModifiers)) {
+				config.modifiersData[flag] = true;
+			}
+		}
+	}
+
 	// Note: `processTerm` mutates `tree` and `groups`.
 	processTerm(tree, regenerateOptions, groups);
 	assertNoUnmatchedReferences(groups);
+
+	const onNewFlags = options && options.onNewFlags;
+	if (onNewFlags) onNewFlags(flags.split('').filter((flag) => {
+		switch (flag) {
+			case 'u':
+				return !config.transform.unicodeFlag;
+			case 'v':
+				return !config.transform.unicodeSetsFlag;
+			default:
+				return !config.modifiersData[flag];
+		}
+	}).join(''));
+
 	return generate(tree);
 };
 
