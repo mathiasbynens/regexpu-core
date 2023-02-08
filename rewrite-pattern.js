@@ -27,6 +27,8 @@ const SPECIAL_CHARS = /([\\^$.*+?()[\]{}|])/g;
 // character classes (if any).
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 
+const ASTRAL_SET = regenerate().addRange(0x10000, 0x10FFFF);
+
 const NEWLINE_SET = regenerate().add(
 	// `LineTerminator`s (https://mths.be/es6#sec-line-terminators):
 	0x000A, // Line Feed <LF>
@@ -490,7 +492,38 @@ const processCharacterClass = (
 			if (config.useUnicodeFlag) {
 				update(characterClassItem, `[^${setStr[0] === '[' ? setStr.slice(1, -1) : setStr}]`)
 			} else {
-				update(characterClassItem, `(?!${setStr})[\\s\\S]`)
+				if (config.flags.unicode) {
+					if (config.flags.ignoreCase) {
+						const astralCharsSet = singleChars.clone().intersection(ASTRAL_SET);
+						// Assumption: singleChars do not contain lone surrogates.
+						// Regex like /[^\ud800]/u is not supported
+						const surrogateOrBMPSetStr = singleChars
+							.clone()
+							.remove(astralCharsSet)
+							.addRange(0xd800, 0xdfff)
+							.toString({ bmpOnly: true });
+						// Don't generate negative lookahead for astral characters
+						// because the case folding is not working anyway as we break
+						// code points into surrogate pairs.
+						const astralNegativeSetStr = ASTRAL_SET
+							.clone()
+							.remove(astralCharsSet)
+							.toString(regenerateOptions);
+						// The transform here does not support lone surrogates.
+						update(
+							characterClassItem,
+							`(?!${surrogateOrBMPSetStr})[\\s\\S]|${astralNegativeSetStr}`
+						);
+					} else {
+						// Generate negative set directly when case folding is not involved.
+						update(
+							characterClassItem,
+							UNICODE_SET.clone().remove(singleChars).toString(regenerateOptions)
+						);
+					}
+				} else {
+					update(characterClassItem, `(?!${setStr})[\\s\\S]`);
+				}
 			}
 		} else {
 			const hasEmptyString = longStrings.has('');

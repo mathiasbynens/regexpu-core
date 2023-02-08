@@ -588,7 +588,7 @@ describe('unicodePropertyEscapes', () => {
 		);
 		assert.equal(
 			rewritePattern('[^\\p{ASCII_Hex_Digit}_]', 'u', features),
-			'(?:(?![0-9A-F_a-f])[\\s\\S])'
+			'(?:[\\0-\\/:-@G-\\^`g-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
 		);
 		assert.equal(
 			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', features),
@@ -753,25 +753,25 @@ const dotAllFlagFixtures = [
 		'pattern': '.',
 		'flags': 's',
 		'expected': '[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
+		options: { unicodeFlag: 'transform' }
 	},
 	{
 		'pattern': '.',
 		'flags': 'gimsy',
 		'expected': '[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
+		options: { unicodeFlag: 'transform' }
 	},
 	{
 		'pattern': '.',
 		'flags': 'su',
 		'expected': UNICODE_PATTERN,
-		'options': { unicodeFlag: 'transform' }
+		options: { unicodeFlag: 'transform' }
 	},
 	{
 		'pattern': '.',
 		'flags': 'gimsuy',
 		'expected': UNICODE_PATTERN,
-		'options': { unicodeFlag: 'transform' }
+		options: { unicodeFlag: 'transform' }
 	}
 ];
 
@@ -989,74 +989,92 @@ const characterClassFixtures = [
 	{
 		pattern: '[^K]', // LATIN CAPITAL LETTER K
 		flags: 'iu',
-		expected: '(?![K\\u212A])[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
+		expected: '(?:(?![K\\u212A\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
+		options: { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^k]', // LATIN SMALL LETTER K
 		flags: 'iu',
-		expected: '(?![k\\u212A])[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
+		expected: '(?:(?![k\\u212A\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
+		options: { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^\u212a]', // KELVIN SIGN
 		flags: 'iu',
-		expected: '(?![K\\u212A])[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
+		expected: '(?:(?![K\\u212A\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
+		options: { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^K]', // LATIN CAPITAL LETTER K
 		flags: 'iu',
 		expected: '[^K]',
-		'options': {}
+		options: {}
 	},
 	{
 		pattern: '[^k]', // LATIN SMALL LETTER K
 		flags: 'iu',
 		expected: '[^k]',
-		'options': {}
+		options: {}
 	},
 	{
 		pattern: '[^\u212a]', // KELVIN SIGN
 		flags: 'iu',
 		expected: '[^\u212a]',
-		'options': {}
+		options: {}
+	},
+	{
+		pattern: '[^\u{1D50E}]', // MATHEMATICAL FRAKTUR CAPITAL K
+		flags: 'iu',
+		expected: '(?:(?![\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uD834\\uD836-\\uDBFF][\\uDC00-\\uDFFF]|\\uD835[\\uDC00-\\uDD0D\\uDD0F-\\uDFFF])',
+		options: { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^K]', // LATIN CAPITAL LETTER K
 		flags: 'u',
-		expected: '(?!K)[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
+		expected: '(?:[\\0-JL-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])',
+		options: { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^k]', // LATIN SMALL LETTER K
 		flags: 'u',
-		expected: '(?!k)[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
+		expected: '(?:[\\0-jl-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])',
+		options: { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^\u212a]', // KELVIN SIGN
 		flags: 'u',
-		expected: '(?!\\u212A)[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
+		expected: '(?:[\\0-\\u2129\\u212B-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])',
+		options: { unicodeFlag: 'transform' }
+	},
+	{
+		pattern: '[^\u{1D50E}]', // MATHEMATICAL FRAKTUR CAPITAL K
+		flags: 'u',
+		expected: '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uD834\\uD836-\\uDBFF][\\uDC00-\\uDFFF]|\\uD835[\\uDC00-\\uDD0D\\uDD0F-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])',
+		options: { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^K]', // LATIN CAPITAL LETTER K
 		flags: 'u',
 		expected: '[^K]',
-		'options': {}
+		options: {}
 	},
 	{
 		pattern: '[^k]', // LATIN SMALL LETTER K
 		flags: 'u',
 		expected: '[^k]',
-		'options': {}
+		options: {}
 	},
 	{
 		pattern: '[^\u212a]', // KELVIN SIGN
 		flags: 'u',
 		expected: '[^\u212a]',
-		'options': {}
+		options: {}
+	},
+	{
+		pattern: '[^\u{1D50E}]', // MATHEMATICAL FRAKTUR CAPITAL K
+		flags: 'u',
+		expected: '[^\u{1D50E}]',
+		options: {}
 	}
 ];
 
