@@ -28,7 +28,7 @@ const SPECIAL_CHARS = /([\\^$.*+?()[\]{}|])/g;
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 
 const NEWLINE_SET = regenerate().add(
-	// minus `LineTerminator`s (https://mths.be/es6#sec-line-terminators):
+	// `LineTerminator`s (https://mths.be/es6#sec-line-terminators):
 	0x000A, // Line Feed <LF>
 	0x000D, // Carriage Return <CR>
 	0x2028, // Line Separator <LS>
@@ -519,10 +519,10 @@ const processModifiers = (item, regenerateOptions, groups) => {
 
 	const oldData = Object.assign({}, config.modifiersData);
 
-	enabling.split("").forEach(flag => {
+	enabling.split('').forEach(flag => {
 		config.modifiersData[flag] = true;
 	});
-	disabling.split("").forEach(flag => {
+	disabling.split('').forEach(flag => {
 		config.modifiersData[flag] = false;
 	});
 
@@ -823,7 +823,7 @@ const rewritePattern = (pattern, flags, options) => {
 				} else if (typeof node == 'object' && node != null) {
 					for (const key of Object.keys(node)) {
 						const value = node[key];
-						if (key == "modifierFlags") {
+						if (key == 'modifierFlags') {
 							if (value.disabling.length > 0){
 								value.disabling.split("").forEach((flag)=>{
 									allDisabledModifiers[flag] = true
@@ -846,7 +846,7 @@ const rewritePattern = (pattern, flags, options) => {
 	assertNoUnmatchedReferences(groups);
 
 	const onNewFlags = options && options.onNewFlags;
-	if (onNewFlags) onNewFlags(flags.split("").filter((flag) => {
+	if (onNewFlags) onNewFlags(flags.split('').filter((flag) => {
 		switch (flag) {
 			case 'u':
 				return !config.transform.unicodeFlag;
@@ -855,7 +855,7 @@ const rewritePattern = (pattern, flags, options) => {
 			default:
 				return !config.modifiersData[flag];
 		}
-	}).join(""));
+	}).join(''));
 
 	return generate(tree);
 };

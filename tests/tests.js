@@ -1571,7 +1571,7 @@ describe('modifiers', () => {
 		options.onNewFlags = (newFlags) => {
 			actualFlags = newFlags;
 		}
-		if(options.modifiers === undefined) {
+		if (options.modifiers === undefined) {
 			options.modifiers = 'transform';
 		}
 
