@@ -551,7 +551,7 @@ const processModifiers = (item, regenerateOptions, groups) => {
 	const disabling = item.modifierFlags.disabling;
 
 	delete item.modifierFlags;
-	item.behavior = 'normal';
+	item.behavior = 'ignore';
 
 	const oldData = Object.assign({}, config.modifiersData);
 
