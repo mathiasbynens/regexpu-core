@@ -133,7 +133,10 @@ function configNeedCaseFoldAscii() {
 }
 
 function configNeedCaseFoldUnicode() {
-	return config.modifiersData.i != false && !!((config.modifiersData.i || config.flags.ignoreCase) && config.transform.unicodeFlag);
+	// config.modifiersData.i : undefined | false
+	if (config.modifiersData.i === false) return false;
+	if (!config.transform.unicodeFlag) return false;
+	return Boolean(config.modifiersData.i || config.flags.ignoreCase);
 }
 
 // Given a range of code points, add any case-folded code points in that range
