@@ -1489,13 +1489,19 @@ const modifiersFixtures = [
 		'flags': 'v',
 		'options':  { unicodeSetsFlag: 'transform', modifiers: 'transform' },
 		'expected': '(?:(?:[Aa][Bb]))',
-		'expectedFlags': '',
+		'expectedFlags': 'u',
 	},
 	{
 		'pattern': '(?i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
 		'flags': 'v',
 		'options':  { unicodeSetsFlag: 'transform', modifiers: 'parse' },
 		'expected': '(?i:(?:ab))',
+		'expectedFlags': 'u',
+	},	{
+		'pattern': '(?i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
+		'flags': 'v',
+		'options':  { unicodeSetsFlag: 'transform', unicodeFlag: 'transform', modifiers: 'transform' },
+		'expected': '(?:(?:[Aa][Bb]))',
 		'expectedFlags': '',
 	},
 	// +m
@@ -1537,14 +1543,20 @@ const modifiersFixtures = [
 		'flags': 'iv',
 		'options':  { unicodeSetsFlag: 'transform', modifiers: 'transform' },
 		'expected': '(?:(?:ab))',
-		'expectedFlags': '',
+		'expectedFlags': 'u',
 	},
 	{
 		'pattern': '(?-i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
 		'flags': 'iv',
 		'options':  { unicodeSetsFlag: 'transform', modifiers: 'parse' },
 		'expected': '(?-i:(?:ab))',
-		'expectedFlags': 'i',
+		'expectedFlags': 'iu',
+	},	{
+		'pattern': '(?-i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
+		'flags': 'iv',
+		'options':  { unicodeSetsFlag: 'transform', unicodeFlag: 'transform', modifiers: 'transform' },
+		'expected': '(?:(?:ab))',
+		'expectedFlags': '',
 	},
 	// -m
 	{

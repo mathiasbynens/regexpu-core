@@ -861,7 +861,7 @@ const rewritePattern = (pattern, flags, options) => {
 						const value = node[key];
 						if (key == 'modifierFlags') {
 							if (value.disabling.length > 0){
-								value.disabling.split("").forEach((flag)=>{
+								value.disabling.split('').forEach((flag)=>{
 									allDisabledModifiers[flag] = true
 								});
 							}
@@ -882,16 +882,19 @@ const rewritePattern = (pattern, flags, options) => {
 	assertNoUnmatchedReferences(groups);
 
 	const onNewFlags = options && options.onNewFlags;
-	if (onNewFlags) onNewFlags(flags.split('').filter((flag) => {
-		switch (flag) {
-			case 'u':
-				return !config.transform.unicodeFlag;
-			case 'v':
-				return !config.transform.unicodeSetsFlag;
-			default:
-				return !config.modifiersData[flag];
+	if (onNewFlags) {
+		let newFlags = flags.split('').filter((flag) => !config.modifiersData[flag]).join('');
+		if (config.transform.unicodeSetsFlag) {
+			newFlags = newFlags.replace('v', 'u');
 		}
-	}).join(''));
+		if (config.transform.unicodeFlag) {
+			newFlags = newFlags.replace('u', '');
+		}
+		if (config.transform.dotAllFlag === 'transform') {
+			newFlags = newFlags.replace('s', '');
+		}
+		onNewFlags(newFlags);
+	}
 
 	return generate(tree);
 };
