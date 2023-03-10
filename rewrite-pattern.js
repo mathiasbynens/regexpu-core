@@ -405,10 +405,12 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 		case 'intersection':
 			handlePositive = buildHandler('intersection');
 			handleNegative = buildHandler('subtraction');
+			if (config.transform.unicodeSetsFlag) data.transformed = true;
 			break;
 		case 'subtraction':
 			handlePositive = buildHandler('subtraction');
 			handleNegative = buildHandler('intersection');
+			if (config.transform.unicodeSetsFlag) data.transformed = true;
 			break;
 		// The `default` clause is only here as a safeguard; it should never be
 		// reached. Code coverage tools should ignore it.
