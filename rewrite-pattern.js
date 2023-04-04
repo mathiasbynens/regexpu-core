@@ -7,6 +7,7 @@ const unicodeMatchProperty = require('unicode-match-property-ecmascript');
 const unicodeMatchPropertyValue = require('unicode-match-property-value-ecmascript');
 const iuMappings = require('./data/iu-mappings.js');
 const ESCAPE_SETS = require('./data/character-class-escape-sets.js');
+const unicodeProperties = require('./unicode-properties.js');
 
 function flatMap(array, callback) {
 	const result = [];
@@ -61,7 +62,7 @@ const getUnicodePropertyValueSet = (property, value) => {
 		`${ property }/${ value }` :
 		`Binary_Property/${ property }`;
 	try {
-		return require(`regenerate-unicode-properties/${ path }.js`);
+		return unicodeProperties[path]();
 	} catch (exception) {
 		throw new Error(
 			`Failed to recognize value \`${ value }\` for property ` +
