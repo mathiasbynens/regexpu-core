@@ -1487,11 +1487,31 @@ const modifiersFixtures = [
 		'expected': '(?:[A-Za-z])',
 	},
 	{
+		'pattern': '(?i:[ab])',
+		'expected': '(?:[ABab])',
+	},
+	{
+		'pattern': '(?i:\\u212A)',
+		'expected': '(?:\\u212A)',
+	},
+	{
+		'pattern': '(?i:k)',
+		'flags': 'u',
+		'expected': '(?:[Kk\\u212A])',
+	},
+	{
 		'pattern': '(?i:[a-z])',
 		'flags': 'u',
 		'options':  { unicodeFlag: 'transform', modifiers: 'transform' },
 		'expected': '(?:[A-Za-z\\u017F\\u212A])',
 		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?i:[ks])',
+		'flags': 'u',
+		'options':  { modifiers: 'transform' },
+		'expected': '(?:[KSks\\u017F\\u212A])',
+		'expectedFlags': 'u',
 	},
 	{
 		'pattern': '(?i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
@@ -1512,6 +1532,21 @@ const modifiersFixtures = [
 		'options':  { unicodeSetsFlag: 'transform', unicodeFlag: 'transform', modifiers: 'transform' },
 		'expected': '(?:(?:[Aa][Bb]))',
 		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?i:є)',
+		'options': { modifiers: 'transform' },
+		'expected': '(?:[\\u0404\\u0454])',
+	},
+	{
+		'pattern': '(?i:[є-ґ])',
+		'options': { modifiers: 'transform' },
+		'expected': '(?:[\\u0404-\\u040F\\u0454-\\u0491])',
+	},
+	{
+		'pattern': '(?i:[Жщ])',
+		'options': { modifiers: 'transform' },
+		'expected': '(?:[\\u0416\\u0429\\u0436\\u0449])',
 	},
 	// +m
 	{
