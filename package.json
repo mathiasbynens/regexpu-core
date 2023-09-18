@@ -58,7 +58,6 @@
 	},
 	"devDependencies": {
 		"jsesc": "^3.0.2",
-		"lodash": "^4.17.21",
 		"regexpu-fixtures": "^2.1.6",
 		"@unicode/unicode-15.1.0": "^1.5.2"
 	}
