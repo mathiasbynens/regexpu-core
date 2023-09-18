@@ -15,24 +15,24 @@ jobs:
       matrix:
         # Include all major maintenance + active LTS + current Node.js versions.
         # https://github.com/nodejs/Release#release-schedule
-        node: [12, 14, 16]
+        node: [18, 20]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Node.js 16
-        uses: actions/setup-node@v1
+        uses: actions/checkout@v4
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v3
         with:
           # Always build using the same Node.js version, to ensure consistent
           # results from scripts/iu-mappings.js.
           # This version should be the same as the one used in the
           # publish-on-tag workflow.
-          node-version: 16
+          node-version: 20
       - name: Install dependencies
         run: npm install
       - name: Build
         run: npm run build
       - name: Set up Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
       - name: Test
@@ -42,14 +42,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Node.js 6
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 6
       - name: Install dependencies
         run: npm install
-      - name: Downgrade mocha
+      - name: Install mocha 6
         run: npm install mocha@6 -D --save
       - name: Test
-        run: npm test
+        run: npm run test-node6

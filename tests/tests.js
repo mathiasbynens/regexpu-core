@@ -1,5 +1,6 @@
 'use strict';
-
+const describe = global.describe || require("node:test").describe;
+const it = global.it || require("node:test").it;
 const assert = require('assert');
 const regenerate = require('regenerate');
 const rewritePattern = require('../rewrite-pattern.js');
@@ -791,10 +792,8 @@ describe('dotAllFlag', () => {
 		});
 	}
 
-	it('not transformed', () => {
-		it('leaves `/./su` as-is', () => {
-			assert.equal(rewritePattern('.', 'su'), '.');
-		});
+	it('leaves `/./su` as-is', () => {
+		assert.equal(rewritePattern('.', 'su'), '.');
 	});
 });
 

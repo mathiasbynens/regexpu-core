@@ -44,8 +44,9 @@
 	],
 	"scripts": {
 		"build": "node scripts/iu-mappings.js && node scripts/character-class-escape-sets.js",
-		"test": "mocha tests",
-		"cover": "istanbul cover --report html node_modules/.bin/_mocha tests -- -u exports -R spec"
+		"test": "node --test tests/tests.js",
+		"test-node6": "mocha tests",
+		"cover": "NODE_V8_COVERAGE=coverage node --test  --experimental-test-coverage tests/tests.js"
 	},
 	"dependencies": {
 		"regenerate": "^1.4.2",
@@ -56,11 +57,8 @@
 		"unicode-match-property-value-ecmascript": "^2.1.0"
 	},
 	"devDependencies": {
-		"codecov": "^3.8.3",
-		"istanbul": "^0.4.5",
 		"jsesc": "^3.0.2",
 		"lodash": "^4.17.21",
-		"mocha": "^10.1.0",
 		"regexpu-fixtures": "^2.1.6",
 		"@unicode/unicode-15.1.0": "^1.5.2"
 	}
