@@ -1,6 +1,6 @@
 'use strict';
 
-const generate = require('@babel/regjsgen').generate;
+const generate = require('regjsgen').generate;
 const parse = require('regjsparser').parse;
 const regenerate = require('regenerate');
 const unicodeMatchProperty = require('unicode-match-property-ecmascript');
