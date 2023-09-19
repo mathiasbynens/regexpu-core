@@ -145,6 +145,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Kaithi}
 \p{Script_Extensions=Kannada}
 \p{Script_Extensions=Katakana}
+\p{Script_Extensions=Kawi}
 \p{Script_Extensions=Kayah_Li}
 \p{Script_Extensions=Kharoshthi}
 \p{Script_Extensions=Khitan_Small_Script}
@@ -179,6 +180,7 @@ $ node -e 'require("regenerate-unicode-properties").get("Script_Extensions").for
 \p{Script_Extensions=Multani}
 \p{Script_Extensions=Myanmar}
 \p{Script_Extensions=Nabataean}
+\p{Script_Extensions=Nag_Mundari}
 \p{Script_Extensions=Nandinagari}
 \p{Script_Extensions=New_Tai_Lue}
 \p{Script_Extensions=Newa}
