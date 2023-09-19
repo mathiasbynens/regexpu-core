@@ -130,14 +130,15 @@ const getUnicodePropertyEscapeCharacterClassData = (property, isNegative) => {
 	return data;
 };
 
-function configNeedCaseFoldAscii() {
+function configNeedExplicitCaseFold() {
 	return !!config.modifiersData.i;
 }
 
-function configNeedCaseFoldUnicode() {
+function configNeedAccountForImplicitCaseFold() {
 	// config.modifiersData.i : undefined | false
 	if (config.modifiersData.i === false) return false;
-	if (!config.transform.unicodeFlag) return false;
+	if (!config.flags.unicode && !config.flags.unicodeSets) return false;
+	if (!config.transform.unicodeFlag && !config.transform.modifiers) return false;
 	return Boolean(config.modifiersData.i || config.flags.ignoreCase);
 }
 
@@ -146,7 +147,7 @@ function configNeedCaseFoldUnicode() {
 regenerate.prototype.iuAddRange = function(min, max) {
 	const $this = this;
 	do {
-		const folded = caseFold(min, configNeedCaseFoldAscii(), configNeedCaseFoldUnicode());
+		const folded = caseFold(min, configNeedExplicitCaseFold(), configNeedAccountForImplicitCaseFold());
 		if (folded) {
 			$this.add(folded);
 		}
@@ -156,7 +157,7 @@ regenerate.prototype.iuAddRange = function(min, max) {
 regenerate.prototype.iuRemoveRange = function(min, max) {
 	const $this = this;
 	do {
-		const folded = caseFold(min, configNeedCaseFoldAscii(), configNeedCaseFoldUnicode());
+		const folded = caseFold(min, configNeedExplicitCaseFold(), configNeedAccountForImplicitCaseFold());
 		if (folded) {
 			$this.remove(folded);
 		}
@@ -195,14 +196,17 @@ const wrap = (tree, pattern) => {
 	};
 };
 
-const caseFold = (codePoint, includeAscii, includeUnicode) => {
-	let folded = (includeUnicode ? iuMappings.get(codePoint) : undefined) || [];
+const caseFold = (codePoint, explicitCaseFold, accountForImplicitCaseFold) => {
+	let folded = (accountForImplicitCaseFold ? iuMappings.get(codePoint) : undefined) || [];
 	if (typeof folded === 'number') folded = [folded];
-	if (includeAscii) {
-		if (codePoint >= 0x41 && codePoint <= 0x5A) {
-			folded.push(codePoint + 0x20);
-		} else if (codePoint >= 0x61 && codePoint <= 0x7A) {
-			folded.push(codePoint - 0x20);
+	if (explicitCaseFold) {
+		const char = String.fromCodePoint(codePoint);
+		const upperCaseChar = char.toLowerCase().toUpperCase();
+		const lowerCaseChar = char.toUpperCase().toLowerCase();
+		if (char === upperCaseChar) {
+			folded.push(lowerCaseChar);
+		} else if (char === lowerCaseChar) {
+			folded.push(upperCaseChar);
 		}
 	}
 	return folded.length == 0 ? false : folded;
@@ -346,11 +350,11 @@ const getCharacterClassEmptyData = () => ({
 });
 
 const maybeFold = (codePoint) => {
-	const caseFoldAscii = configNeedCaseFoldAscii();
-	const caseFoldUnicode = configNeedCaseFoldUnicode();
+	const explicitCaseFold = configNeedExplicitCaseFold();
+	const implicitCaseFold = configNeedAccountForImplicitCaseFold();
 
-	if (caseFoldAscii || caseFoldUnicode) {
-		const folded = caseFold(codePoint, caseFoldAscii, caseFoldUnicode);
+	if (explicitCaseFold || implicitCaseFold) {
+		const folded = caseFold(codePoint, explicitCaseFold, implicitCaseFold);
 		if (folded) {
 			return [codePoint, folded];
 		}
@@ -361,8 +365,8 @@ const maybeFold = (codePoint) => {
 const computeClassStrings = (classStrings, regenerateOptions) => {
 	let data = getCharacterClassEmptyData();
 
-	const caseFoldAscii = configNeedCaseFoldAscii();
-	const caseFoldUnicode = configNeedCaseFoldUnicode();
+	const explicitCaseFold = configNeedExplicitCaseFold();
+	const implicitCaseFold = configNeedAccountForImplicitCaseFold();
 
 	for (const string of classStrings.strings) {
 		if (string.characters.length === 1) {
@@ -371,7 +375,7 @@ const computeClassStrings = (classStrings, regenerateOptions) => {
 			});
 		} else {
 			let stringifiedString;
-			if (caseFoldUnicode || caseFoldAscii) {
+			if (implicitCaseFold || explicitCaseFold) {
 				stringifiedString = '';
 				for (const ch of string.characters) {
 					let set = regenerate(ch.codePoint);
@@ -419,21 +423,25 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 			throw new Error(`Unknown character class kind: ${ characterClassItem.kind }`);
 	}
 
-	const caseFoldAscii = configNeedCaseFoldAscii();
-	const caseFoldUnicode = configNeedCaseFoldUnicode();
+	const explicitCaseFold = configNeedExplicitCaseFold();
+	const implicitCaseFold = configNeedAccountForImplicitCaseFold();
 
 	for (const item of characterClassItem.body) {
 		switch (item.type) {
 			case 'value':
-				maybeFold(item.codePoint).forEach((cp) => {
+				const folded = maybeFold(item.codePoint);
+				folded.forEach((cp) => {
 					handlePositive.single(data, cp);
 				});
+				if (folded.length > 1) {
+					data.transformed = true;
+				}
 				break;
 			case 'characterClassRange':
 				const min = item.min.codePoint;
 				const max = item.max.codePoint;
 				handlePositive.range(data, min, max);
-				if (caseFoldAscii || caseFoldUnicode) {
+				if (explicitCaseFold || implicitCaseFold) {
 					handlePositive.iuRange(data, min, max);
 					data.transformed = true;
 				}
