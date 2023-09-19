@@ -330,7 +330,7 @@ const buildHandler = (action) => {
 		}
 		// The `default` clause is only here as a safeguard; it should never be
 		// reached. Code coverage tools should ignore it.
-		/* istanbul ignore next */
+		/* node:coverage ignore next */
 		default:
 			throw new Error(`Unknown set action: ${ characterClassItem.kind }`);
 	}
@@ -414,7 +414,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 			break;
 		// The `default` clause is only here as a safeguard; it should never be
 		// reached. Code coverage tools should ignore it.
-		/* istanbul ignore next */
+		/* node:coverage ignore next */
 		default:
 			throw new Error(`Unknown character class kind: ${ characterClassItem.kind }`);
 	}
@@ -465,7 +465,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				break;
 			// The `default` clause is only here as a safeguard; it should never be
 			// reached. Code coverage tools should ignore it.
-			/* istanbul ignore next */
+			/* node:coverage ignore next */
 			default:
 				throw new Error(`Unknown term type: ${ item.type }`);
 		}
@@ -731,7 +731,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 			break;
 		// The `default` clause is only here as a safeguard; it should never be
 		// reached. Code coverage tools should ignore it.
-		/* istanbul ignore next */
+		/* node:coverage ignore next */
 		default:
 			throw new Error(`Unknown term type: ${ item.type }`);
 	}
