@@ -105,6 +105,8 @@ const unicodeSetFixtures = [
 	},
 	{
 		pattern: '[^[a-z][f-h]]',
+		matches: ["A", "\u{12345}"],
+		nonMatches: ["a", "z"],
 		expected: '(?:(?![a-z])[\\s\\S])',
 		options: TRANSFORM_U
 	},

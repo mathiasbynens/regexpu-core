@@ -421,12 +421,25 @@ describe('unicodeSets (v) flag', () => {
 				}, throws);
 			});
 		} else {
+			const transpiled = rewritePattern(pattern, flags, options);
 			it(`rewrites \`${inputRE}\` correctly ${transformUnicodeFlag ? 'without ' : ''}using the u flag`, () => {
-				const transpiled = rewritePattern(pattern, flags, options);
 				if (transpiled != '(?:' + expected + ')') {
 					assert.strictEqual(transpiled, expected);
 				}
 			});
+			if (fixture.matches) {
+				// todo: infer output flags from fixture input flags and options
+				const transpiledRegex = new RegExp(`^${transpiled}$`);
+				for (const match of fixture.matches) {
+					assert.match(match, transpiledRegex);
+				}
+			}
+			if (fixture.nonMatches) {
+				const transpiledRegex = new RegExp(`^${transpiled}$`);
+				for (const nonMatch of fixture.nonMatches) {
+					assert.doesNotMatch(nonMatch, transpiledRegex);
+				}
+			}
 		}
 	}
 
