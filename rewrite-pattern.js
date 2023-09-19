@@ -677,12 +677,12 @@ const processTerm = (item, regenerateOptions, groups) => {
 			break;
 		case 'value':
 			const codePoint = item.codePoint;
-			if (item.kind === "symbol" && codePoint >= 0x20 && codePoint <= 0x7E) {
+			const set = regenerate(codePoint);
+			const folded = maybeFold(codePoint);
+			if (folded.length === 1 && item.kind === "symbol" && folded[0] >= 0x20 && folded[0] <= 0x7E) {
 				// skip regenerate when it is a printable ASCII symbol
 				break;
 			}
-			const set = regenerate(codePoint);
-			const folded = maybeFold(codePoint);
 			set.add(folded);
 			update(item, set.toString(regenerateOptions));
 			break;
