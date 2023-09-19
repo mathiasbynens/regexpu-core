@@ -398,6 +398,26 @@ describe('character classes', () => {
 
 
 describe('unicodeSets (v) flag', () => {
+	// Re-use the unicode fixtures but replacing the input pattern's `u` flag with `v` flag
+	for (const fixture of unicodeFixtures) {
+		if (fixture.flags.includes("u")) {
+			for (let flag of fixture.flags) {
+				flag = flag.replace("u", "v");
+				const { pattern, transpiled: expected } = fixture;
+				const inputRE = `/${pattern}/${flag}`;
+				it(`rewrites \`${inputRE}\` correctly without using the u flag`, () => {
+					const transpiled = rewritePattern(pattern, flag, {
+						unicodeSetsFlag: "transform",
+						unicodeFlag: "transform",
+					});
+					if (transpiled != "(?:" + expected + ")") {
+						assert.strictEqual(transpiled, expected);
+					}
+				});
+			}
+		}
+	}
+
 	if (IS_NODE_6) return;
 
 	for (const fixture of unicodeSetFixtures) {

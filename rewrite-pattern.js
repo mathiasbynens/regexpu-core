@@ -441,7 +441,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 			case 'characterClassEscape':
 				handlePositive.regSet(data, getCharacterClassEscapeSet(
 					item.value,
-					config.flags.unicode,
+					config.flags.unicode || config.flags.unicodeSets,
 					config.flags.ignoreCase
 				));
 				break;
@@ -494,7 +494,7 @@ const processCharacterClass = (
 			if (config.useUnicodeFlag) {
 				update(characterClassItem, `[^${setStr[0] === '[' ? setStr.slice(1, -1) : setStr}]`)
 			} else {
-				if (config.flags.unicode) {
+				if (config.flags.unicode || config.flags.unicodeSets) {
 					if (config.flags.ignoreCase) {
 						const astralCharsSet = singleChars.clone().intersection(ASTRAL_SET);
 						// Assumption: singleChars do not contain lone surrogates.
@@ -835,7 +835,7 @@ const rewritePattern = (pattern, flags, options) => {
 
 	const regenerateOptions = {
 		'hasUnicodeFlag': config.useUnicodeFlag,
-		'bmpOnly': !config.flags.unicode
+		'bmpOnly': !config.flags.unicode && !config.flags.unicodeSets
 	};
 
 	const groups = {
