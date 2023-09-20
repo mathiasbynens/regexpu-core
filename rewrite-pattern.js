@@ -21,6 +21,11 @@ function flatMap(array, callback) {
 	return result;
 }
 
+function regenerateContainsAstral(regenerateData) {
+	const data = regenerateData.data;
+	return data.length >= 1 && data[data.length - 1] >= 0x10000;
+}
+
 const SPECIAL_CHARS = /([\\^$.*+?()[\]{}|])/g;
 
 // Prepare a Regenerate set containing all code points, used for negative
@@ -488,7 +493,9 @@ const processCharacterClass = (
 	const negative = characterClassItem.negative;
 	const { singleChars, transformed, longStrings } = computed;
 	if (transformed) {
-		const setStr = singleChars.toString(regenerateOptions);
+		// If single chars already contains some astral character, regenerate (bmpOnly: true) will create valid regex strings
+		const bmpOnly = regenerateContainsAstral(singleChars);
+		const setStr = singleChars.toString({ ...regenerateOptions, bmpOnly: bmpOnly });
 
 		if (negative) {
 			if (config.useUnicodeFlag) {
@@ -518,10 +525,9 @@ const processCharacterClass = (
 						);
 					} else {
 						// Generate negative set directly when case folding is not involved.
-						update(
-							characterClassItem,
-							UNICODE_SET.clone().remove(singleChars).toString(regenerateOptions)
-						);
+						const negativeSet = UNICODE_SET.clone().remove(singleChars);
+						const bmpOnly = regenerateContainsAstral(negativeSet);
+						update(characterClassItem, negativeSet.toString({ bmpOnly: bmpOnly }));
 					}
 				} else {
 					update(characterClassItem, `(?!${setStr})[\\s\\S]`);
