@@ -495,7 +495,7 @@ const processCharacterClass = (
 	if (transformed) {
 		// If single chars already contains some astral character, regenerate (bmpOnly: true) will create valid regex strings
 		const bmpOnly = regenerateContainsAstral(singleChars);
-		const setStr = singleChars.toString({ ...regenerateOptions, bmpOnly: bmpOnly });
+		const setStr = singleChars.toString(Object.assign({}, regenerateOptions, { bmpOnly: bmpOnly }));
 
 		if (negative) {
 			if (config.useUnicodeFlag) {
