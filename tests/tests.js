@@ -243,10 +243,10 @@ describe('unicodePropertyEscapes', () => {
 			'[\\u{14400}-\\u{14646}]'
 		);
 		assert.equal(
-			rewritePattern('[\\p{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', {
+			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', {
 				'unicodePropertyEscapes': 'transform',
 			}),
-			'[\\u{14400}-\\u{14646}]'
+			'[\\0-\\u{143FF}\\u{14647}-\\u{10FFFF}]'
 		);
 	});
 	it('should not transpile unicode property when unicodePropertyEscapes is not enabled', () => {
