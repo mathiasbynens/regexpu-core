@@ -342,6 +342,13 @@ const unicodeSetFixtures = [
 	{
 		pattern: '[\\p{ASCII}&&\\p{Control}]',
 		expected: '[\\0-\\x1F\\x7F]',
+	},
+	{
+		pattern: '.',
+		flags: 'sv',
+		matches: ['\n'],
+		options: { unicodeSetsFlag: 'transform', dotAllFlag: 'transform' },
+		expected: '[\\s\\S]'
 	}
 ];
 

@@ -35,6 +35,9 @@ function getOutputFlags(inputFlags, options) {
 	if (options.unicodeFlag === "transform") {
 		result = result.replace("u", "");
 	}
+	if (options.dotAllFlag === "transform") {
+		result = result.replace("s", "");
+	}
 	return result;
 }
 
