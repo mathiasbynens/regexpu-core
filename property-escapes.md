@@ -1,27 +1,25 @@
 # Unicode property escapes in _regexpu_
 
-To opt-in to experimental support for [Unicode property escapes](https://github.com/mathiasbynens/es-regexp-unicode-property-escapes), enable [the `unicodePropertyEscape` option](README.md#unicodepropertyescape-default-false).
+To enable support for [Unicode property escapes](https://github.com/mathiasbynens/es-regexp-unicode-property-escapes), set [the `unicodePropertyEscape` option](README.md#stable-regular-expression-features) to `transform`.
 
 ```js
 rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
-  'unicodePropertyEscape': true
-});
-// → '(?:\\uD811[\\uDC00-\\uDE46])'
-```
-
-If you’re targeting ES2015 environments exclusively, consider enabling [the `useUnicodeFlag` option](README.md#useunicodeflag-default-false) for simpler (but not necessarily more compact) output.
-
-```js
-rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
-  'unicodePropertyEscape': true,
-  'useUnicodeFlag': true
+  'unicodePropertyEscapes': 'transform'
 });
 // → '[\\u{14400}-\\u{14646}]'
 ```
 
-[An online demo is available.](https://mothereff.in/regexpu#input=var+regex+%3D+/%5Cp%7BScript_Extensions%3DGreek%7D/u%3B&unicodePropertyEscape=1)
+If you’re targeting ES5 environments, consider enabling [the `unicodeFlag` option](README.md#stable-regular-expression-features).
 
-Note that this feature is non-standard. This implementation may or may not reflect what eventually gets specified.
+```js
+rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
+  'unicodePropertyEscape': 'transform',
+  'unicodeFlag': 'transform'
+});
+// → '(?:\\uD811[\\uDC00-\\uDE46])'
+```
+
+[An online demo is available.](https://mothereff.in/regexpu#input=var+regex+%3D+/%5Cp%7BScript_Extensions%3DGreek%7D/u%3B&unicodePropertyEscape=1)
 
 What follows is an exhaustive overview of the Unicode properties and values that _regexpu_ supports in `\p{…}` and `\P{…}` expressions in regular expressions with the `u` flag.
 
