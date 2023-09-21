@@ -1,20 +1,27 @@
 'use strict';
-
+const describe = global.describe || require("node:test").describe;
+const it = global.it || require("node:test").it;
 const assert = require('assert');
 const regenerate = require('regenerate');
 const rewritePattern = require('../rewrite-pattern.js');
-const fixtures = require('regexpu-fixtures');
 
-const BMP_SET = regenerate().addRange(0x0, 0xFFFF);
-const BMP_PATTERN = BMP_SET.toString({ 'bmpOnly': true });
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
-const UNICODE_PATTERN = UNICODE_SET.toString();
+
+const IS_NODE_6 = process.version.startsWith('v6.');
+
+const { unicodeFixtures } = require("./fixtures/unicode.js");
+const { unicodePropertyEscapeFixtures } = require("./fixtures/unicode-property-escape.js");
+const { dotAllFlagFixtures } = require("./fixtures/dot-all-flag.js");
+const { namedGroupFixtures } = require("./fixtures/named-group.js");
+const { characterClassFixtures } = require("./fixtures/character-class.js");
+const { unicodeSetFixtures } = require("./fixtures/unicode-set.js");
+const { modifiersFixtures } = require("./fixtures/modifiers.js");
 
 describe('rewritePattern { unicodeFlag }', () => {
 	const options = {
 		'unicodeFlag': 'transform'
 	};
-	for (const fixture of fixtures) {
+	for (const fixture of unicodeFixtures) {
 		const pattern = fixture.pattern;
 		for (const flag of fixture.flags) {
 			if (flag.includes('u')) {
@@ -23,513 +30,15 @@ describe('rewritePattern { unicodeFlag }', () => {
 				});
 			} else {
 				it('leaves `/' + pattern + '/' + flag + '` as-is', () => {
-					// TODO: Update regexpu-fixtures
-					const expected = pattern.replace(/^\uD834\uDF06/g, '\\uD834\\uDF06');
-					assert.equal(rewritePattern(pattern, flag, options), expected);
+					assert.equal(rewritePattern(pattern, flag, options), pattern);
 				});
 			}
 		}
 	}
 });
 
-const unicodePropertyEscapeFixtures = [
-	// https://unicode.org/reports/tr18/#RL1.2 item 1
-	{
-		'path': 'General_Category/Uppercase_Letter',
-		'expressions': [
-			'gc=Lu',
-			'gc=Uppercase_Letter',
-			'General_Category=Lu',
-			'General_Category=Uppercase_Letter',
-			'Lu',
-			'Uppercase_Letter'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 2a
-	{
-		'path': 'Script/Greek',
-		'expressions': [
-			'sc=Grek',
-			'sc=Greek',
-			'Script=Grek',
-			'Script=Greek'
-		]
-	},
-	{
-		'path': 'Script/Hiragana',
-		'expressions': [
-			'sc=Hira',
-			'sc=Hiragana',
-			'Script=Hira',
-			'Script=Hiragana'
-		]
-	},
-	{
-		'path': 'Script/Kawi',
-		'expressions': [
-			'sc=Kawi',
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 2b
-	{
-		'path': 'Script_Extensions/Greek',
-		'expressions': [
-			'scx=Grek',
-			'scx=Greek',
-			'Script_Extensions=Grek',
-			'Script_Extensions=Greek'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 3
-	{
-		'path': 'Binary_Property/Alphabetic',
-		'expressions': [
-			'Alpha',
-			'Alphabetic'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 4
-	{
-		'path': 'Binary_Property/Uppercase',
-		'expressions': [
-			'Upper',
-			'Uppercase'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 5
-	{
-		'path': 'Binary_Property/Lowercase',
-		'expressions': [
-			'Lower',
-			'Lowercase'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 6
-	{
-		'path': 'Binary_Property/White_Space',
-		'expressions': [
-			'WSpace',
-			'White_Space'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 7
-	{
-		'path': 'Binary_Property/Noncharacter_Code_Point',
-		'expressions': [
-			'NChar',
-			'Noncharacter_Code_Point'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 8
-	{
-		'path': 'Binary_Property/Default_Ignorable_Code_Point',
-		'expressions': [
-			'DI',
-			'Default_Ignorable_Code_Point'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 9a
-	{
-		'path': 'Binary_Property/Any',
-		'expressions': [
-			'Any'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 9b
-	{
-		'path': 'Binary_Property/ASCII',
-		'expressions': [
-			'ASCII'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL1.2 item 9c
-	{
-		'path': 'Binary_Property/Assigned',
-		'expressions': [
-			'Assigned'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/ASCII_Hex_Digit',
-		'expressions': [
-			'ASCII_Hex_Digit',
-			'AHex'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	// {
-	// 	'path': 'Bidi_Class/Arabic_Letter',
-	// 	'expressions': [
-	// 		'bc=AL',
-	// 		'bc=Arabic_Letter',
-	// 		'Bidi_Class=AL',
-	// 		'Bidi_Class=Arabic_Letter'
-	// 	]
-	// },
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Bidi_Control',
-		'expressions': [
-			'Bidi_C',
-			'Bidi_Control'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Bidi_Mirrored',
-		'expressions': [
-			'Bidi_M',
-			'Bidi_Mirrored'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Case_Ignorable',
-		'expressions': [
-			'CI',
-			'Case_Ignorable',
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Cased',
-		'expressions': [
-			'Cased'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Changes_When_NFKC_Casefolded',
-		'expressions': [
-			'CWKCF',
-			'Changes_When_NFKC_Casefolded'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Changes_When_Casefolded',
-		'expressions': [
-			'CWCF',
-			'Changes_When_Casefolded'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Changes_When_Casemapped',
-		'expressions': [
-			'CWCM',
-			'Changes_When_Casemapped'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Changes_When_Lowercased',
-		'expressions': [
-			'CWL',
-			'Changes_When_Lowercased'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Changes_When_Titlecased',
-		'expressions': [
-			'CWT',
-			'Changes_When_Titlecased'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Changes_When_Uppercased',
-		'expressions': [
-			'CWU',
-			'Changes_When_Uppercased'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Dash',
-		'expressions': [
-			'Dash'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Deprecated',
-		'expressions': [
-			'Dep',
-			'Deprecated'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Diacritic',
-		'expressions': [
-			'Dia',
-			'Diacritic'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Extender',
-		'expressions': [
-			'Ext',
-			'Extender'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Grapheme_Base',
-		'expressions': [
-			'Gr_Base',
-			'Grapheme_Base'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Grapheme_Extend',
-		'expressions': [
-			'Gr_Ext',
-			'Grapheme_Extend'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Hex_Digit',
-		'expressions': [
-			'Hex',
-			'Hex_Digit'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/ID_Continue',
-		'expressions': [
-			'IDC',
-			'ID_Continue'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/ID_Start',
-		'expressions': [
-			'IDS',
-			'ID_Start'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Ideographic',
-		'expressions': [
-			'Ideo',
-			'Ideographic'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/IDS_Binary_Operator',
-		'expressions': [
-			'IDSB',
-			'IDS_Binary_Operator'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/IDS_Trinary_Operator',
-		'expressions': [
-			'IDST',
-			'IDS_Trinary_Operator'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Join_Control',
-		'expressions': [
-			'Join_C',
-			'Join_Control'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Logical_Order_Exception',
-		'expressions': [
-			'LOE',
-			'Logical_Order_Exception'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Math',
-		'expressions': [
-			'Math'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Pattern_Syntax',
-		'expressions': [
-			'Pat_Syn',
-			'Pattern_Syntax'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Pattern_White_Space',
-		'expressions': [
-			'Pat_WS',
-			'Pattern_White_Space'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Quotation_Mark',
-		'expressions': [
-			'QMark',
-			'Quotation_Mark'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Radical',
-		'expressions': [
-			'Radical'
-		]
-	},
-	{
-		'path': 'Binary_Property/Regional_Indicator',
-		'expressions': [
-			'RI',
-			'Regional_Indicator'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Soft_Dotted',
-		'expressions': [
-			'SD',
-			'Soft_Dotted'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Sentence_Terminal',
-		'expressions': [
-			'STerm',
-			'Sentence_Terminal'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Terminal_Punctuation',
-		'expressions': [
-			'Term',
-			'Terminal_Punctuation'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Unified_Ideograph',
-		'expressions': [
-			'UIdeo',
-			'Unified_Ideograph'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/Variation_Selector',
-		'expressions': [
-			'VS',
-			'Variation_Selector'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/XID_Continue',
-		'expressions': [
-			'XIDC',
-			'XID_Continue'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	{
-		'path': 'Binary_Property/XID_Start',
-		'expressions': [
-			'XIDS',
-			'XID_Start'
-		]
-	},
-	// https://unicode.org/reports/tr18/#RL2.7
-	// {
-	// 	'path': 'Bidi_Paired_Bracket_Type/Open',
-	// 	'expressions': [
-	// 		'bpt=o',
-	// 		'bpt=Open',
-	// 		'Bidi_Paired_Bracket_Type=o',
-	// 		'Bidi_Paired_Bracket_Type=Open'
-	// 	]
-	// },
-	// https://unicode.org/reports/tr51/
-	{
-		'path': 'Binary_Property/Emoji',
-		'expressions': [
-			'Emoji'
-		]
-	},
-	// https://unicode.org/reports/tr51/
-	{
-		'path': 'Binary_Property/Emoji_Component',
-		'expressions': [
-			'Emoji_Component'
-		]
-	},
-	// https://unicode.org/reports/tr51/
-	{
-		'path': 'Binary_Property/Emoji_Modifier',
-		'expressions': [
-			'Emoji_Modifier'
-		]
-	},
-	// https://unicode.org/reports/tr51/
-	{
-		'path': 'Binary_Property/Emoji_Modifier_Base',
-		'expressions': [
-			'Emoji_Modifier_Base'
-		]
-	},
-	// https://unicode.org/reports/tr51/
-	{
-		'path': 'Binary_Property/Emoji_Presentation',
-		'expressions': [
-			'Emoji_Presentation'
-		]
-	},
-	// https://unicode.org/reports/tr51/proposed.html
-	{
-		'path': 'Binary_Property/Extended_Pictographic',
-		'expressions': [
-			'Extended_Pictographic'
-		]
-	},
-	{
-		'path': 'Script_Extensions/Yezidi',
-		'expressions': [
-			'scx=Yezi',
-			'scx=Yezidi',
-			'Script_Extensions=Yezi',
-			'Script_Extensions=Yezidi',
-		]
-	},
-	{
-		'path': 'Script_Extensions/Toto',
-		'expressions': [
-			'scx=Toto',
-			'Script_Extensions=Toto',
-		]
-	},
-];
-
 const getPropertyValuePattern = (path) => {
-	const codePoints = require(`@unicode/unicode-15.0.0/${
+	const codePoints = require(`@unicode/unicode-15.1.0/${
 		path }/code-points.js`);
 	return {
 		'p': regenerate(codePoints).toString(),
@@ -538,6 +47,8 @@ const getPropertyValuePattern = (path) => {
 };
 
 describe('unicodePropertyEscapes', () => {
+	if (IS_NODE_6) return;
+
 	const features = {
 		'unicodePropertyEscapes': 'transform',
 		'unicodeFlag': 'transform'
@@ -584,7 +95,7 @@ describe('unicodePropertyEscapes', () => {
 		);
 		assert.equal(
 			rewritePattern('[^\\p{ASCII_Hex_Digit}_]', 'u', features),
-			'(?:(?![0-9A-F_a-f])[\\s\\S])'
+			'(?:[\\0-\\/:-@G-\\^`g-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
 		);
 		assert.equal(
 			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', features),
@@ -734,43 +245,6 @@ describe('unicodePropertyEscapes', () => {
 	});
 });
 
-const dotAllFlagFixtures = [
-	{
-		'pattern': '.',
-		'flags': 's',
-		'expected': '[\\s\\S]'
-	},
-	{
-		'pattern': '.',
-		'flags': 'gimsy',
-		'expected': '[\\s\\S]'
-	},
-	{
-		'pattern': '.',
-		'flags': 's',
-		'expected': '[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
-	},
-	{
-		'pattern': '.',
-		'flags': 'gimsy',
-		'expected': '[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
-	},
-	{
-		'pattern': '.',
-		'flags': 'su',
-		'expected': UNICODE_PATTERN,
-		'options': { unicodeFlag: 'transform' }
-	},
-	{
-		'pattern': '.',
-		'flags': 'gimsuy',
-		'expected': UNICODE_PATTERN,
-		'options': { unicodeFlag: 'transform' }
-	}
-];
-
 describe('dotAllFlag', () => {
 	for (const fixture of dotAllFlagFixtures) {
 		const pattern = fixture.pattern;
@@ -787,86 +261,10 @@ describe('dotAllFlag', () => {
 		});
 	}
 
-	it('not transformed', () => {
-		it('leaves `/./su` as-is', () => {
-			assert.equal(rewritePattern('.', 'su'), '.');
-		});
+	it('leaves `/./su` as-is', () => {
+		assert.equal(rewritePattern('.', 'su'), '.');
 	});
 });
-
-const namedGroupFixtures = [
-	{
-		'pattern': '(?<name>)\\k<name>',
-		'flags': '',
-		'expected': '()\\1',
-		'expectedGroups': [
-			['name', 1]
-		]
-	},
-	{
-		'pattern': '(?<name1>)(?<name2>)\\k<name1>\\k<name2>',
-		'flags': '',
-		'expected': '()()\\1\\2',
-		'expectedGroups': [
-			['name1', 1],
-			['name2', 2]
-		]
-	},
-	{
-		'pattern': '()(?<name>)\\k<name>',
-		'flags': '',
-		'expected': '()()\\2',
-		'expectedGroups': [
-			['name', 2]
-		]
-	},
-	{
-		'pattern': '(?<name>)()\\1',
-		'flags': '',
-		'expected': '()()\\1'
-	},
-	{
-		'pattern': '\\k<name>\\k<name>(?<name>)\\k<name>',
-		'flags': '',
-		'expected': '(?:)(?:)()\\1'
-	},
-	{
-		'pattern': '(?<name>\\k<name>)',
-		'flags': '',
-		'expected': '(\\1)'
-	},
-	{
-		'pattern': '(?<$𐒤>a)b\\k<$𐒤>',
-		'flags': '',
-		'expected': '(a)b\\1'
-	},
-	{
-		'pattern': '(?<=a)(?<!b)(?=c)(?!d)(?:e)(?<name>f)\\k<name>',
-		'flags': '',
-		'expected': '(?<=a)(?<!b)(?=c)(?!d)(?:e)(f)\\1',
-		'expectedGroups': [
-			['name', 1]
-		]
-	},
-	{
-		'pattern': '(?:(?<a>x)|(?<a>y))\\k<a>',
-		'flags': '',
-		'expected': '(?:(x)|(y))\\1\\2',
-		'expectedGroups': [
-			['a', 1],
-			['a', 2]
-		]
-	},
-	{
-		'pattern': '(?:(?<a>x)\\k<a>|(?<a>y)\\k<a>)',
-		'flags': '',
-		'expected': '(?:(x)\\1|(y)\\1\\2)',
-		'expectedGroups': [
-			['a', 1],
-			['a', 2]
-		]
-	}
-];
 
 describe('namedGroups', () => {
 	for (const fixture of namedGroupFixtures) {
@@ -970,7 +368,7 @@ describe('namedGroups', () => {
 		assert.throws(() => rewritePattern('\\k<foo>', ''), /Unknown group names: foo/);
 	});
 
-	it('shold call onNamedGroup even if namedGroups is not enabled', () => {
+	it('should call onNamedGroup even if namedGroups is not enabled', () => {
 		let called = false;
 		rewritePattern('(?<name>)', '', {
 			onNamedGroup() {
@@ -980,81 +378,6 @@ describe('namedGroups', () => {
 		assert.strictEqual(called, true);
 	})
 });
-
-const characterClassFixtures = [
-	{
-		pattern: '[^K]', // LATIN CAPITAL LETTER K
-		flags: 'iu',
-		expected: '(?![K\\u212A])[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
-	},
-	{
-		pattern: '[^k]', // LATIN SMALL LETTER K
-		flags: 'iu',
-		expected: '(?![k\\u212A])[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
-	},
-	{
-		pattern: '[^\u212a]', // KELVIN SIGN
-		flags: 'iu',
-		expected: '(?![K\\u212A])[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
-	},
-	{
-		pattern: '[^K]', // LATIN CAPITAL LETTER K
-		flags: 'iu',
-		expected: '[^K]',
-		'options': {}
-	},
-	{
-		pattern: '[^k]', // LATIN SMALL LETTER K
-		flags: 'iu',
-		expected: '[^k]',
-		'options': {}
-	},
-	{
-		pattern: '[^\u212a]', // KELVIN SIGN
-		flags: 'iu',
-		expected: '[^\u212a]',
-		'options': {}
-	},
-	{
-		pattern: '[^K]', // LATIN CAPITAL LETTER K
-		flags: 'u',
-		expected: '(?!K)[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
-	},
-	{
-		pattern: '[^k]', // LATIN SMALL LETTER K
-		flags: 'u',
-		expected: '(?!k)[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
-	},
-	{
-		pattern: '[^\u212a]', // KELVIN SIGN
-		flags: 'u',
-		expected: '(?!\\u212A)[\\s\\S]',
-		'options': { unicodeFlag: 'transform' }
-	},
-	{
-		pattern: '[^K]', // LATIN CAPITAL LETTER K
-		flags: 'u',
-		expected: '[^K]',
-		'options': {}
-	},
-	{
-		pattern: '[^k]', // LATIN SMALL LETTER K
-		flags: 'u',
-		expected: '[^k]',
-		'options': {}
-	},
-	{
-		pattern: '[^\u212a]', // KELVIN SIGN
-		flags: 'u',
-		expected: '[^\u212a]',
-		'options': {}
-	}
-];
 
 describe('character classes', () => {
 	for (const fixture of characterClassFixtures) {
@@ -1072,7 +395,6 @@ describe('character classes', () => {
 	}
 });
 
-const TRANSFORM_U = { unicodeFlag: 'transform', unicodeSetsFlag: 'transform' };
 
 const Basic_Emoji = {
 	get all() { return `${this.strings}|[${this.chars}]` },
@@ -1423,6 +745,8 @@ const unicodeSetFixtures = [
 ];
 
 describe('unicodeSets (v) flag', () => {
+	if (IS_NODE_6) return;
+
 	for (const fixture of unicodeSetFixtures) {
 		const pattern = fixture.pattern;
 		const flags = fixture.flags || 'v';
@@ -1457,6 +781,40 @@ describe('unicodeSets (v) flag', () => {
 		assert.throws(() => {
 			rewritePattern('\\p{Basic_Emoji}', 'u')
 		}, /Properties of strings are only supported when using the unicodeSets \(v\) flag/);
+	})
+});
+
+describe('modifiers', () => {
+	for (const fixture of modifiersFixtures) {
+		const {
+			pattern,
+			flags = '',
+			expected,
+			options = {}
+		} = fixture;
+
+		let actualFlags = flags;
+
+		options.onNewFlags = (newFlags) => {
+			actualFlags = newFlags;
+		}
+		if (options.modifiers === undefined) {
+			options.modifiers = 'transform';
+		}
+
+		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
+			const transpiled = rewritePattern(pattern, flags, options);
+			assert.strictEqual(transpiled, expected);
+			if (fixture.expectedFlags != undefined) {
+				assert.strictEqual(actualFlags, fixture.expectedFlags);
+			}
+		});
+	}
+
+	it('No `modifiers:"transform"`', () => {
+		assert.throws(() => {
+			rewritePattern('(?i:a)', '');
+		});
 	})
 });
 
