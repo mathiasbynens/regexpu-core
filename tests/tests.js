@@ -17,6 +17,30 @@ const { characterClassFixtures } = require("./fixtures/character-class.js");
 const { unicodeSetFixtures } = require("./fixtures/unicode-set.js");
 const { modifiersFixtures } = require("./fixtures/modifiers.js");
 
+/** For node 6 compat */
+assert.match || (assert.match = function match(value, regex) { assert.ok(regex.exec(value) !== null) });
+assert.doesNotMatch || (assert.doesNotMatch = function doesNotMatch(value, regex) { assert.ok(regex.exec(value) === null) });
+
+/**
+ * comput output regex flags from input flags and transform options
+ *
+ * @param {string} inputFlags
+ * @param {*} regexpuOptions
+ */
+function getOutputFlags(inputFlags, options) {
+	let result = inputFlags;
+	if (options.unicodeSetsFlag === "transform") {
+		result = result.replace("v", "u");
+	}
+	if (options.unicodeFlag === "transform") {
+		result = result.replace("u", "");
+	}
+	if (options.dotAllFlag === "transform") {
+		result = result.replace("s", "");
+	}
+	return result;
+}
+
 describe('rewritePattern { unicodeFlag }', () => {
 	const options = {
 		'unicodeFlag': 'transform'
@@ -95,11 +119,11 @@ describe('unicodePropertyEscapes', () => {
 		);
 		assert.equal(
 			rewritePattern('[^\\p{ASCII_Hex_Digit}_]', 'u', features),
-			'(?:[\\0-\\/:-@G-\\^`g-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+			'(?:[\\0-\\/:-@G-\\^`g-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
 		);
 		assert.equal(
 			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', features),
-			'(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+			'(?:[\\0-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF])'
 		);
 		assert.equal(
 			rewritePattern('[\\p{Script_Extensions=Anatolian_Hieroglyphs}_]', 'u', features),
@@ -107,7 +131,7 @@ describe('unicodePropertyEscapes', () => {
 		);
 		assert.equal(
 			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}_]', 'u', features),
-			'(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+			'(?:[\\0-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF])'
 		);
 		assert.equal(
 			rewritePattern('(?:\\p{ASCII_Hex_Digit})', 'u', features),
@@ -219,10 +243,10 @@ describe('unicodePropertyEscapes', () => {
 			'[\\u{14400}-\\u{14646}]'
 		);
 		assert.equal(
-			rewritePattern('[\\p{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', {
+			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', {
 				'unicodePropertyEscapes': 'transform',
 			}),
-			'[\\u{14400}-\\u{14646}]'
+			'[\\0-\\u{143FF}\\u{14647}-\\u{10FFFF}]'
 		);
 	});
 	it('should not transpile unicode property when unicodePropertyEscapes is not enabled', () => {
@@ -391,6 +415,14 @@ describe('character classes', () => {
 			if (transpiled != '(?:' + expected + ')') {
 				assert.strictEqual(transpiled, expected);
 			}
+			for (const match of fixture.matches || []) {
+				const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flags, options));
+				assert.match(match, transpiledRegex);
+			}
+			for (const nonMatch of fixture.nonMatches || []) {
+				const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flags, options));
+				assert.doesNotMatch(nonMatch, transpiledRegex);
+			}
 		});
 	}
 });
@@ -398,6 +430,35 @@ describe('character classes', () => {
 
 
 describe('unicodeSets (v) flag', () => {
+	// Re-use the unicode fixtures but replacing the input pattern's `u` flag with `v` flag
+	for (const fixture of unicodeFixtures) {
+		if (fixture.flags.includes("u")) {
+			for (let flag of fixture.flags) {
+				flag = flag.replace("u", "v");
+				const { pattern, transpiled: expected } = fixture;
+				const inputRE = `/${pattern}/${flag}`;
+				it(`rewrites \`${inputRE}\` correctly without using the u flag`, () => {
+					const options = {
+						unicodeSetsFlag: "transform",
+						unicodeFlag: "transform",
+					};
+					const transpiled = rewritePattern(pattern, flag, options);
+					if (transpiled != "(?:" + expected + ")") {
+						assert.strictEqual(transpiled, expected);
+					}
+					for (const match of fixture.matches || []) {
+						const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flag, options));
+						assert.match(match, transpiledRegex);
+					}
+					for (const nonMatch of fixture.nonMatches || []) {
+						const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flag, options));
+						assert.doesNotMatch(nonMatch, transpiledRegex);
+					}
+				});
+			}
+		}
+	}
+
 	if (IS_NODE_6) return;
 
 	for (const fixture of unicodeSetFixtures) {
@@ -421,12 +482,20 @@ describe('unicodeSets (v) flag', () => {
 				}, throws);
 			});
 		} else {
+			const transpiled = rewritePattern(pattern, flags, options);
 			it(`rewrites \`${inputRE}\` correctly ${transformUnicodeFlag ? 'without ' : ''}using the u flag`, () => {
-				const transpiled = rewritePattern(pattern, flags, options);
 				if (transpiled != '(?:' + expected + ')') {
 					assert.strictEqual(transpiled, expected);
 				}
 			});
+			for (const match of fixture.matches || []) {
+				const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flags, options));
+				assert.match(match, transpiledRegex);
+			}
+			for (const nonMatch of fixture.nonMatches || []) {
+				const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flags, options));
+				assert.doesNotMatch(nonMatch, transpiledRegex);
+			}
 		}
 	}
 

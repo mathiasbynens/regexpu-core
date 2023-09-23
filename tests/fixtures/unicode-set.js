@@ -105,15 +105,21 @@ const unicodeSetFixtures = [
 	},
 	{
 		pattern: '[^[a-z][f-h]]',
-		expected: '(?:(?![a-z])[\\s\\S])',
+		matches: ["A", "\u{12345}", "\uDAAA", "\uDDDD"],
+		nonMatches: ["a", "z"],
+		expected: '(?:[\\0-`\\{-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
 		options: TRANSFORM_U
 	},
 	{
 		pattern: '[[^a-z][f-h]]',
+		matches: ["f", "A", "\u{12345}", "\uDAAA", "\uDDDD"],
+		nonMatches: ["a", "z"],
 		expected: '[\\0-`f-h\\{-\\u{10FFFF}]'
 	},
 	{
 		pattern: '[[^a-z][f-h]]',
+		matches: ["f", "A", "\u{12345}", "\uDAAA", "\uDDDD"],
+		nonMatches: ["a", "z"],
 		expected: '(?:[\\0-`f-h\\{-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
 		options: TRANSFORM_U
 	},
@@ -336,6 +342,13 @@ const unicodeSetFixtures = [
 	{
 		pattern: '[\\p{ASCII}&&\\p{Control}]',
 		expected: '[\\0-\\x1F\\x7F]',
+	},
+	{
+		pattern: '.',
+		flags: 'sv',
+		matches: ['\n'],
+		options: { unicodeSetsFlag: 'transform', dotAllFlag: 'transform' },
+		expected: '[\\s\\S]'
 	}
 ];
 

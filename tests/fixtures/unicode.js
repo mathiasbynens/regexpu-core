@@ -44,7 +44,7 @@ const unicodeFixtures = [
 	{
 		'pattern': '[\\s\\S]',
 		'flags': FLAGS_WITH_UNICODE,
-		'transpiled': '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+		'transpiled': '(?:[\\0-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
 	},
 	{
 		'pattern': '\\d',
@@ -68,8 +68,9 @@ const unicodeFixtures = [
 	},
 	{
 		'pattern': '[\\d\\D]',
+		'matches': ["a", "0", "\u{12345}", "\uDAAA", "\uDDDD"],
 		'flags': FLAGS_WITH_UNICODE,
-		'transpiled': '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+		'transpiled': '(?:[\\0-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
 	},
 	{
 		'pattern': '\\w',
@@ -100,8 +101,9 @@ const unicodeFixtures = [
 	},
 	{
 		'pattern': '[\\w\\W]',
+		'matches': ["a", "0", "\u{12345}", "\uDAAA", "\uDDDD"],
 		'flags': FLAGS_WITH_UNICODE,
-		'transpiled': '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+		'transpiled': '(?:[\\0-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
 	},
 	{
 		'pattern': '[\\uD834\\uDF06-\\uD834\\uDF08a-z]',
@@ -180,11 +182,14 @@ const unicodeFixtures = [
 	},
 	{
 		'pattern': '[^a]',
+		'matches': ['b', 'A', '\u{1D49C}', '\uDAAA', '\uDDDD'],
+		'nonMatches': ['a'],
 		'flags': FLAGS_WITH_UNICODE_WITHOUT_I,
-		'transpiled': '(?:[\\0-`b-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+		'transpiled': '(?:[\\0-`b-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
 	},
 	{
 		'pattern': '[^a]',
+		'nonMatches': ['a', 'A'],
 		'flags': FLAGS_WITH_UNICODE_WITH_I,
 		'transpiled': '(?:(?![a\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
 	},
