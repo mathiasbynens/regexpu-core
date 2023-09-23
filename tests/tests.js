@@ -427,8 +427,6 @@ describe('character classes', () => {
 	}
 });
 
-
-
 describe('unicodeSets (v) flag', () => {
 	// Re-use the unicode fixtures but replacing the input pattern's `u` flag with `v` flag
 	for (const fixture of unicodeFixtures) {

@@ -456,7 +456,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				data.transformed =
 					data.transformed ||
 					config.transform.unicodePropertyEscapes ||
-					(config.transform.unicodeSetsFlag && nestedData.maybeIncludesStrings);
+					(config.transform.unicodeSetsFlag && (nestedData.maybeIncludesStrings || characterClassItem.kind !== "union"));
 				break;
 			case 'characterClass':
 				const handler = item.negative ? handleNegative : handlePositive;
@@ -819,7 +819,7 @@ const rewritePattern = (pattern, flags, options) => {
 	config.transform.unicodeSetsFlag = config.flags.unicodeSets && transform(options, 'unicodeSetsFlag');
 
 	// unicodeFlag: 'transform' implies unicodePropertyEscapes: 'transform'
-	config.transform.unicodePropertyEscapes = config.flags.unicode && (
+	config.transform.unicodePropertyEscapes = (config.flags.unicode || config.flags.unicodeSets) && (
 		transform(options, 'unicodeFlag') || transform(options, 'unicodePropertyEscapes')
 	);
 	config.transform.namedGroups = transform(options, 'namedGroups');
