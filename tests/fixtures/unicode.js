@@ -185,7 +185,7 @@ const unicodeFixtures = [
 		'matches': ['b', 'A', '\u{1D49C}', '\uDAAA', '\uDDDD'],
 		'nonMatches': ['a'],
 		'flags': FLAGS_WITH_UNICODE_WITHOUT_I,
-		'transpiled': '(?:[\\0-`b-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
+		'transpiled': '(?:[\\0-`b-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
 	},
 	{
 		'pattern': '[^a]',

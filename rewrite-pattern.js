@@ -526,8 +526,7 @@ const processCharacterClass = (
 					} else {
 						// Generate negative set directly when case folding is not involved.
 						const negativeSet = UNICODE_SET.clone().remove(singleChars);
-						const bmpOnly = regenerateContainsAstral(negativeSet);
-						update(characterClassItem, negativeSet.toString({ bmpOnly: bmpOnly }));
+						update(characterClassItem, negativeSet.toString(regenerateOptions));
 					}
 				} else {
 					update(characterClassItem, `(?!${setStr})[\\s\\S]`);
