@@ -685,6 +685,10 @@ const processTerm = (item, regenerateOptions, groups) => {
 			const codePoint = item.codePoint;
 			const set = regenerate(codePoint);
 			const folded = maybeFold(codePoint);
+			if (folded.length === 1 && item.kind === "symbol" && folded[0] >= 0x20 && folded[0] <= 0x7E) {
+				// skip regenerate when it is a printable ASCII symbol
+				break;
+			}
 			set.add(folded);
 			update(item, set.toString(regenerateOptions));
 			break;
