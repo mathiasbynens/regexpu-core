@@ -60,6 +60,23 @@ const extend = (map, key, value, callback) => {
 	}
 };
 
+// Create a new map containing all `mapping` and their inverse.
+const flattenMapping = (mapping, extendFilter) => {
+	const result = new Map();
+	for (const [from, to] of mapping) {
+		if (Array.isArray(to)) {
+			for (const codePoint of to) {
+				extend(result, from, codePoint, extendFilter);
+				extend(result, codePoint, from, extendFilter);
+			}
+		} else {
+			extend(result, from, to, extendFilter);
+			extend(result, to, from, extendFilter);
+		}
+	}
+	return result;
+};
+
 // From <http://unicode.org/Public/UCD/latest/ucd/CaseFolding.txt>:
 //
 // The status field is:
@@ -112,6 +129,13 @@ for (const [from, to] of simpleMappings) {
 // `i` and `u` flags set. In addition to the above, this includes all mappings
 // for astral code points.
 const filteredMappings = new Map();
+// The BMP mapping is used when we expand case folds wrapped in the (?:i) modifiers,
+// we have to further expand case folds that ES5 engines might already support,
+// because the output regex may not have the `i` flag set. For example,
+// /\u212A/ui can be transformed to /[K\u212A]/i
+// while /(?i:\u212A)a/u must be transformed to /[Kk\u212A]a/u, where we have
+// to manually expand 'K' into 'Kk'.
+const filteredBMPMappings = new Map();
 for (const [from, to] of oneWayMappings) {
 	// Case folding is applied to both the pattern and the string being matched.
 	// Because of that e.g. `/[A-Z]/iu` matches U+017F and U+212A, just like
@@ -132,17 +156,20 @@ for (const [from, to] of oneWayMappings) {
 	}
 	if (
 		// Include astral code points.
-		(from > 0xFFFF || to > 0xFFFF) ||
-		// Exclude ES5 mappings as per the above comment.
-		// https://mths.be/es6#sec-runtime-semantics-canonicalize-abstract-operation
-		(
-			// TODO: Make this not depend on the engine in which this build script
-			// runs. (If V8 has a bug, then the generated data has the same bug.)
-			!RegExp(String.fromCodePoint(from), 'i').test(String.fromCodePoint(to))
-		)
+		(from > 0xFFFF || to > 0xFFFF)
 	) {
 		extend(filteredMappings, from, to);
 	} else {
+		// https://mths.be/es6#sec-runtime-semantics-canonicalize-abstract-operation
+		if(
+			// TODO: Make this not depend on the engine in which this build script
+			// runs. (If V8 has a bug, then the generated data has the same bug.)
+			!RegExp(String.fromCodePoint(from), 'i').test(String.fromCodePoint(to))
+		) {
+			extend(filteredMappings, from, to);
+		} else if (from > 0x80 || to > 0x80) {
+			extend(filteredBMPMappings, from, to);
+		}
 		const stringFrom = String.fromCodePoint(from);
 		const stringTo = String.fromCodePoint(to);
 		const code = `/${
@@ -161,18 +188,9 @@ for (const [from, to] of oneWayMappings) {
 	}
 }
 
-// Create a new object containing all `filteredMappings` and their inverse.
-const iuMappings = new Map();
-for (const [from, to] of filteredMappings) {
-	if (Array.isArray(to)) {
-		for (const codePoint of to) {
-			extend(iuMappings, from, codePoint, isES5CasedVariant);
-			extend(iuMappings, codePoint, from, isES5CasedVariant);
-		}
-	} else {
-		extend(iuMappings, from, to, isES5CasedVariant);
-		extend(iuMappings, to, from, isES5CasedVariant);
-	}
-}
+const iuMappings = flattenMapping(filteredMappings, isES5CasedVariant);
+const iBMPMappings = flattenMapping(filteredBMPMappings);
 
+
+writeMap('data/i-bmp-mappings.js', iBMPMappings);
 writeMap('data/iu-mappings.js', iuMappings);

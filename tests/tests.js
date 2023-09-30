@@ -534,6 +534,14 @@ describe('modifiers', () => {
 			if (fixture.expectedFlags != undefined) {
 				assert.strictEqual(actualFlags, fixture.expectedFlags);
 			}
+			for (const match of fixture.matches || []) {
+				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
+				assert.match(match, transpiledRegex);
+			}
+			for (const nonMatch of fixture.nonMatches || []) {
+				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
+				assert.doesNotMatch(nonMatch, transpiledRegex);
+			}
 		});
 	}
 
