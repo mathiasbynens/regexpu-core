@@ -178,7 +178,7 @@ const unicodeFixtures = [
 	{
 		'pattern': '[^a]',
 		'flags': FLAGS_WITHOUT_UNICODE,
-		'transpiled': '(?:(?![a\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
+		'transpiled': '(?:(?![a\\uD800-\\uDFFF])[^]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
 	},
 	{
 		'pattern': '[^a]',
@@ -191,7 +191,7 @@ const unicodeFixtures = [
 		'pattern': '[^a]',
 		'nonMatches': ['a', 'A'],
 		'flags': FLAGS_WITH_UNICODE_WITH_I,
-		'transpiled': '(?:(?![a\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
+		'transpiled': '(?:(?![a\\uD800-\\uDFFF])[^]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
 	},
 	{
 		'pattern': '[ab]+',

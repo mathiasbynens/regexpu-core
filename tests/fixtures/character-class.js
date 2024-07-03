@@ -2,19 +2,19 @@ const characterClassFixtures = [
 	{
 		pattern: '[^K]', // LATIN CAPITAL LETTER K
 		flags: 'iu',
-		expected: '(?:(?![K\\u212A\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
+		expected: '(?:(?![K\\u212A\\uD800-\\uDFFF])[^]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
 		options: { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^k]', // LATIN SMALL LETTER K
 		flags: 'iu',
-		expected: '(?:(?![k\\u212A\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
+		expected: '(?:(?![k\\u212A\\uD800-\\uDFFF])[^]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
 		options: { unicodeFlag: 'transform' }
 	},
 	{
 		pattern: '[^\u212a]', // KELVIN SIGN
 		flags: 'iu',
-		expected: '(?:(?![K\\u212A\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
+		expected: '(?:(?![K\\u212A\\uD800-\\uDFFF])[^]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
 		options: { unicodeFlag: 'transform' }
 	},
 	{
@@ -38,7 +38,7 @@ const characterClassFixtures = [
 	{
 		pattern: '[^\u{1D50E}]', // MATHEMATICAL FRAKTUR CAPITAL K
 		flags: 'iu',
-		expected: '(?:(?![\\uD800-\\uDFFF])[\\s\\S]|[\\uD800-\\uD834\\uD836-\\uDBFF][\\uDC00-\\uDFFF]|\\uD835[\\uDC00-\\uDD0D\\uDD0F-\\uDFFF])',
+		expected: '(?:(?![\\uD800-\\uDFFF])[^]|[\\uD800-\\uD834\\uD836-\\uDBFF][\\uDC00-\\uDFFF]|\\uD835[\\uDC00-\\uDD0D\\uDD0F-\\uDFFF])',
 		options: { unicodeFlag: 'transform' }
 	},
 	{
