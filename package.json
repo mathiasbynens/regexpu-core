@@ -50,7 +50,7 @@
 	},
 	"dependencies": {
 		"regenerate": "^1.4.2",
-		"regenerate-unicode-properties": "^10.1.1",
+		"regenerate-unicode-properties": "^10.2.0",
 		"regjsgen": "^0.8.0",
 		"regjsparser": "^0.10.0",
 		"unicode-match-property-ecmascript": "^2.0.0",
@@ -58,6 +58,6 @@
 	},
 	"devDependencies": {
 		"jsesc": "^3.0.2",
-		"@unicode/unicode-15.1.0": "^1.5.2"
+		"@unicode/unicode-16.0.0": "^1.6.0"
 	}
 }
