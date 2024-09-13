@@ -7,23 +7,23 @@ const dotAllFlagFixtures = [
 	{
 		'pattern': '.',
 		'flags': 's',
-		'expected': '[\\s\\S]'
+		'expected': '[^]'
 	},
 	{
 		'pattern': '.',
 		'flags': 'gimsy',
-		'expected': '[\\s\\S]'
+		'expected': '[^]'
 	},
 	{
 		'pattern': '.',
 		'flags': 's',
-		'expected': '[\\s\\S]',
+		'expected': '[^]',
 		options: { unicodeFlag: 'transform' }
 	},
 	{
 		'pattern': '.',
 		'flags': 'gimsy',
-		'expected': '[\\s\\S]',
+		'expected': '[^]',
 		options: { unicodeFlag: 'transform' }
 	},
 	{

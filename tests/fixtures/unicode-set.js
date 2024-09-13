@@ -365,7 +365,7 @@ const unicodeSetFixtures = [
 		flags: 'sv',
 		matches: ['\n'],
 		options: { unicodeSetsFlag: 'transform', dotAllFlag: 'transform' },
-		expected: '[\\s\\S]'
+		expected: '[^]'
 	}
 ];
 

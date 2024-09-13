@@ -521,7 +521,7 @@ const processCharacterClass = (
 						// The transform here does not support lone surrogates.
 						update(
 							characterClassItem,
-							`(?!${surrogateOrBMPSetStr})[\\s\\S]|${astralNegativeSetStr}`
+							`(?!${surrogateOrBMPSetStr})[^]|${astralNegativeSetStr}`
 						);
 					} else {
 						// Generate negative set directly when case folding is not involved.
@@ -530,7 +530,7 @@ const processCharacterClass = (
 						update(characterClassItem, negativeSet.toString({ bmpOnly: bmpOnly }));
 					}
 				} else {
-					update(characterClassItem, `(?!${setStr})[\\s\\S]`);
+					update(characterClassItem, `(?!${setStr})[^]`);
 				}
 			}
 		} else {
@@ -589,7 +589,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 				);
 			} else if (config.transform.dotAllFlag || config.modifiersData.s) {
 				// TODO: consider changing this at the regenerate level.
-				update(item, '[\\s\\S]');
+				update(item, '[^]');
 			}
 			break;
 		case 'characterClass':

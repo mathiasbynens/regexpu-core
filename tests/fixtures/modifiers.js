@@ -47,7 +47,7 @@ const modifiersFixtures = [
 	// +s
 	{
 		'pattern': '(?s:.)',
-		'expected': '(?:[\\s\\S])',
+		'expected': '(?:[^])',
 	},
 	// -i
 	{
@@ -113,7 +113,7 @@ const modifiersFixtures = [
 	{
 		'pattern': '(?-ims:^[a-z].)(^[a-z].)',
 		'flags': 'ims',
-		'expected': '(?:^[a-z].)((?:^|(?<=[\\n\\r\\u2028\\u2029]))[A-Za-z][\\s\\S])',
+		'expected': '(?:^[a-z].)((?:^|(?<=[\\n\\r\\u2028\\u2029]))[A-Za-z][^])',
 		'expectedFlags': '',
 	},
 ];
