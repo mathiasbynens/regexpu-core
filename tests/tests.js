@@ -119,7 +119,7 @@ describe('unicodePropertyEscapes', () => {
 		);
 		assert.equal(
 			rewritePattern('[^\\p{ASCII_Hex_Digit}_]', 'u', features),
-			'(?:[\\0-\\/:-@G-\\^`g-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])'
+			'(?:[\\0-\\/:-@G-\\^`g-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
 		);
 		assert.equal(
 			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', features),
@@ -422,11 +422,11 @@ describe('character classes', () => {
 				assert.strictEqual(transpiled, expected);
 			}
 			for (const match of fixture.matches || []) {
-				const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flags, options));
+				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
 				assert.match(match, transpiledRegex);
 			}
 			for (const nonMatch of fixture.nonMatches || []) {
-				const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flags, options));
+				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
 				assert.doesNotMatch(nonMatch, transpiledRegex);
 			}
 		});
@@ -451,11 +451,11 @@ describe('unicodeSets (v) flag', () => {
 						assert.strictEqual(transpiled, expected);
 					}
 					for (const match of fixture.matches || []) {
-						const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flag, options));
+						const transpiledRegex = new RegExp(transpiled, getOutputFlags(flag, options));
 						assert.match(match, transpiledRegex);
 					}
 					for (const nonMatch of fixture.nonMatches || []) {
-						const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flag, options));
+						const transpiledRegex = new RegExp(transpiled, getOutputFlags(flag, options));
 						assert.doesNotMatch(nonMatch, transpiledRegex);
 					}
 				});
@@ -493,11 +493,11 @@ describe('unicodeSets (v) flag', () => {
 				}
 			});
 			for (const match of fixture.matches || []) {
-				const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flags, options));
+				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
 				assert.match(match, transpiledRegex);
 			}
 			for (const nonMatch of fixture.nonMatches || []) {
-				const transpiledRegex = new RegExp(`^${transpiled}$`, getOutputFlags(flags, options));
+				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
 				assert.doesNotMatch(nonMatch, transpiledRegex);
 			}
 		}
