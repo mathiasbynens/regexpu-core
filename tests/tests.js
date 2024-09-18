@@ -62,7 +62,7 @@ describe('rewritePattern { unicodeFlag }', () => {
 });
 
 const getPropertyValuePattern = (path) => {
-	const codePoints = require(`@unicode/unicode-15.1.0/${
+	const codePoints = require(`@unicode/unicode-16.0.0/${
 		path }/code-points.js`);
 	return {
 		'p': regenerate(codePoints).toString(),
