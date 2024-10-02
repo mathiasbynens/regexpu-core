@@ -180,7 +180,6 @@ const modifiersFixtures = [
 		'expected': '(?:[a-z]$)([a-z](?:$|(?=[\\n\\r\\u2028\\u2029])))',
 		'expectedFlags': '',
 	},
-	// -m
 	{
 		'pattern': '(^a|(?-m:^b))',
 		'expected': '(^a|(?:^b))'
