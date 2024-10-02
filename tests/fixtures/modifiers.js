@@ -90,6 +90,19 @@ const modifiersFixtures = [
 		'options': { modifiers: 'transform' },
 		'expected': '(?:[\\u{10570}\\u{10597}])'
 	},
+	{
+		'pattern': '(?i:a.)',
+		'flags': 's',
+		'expected': '(?:[Aa].)',
+		'expectedFlags': 's'
+	},
+	{
+		'pattern': '(?i:a.)',
+		'flags': 's',
+		'options': { modifiers: 'transform', dotAllFlag: 'transform' },
+		'expected': '(?:[Aa][^])',
+		'expectedFlags': ''
+	},
 	// +m
 	{
 		'pattern': '(?m:^[a-z])',

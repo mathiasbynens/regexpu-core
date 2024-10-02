@@ -924,7 +924,7 @@ const rewritePattern = (pattern, flags, options) => {
 		if (config.transform.unicodeFlag) {
 			newFlags = newFlags.replace('u', '');
 		}
-		if (config.transform.dotAllFlag === 'transform') {
+		if (config.transform.dotAllFlag) {
 			newFlags = newFlags.replace('s', '');
 		}
 		onNewFlags(newFlags);
