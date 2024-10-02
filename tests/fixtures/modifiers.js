@@ -145,6 +145,14 @@ const modifiersFixtures = [
 		'expectedFlags': '',
 	},
 	{
+		'pattern': '(a(?-i:a))',
+		'expected': '(a(?:a))'
+	},
+	{
+		'pattern': '(a(?-i:a))',
+		'flags': 'i',
+		'expected': '([Aa](?:a))',
+		'expectedFlags': ''
 	},
 	// -m
 	{
@@ -159,6 +167,28 @@ const modifiersFixtures = [
 		'expected': '(?:[a-z]$)([a-z](?:$|(?=[\\n\\r\\u2028\\u2029])))',
 		'expectedFlags': '',
 	},
+	// -m
+	{
+		'pattern': '(^a|(?-m:^b))',
+		'expected': '(^a|(?:^b))'
+	},
+	{
+		'pattern': '(^a|(?-m:^b))',
+		'flags': 'm',
+		'expected': '((?:^|(?<=[\\n\\r\\u2028\\u2029]))a|(?:^b))',
+		'expectedFlags': ''
+	},
+	// -s
+	{
+		'pattern': '(.(?-s:.))',
+		'expected': '(.(?:.))'
+	},
+	{
+		'pattern': '(.(?-s:.))',
+		'flags': 's',
+		'expected': '([^](?:.))',
+		'expectedFlags': ''
+	},
 	// +ims
 	{
 		'pattern': '(?ims:^[a-z])',
@@ -171,6 +201,11 @@ const modifiersFixtures = [
 		'pattern': '(?-ims:^[a-z].)(^[a-z].)',
 		'flags': 'ims',
 		'expected': '(?:^[a-z].)((?:^|(?<=[\\n\\r\\u2028\\u2029]))[A-Za-z][^])',
+		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?-ims:^[a-z].)(^[a-z].)',
+		'expected': '(?:^[a-z].)(^[a-z].)',
 		'expectedFlags': '',
 	},
 ];

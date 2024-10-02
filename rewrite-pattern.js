@@ -899,8 +899,14 @@ const rewritePattern = (pattern, flags, options) => {
 					}
 				}
 			}
-			for (const flag of Object.keys(allDisabledModifiers)) {
-				config.modifiersData[flag] = true;
+			if (allDisabledModifiers.i) {
+				config.modifiersData.i = config.flags.ignoreCase;
+			}
+			if (allDisabledModifiers.m) {
+				config.modifiersData.m = config.flags.multiline;
+			}
+			if (allDisabledModifiers.s) {
+				config.modifiersData.s = config.flags.dotAll;
 			}
 		}
 	}
