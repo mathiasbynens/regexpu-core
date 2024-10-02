@@ -68,6 +68,28 @@ const modifiersFixtures = [
 		'expected': '(?:(?:[Aa][Bb]))',
 		'expectedFlags': '',
 	},
+	{
+		'pattern': '(?i:є)',
+		'options': { modifiers: 'transform' },
+		'expected': '(?:[\\u0404\\u0454])',
+	},
+	{
+		'pattern': '(?i:[є-ґ])',
+		'options': { modifiers: 'transform' },
+		'matches': ['\u0462', '\u0463', '\u1C87'],
+		'expected': '(?:[\\u0404-\\u040F\\u0454-\\u0491\\u1C87])',
+	},
+	{
+		'pattern': '(?i:[Жщ])',
+		'options': { modifiers: 'transform' },
+		'expected': '(?:[\\u0416\\u0429\\u0436\\u0449])',
+	},
+	{
+		'pattern': '(?i:\\u{10570})',
+		'flags': 'u',
+		'options': { modifiers: 'transform' },
+		'expected': '(?:[\\u{10570}\\u{10597}])'
+	},
 	// +m
 	{
 		'pattern': '(?m:^[a-z])',
@@ -123,26 +145,6 @@ const modifiersFixtures = [
 		'expectedFlags': '',
 	},
 	{
-		'pattern': '(?i:є)',
-		'options': { modifiers: 'transform' },
-		'expected': '(?:[\\u0404\\u0454])',
-	},
-	{
-		'pattern': '(?i:[є-ґ])',
-		'options': { modifiers: 'transform' },
-		'matches': ['\u0462', '\u0463', '\u1C87'],
-		'expected': '(?:[\\u0404-\\u040F\\u0454-\\u0491\\u1C87])',
-	},
-	{
-		'pattern': '(?i:[Жщ])',
-		'options': { modifiers: 'transform' },
-		'expected': '(?:[\\u0416\\u0429\\u0436\\u0449])',
-	},
-	{
-		'pattern': '(?i:\\u{10570})',
-		'flags': 'u',
-		'options': { modifiers: 'transform' },
-		'expected': '(?:[\\u{10570}\\u{10597}])'
 	},
 	// -m
 	{
