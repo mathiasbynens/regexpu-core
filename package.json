@@ -40,10 +40,11 @@
 		"LICENSE-MIT.txt",
 		"rewrite-pattern.js",
 		"data/character-class-escape-sets.js",
+		"data/i-bmp-mappings.js",
 		"data/iu-mappings.js"
 	],
 	"scripts": {
-		"build": "node scripts/iu-mappings.js && node scripts/character-class-escape-sets.js",
+		"build": "node scripts/case-mappings.js && node scripts/character-class-escape-sets.js",
 		"test": "node --test tests/tests.js",
 		"test-node6": "mocha tests",
 		"cover": "NODE_V8_COVERAGE=coverage node --test  --experimental-test-coverage tests/tests.js"
