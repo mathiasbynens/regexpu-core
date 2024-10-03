@@ -1,3 +1,5 @@
+const IS_NODE_6 = process.version.startsWith('v6.');
+
 const modifiersFixtures = [
 	// +i
 	{
@@ -103,7 +105,7 @@ const modifiersFixtures = [
 		'expected': '(?:[Aa][^])',
 		'expectedFlags': ''
 	},
-	{
+	!IS_NODE_6 && {
 		'pattern': '(?i:\\p{Lowercase_Letter})k',
 		'flags': 'u',
 		'options': { modifiers: 'transform' },
@@ -111,7 +113,7 @@ const modifiersFixtures = [
 		'nonMatches': ['cK', 'CK', 'δK', 'ΔK', '\u{118A8}K', '\u{118C8}K', 'c\u212A', 'C\u212A'],
 		'expectedFlags': 'u'
 	},
-	{
+	!IS_NODE_6 && {
 		'pattern': '(?i:\\p{Lowercase_Letter})k',
 		'flags': 'u',
 		'options': { unicodePropertyEscapes: 'transform', modifiers: 'transform' },
@@ -280,6 +282,6 @@ const modifiersFixtures = [
 		'expected': '(?:^[a-z].)(^[a-z].)',
 		'expectedFlags': '',
 	},
-];
+].filter(Boolean);
 
 exports.modifiersFixtures = modifiersFixtures;
