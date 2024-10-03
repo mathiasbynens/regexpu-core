@@ -624,6 +624,17 @@ const processTerm = (item, regenerateOptions, groups) => {
 					item = processCharacterClass(item, regenerateOptions, data);
 				}
 			} else if (config.transform.unicodePropertyEscapes) {
+				const caseFoldBMP = configNeedCaseFoldBMP(),
+					  caseFoldUnicode = configNeedCaseFoldUnicode();
+				const singleChars = data.singleChars;
+				if (caseFoldBMP || caseFoldUnicode) {
+					for (const codepoint of singleChars.toArray()) {
+						const folded = caseFold(codepoint, caseFoldBMP, caseFoldUnicode);
+						if (folded) {
+							singleChars.add(folded);
+						}
+					}
+				}
 				update(
 					item,
 					data.singleChars.toString(regenerateOptions)

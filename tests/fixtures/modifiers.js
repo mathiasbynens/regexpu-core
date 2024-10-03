@@ -167,6 +167,14 @@ const modifiersFixtures = [
 		'expected': '([Aa](?:a))',
 		'expectedFlags': ''
 	},
+	{
+		'pattern': '\\p{Lowercase_Letter}(?-i:k)',
+		'flags': 'iu',
+		'options': { unicodePropertyEscapes: 'transform', modifiers: 'transform' },
+		'matches': ['ck', 'Ck', 'δk', 'Δk', '\u{118A8}k', '\u{118C8}k'],
+		'nonMatches': ['cK', 'CK', 'δK', 'ΔK', '\u{118A8}K', '\u{118C8}K', 'c\u212A', 'C\u212A'],
+		'expectedFlags': 'u'
+	},
 	// -m
 	{
 		'pattern': '(?-m:^[a-z])(^[a-z])',
