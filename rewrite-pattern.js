@@ -579,12 +579,12 @@ const processModifiers = (item, regenerateOptions, groups) => {
 
 	const oldData = Object.assign({}, config.modifiersData);
 
-	enabling.split('').forEach(flag => {
+	for (const flag of enabling) {
 		config.modifiersData[flag] = true;
-	});
-	disabling.split('').forEach(flag => {
+	}
+	for (const flag of disabling) {
 		config.modifiersData[flag] = false;
-	});
+	}
 
 	item.body = item.body.map(term => {
 		return processTerm(term, regenerateOptions, groups);
@@ -888,10 +888,8 @@ const rewritePattern = (pattern, flags, options) => {
 					for (const key of Object.keys(node)) {
 						const value = node[key];
 						if (key == 'modifierFlags') {
-							if (value.disabling.length > 0){
-								value.disabling.split('').forEach((flag)=>{
-									allDisabledModifiers[flag] = true
-								});
+							for (const flag of value.disabling) {
+								allDisabledModifiers[flag] = true;
 							}
 						} else if (typeof value == 'object' && value != null) {
 							itemStack.push(value);
@@ -899,8 +897,14 @@ const rewritePattern = (pattern, flags, options) => {
 					}
 				}
 			}
-			for (const flag of Object.keys(allDisabledModifiers)) {
-				config.modifiersData[flag] = true;
+			if (allDisabledModifiers.i) {
+				config.modifiersData.i = config.flags.ignoreCase;
+			}
+			if (allDisabledModifiers.m) {
+				config.modifiersData.m = config.flags.multiline;
+			}
+			if (allDisabledModifiers.s) {
+				config.modifiersData.s = config.flags.dotAll;
 			}
 		}
 	}
@@ -918,7 +922,7 @@ const rewritePattern = (pattern, flags, options) => {
 		if (config.transform.unicodeFlag) {
 			newFlags = newFlags.replace('u', '');
 		}
-		if (config.transform.dotAllFlag === 'transform') {
+		if (config.transform.dotAllFlag) {
 			newFlags = newFlags.replace('s', '');
 		}
 		onNewFlags(newFlags);
