@@ -18,8 +18,8 @@ const { unicodeSetFixtures } = require("./fixtures/unicode-set.js");
 const { modifiersFixtures } = require("./fixtures/modifiers.js");
 
 /** For node 6 compat */
-assert.match || (assert.match = function match(value, regex) { assert.ok(regex.exec(value) !== null) });
-assert.doesNotMatch || (assert.doesNotMatch = function doesNotMatch(value, regex) { assert.ok(regex.exec(value) === null) });
+assert.match || (assert.match = function match(value, regex) { assert.ok(regex.exec(value) !== null, `${value} does not match ${regex.toString()}`) });
+assert.doesNotMatch || (assert.doesNotMatch = function doesNotMatch(value, regex) { assert.ok(regex.exec(value) === null, `${value} does match ${regex.toString()}`) });
 
 /**
  * comput output regex flags from input flags and transform options
@@ -71,6 +71,7 @@ const getPropertyValuePattern = (path) => {
 };
 
 describe('unicodePropertyEscapes', () => {
+	// ignore tests as @unicode/unicode-* library does not support node.js 6
 	if (IS_NODE_6) return;
 
 	const features = {
