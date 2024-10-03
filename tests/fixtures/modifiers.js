@@ -103,6 +103,36 @@ const modifiersFixtures = [
 		'expected': '(?:[Aa][^])',
 		'expectedFlags': ''
 	},
+	{
+		'pattern': '(?i:\\p{Lowercase_Letter})k',
+		'flags': 'u',
+		'options': { modifiers: 'transform' },
+		'matches': ['ck', 'Ck', 'δk', 'Δk', '\u{118A8}k', '\u{118C8}k'],
+		'nonMatches': ['cK', 'CK', 'δK', 'ΔK', '\u{118A8}K', '\u{118C8}K', 'c\u212A', 'C\u212A'],
+		'expectedFlags': 'u'
+	},
+	{
+		'pattern': '(?i:\\p{Lowercase_Letter})k',
+		'flags': 'u',
+		'options': { unicodePropertyEscapes: 'transform', modifiers: 'transform' },
+		'matches': ['ck', 'Ck', 'δk', 'Δk', '\u{118A8}k', '\u{118C8}k'],
+		'nonMatches': ['cK', 'CK', 'δK', 'ΔK', '\u{118A8}K', '\u{118C8}K', 'c\u212A', 'C\u212A'],
+		'expectedFlags': 'u'
+	},
+	{
+		'pattern': '(?i:[\\p{Lowercase_Letter}&&\\p{ASCII}])a',
+		'flags': 'v',
+		'options': { unicodeSetsFlag: 'transform', modifiers: 'transform' },
+		'expected': '(?:[A-Za-z\\u017F\\u212A])a',
+		'expectedFlags': 'u'
+	},
+	{
+		'pattern': '(?i:[\\p{Lowercase_Letter}&&\\p{ASCII}])a',
+		'flags': 'v',
+		'options': { unicodeSetsFlag: 'transform', unicodePropertyEscapes: 'transform', modifiers: 'transform' },
+		'expected': '(?:[A-Za-z\\u017F\\u212A])a',
+		'expectedFlags': 'u'
+	},
 	// +m
 	{
 		'pattern': '(?m:^[a-z])',
@@ -170,9 +200,24 @@ const modifiersFixtures = [
 	{
 		'pattern': '\\p{Lowercase_Letter}(?-i:k)',
 		'flags': 'iu',
+		'options': { modifiers: 'transform' },
+		'matches': ['ck', 'Ck', 'δk', 'Δk', '\u{118A8}k', '\u{118C8}k'],
+		'nonMatches': ['cK', 'CK', 'δK', 'ΔK', '\u{118A8}K', '\u{118C8}K', 'c\u212A', 'C\u212A'],
+		'expectedFlags': 'u'
+	},
+	{
+		'pattern': '\\p{Lowercase_Letter}(?-i:k)',
+		'flags': 'iu',
 		'options': { unicodePropertyEscapes: 'transform', modifiers: 'transform' },
 		'matches': ['ck', 'Ck', 'δk', 'Δk', '\u{118A8}k', '\u{118C8}k'],
 		'nonMatches': ['cK', 'CK', 'δK', 'ΔK', '\u{118A8}K', '\u{118C8}K', 'c\u212A', 'C\u212A'],
+		'expectedFlags': 'u'
+	},
+	{
+		'pattern': '[\\p{Lowercase_Letter}&&\\p{ASCII}](?-i:a)',
+		'flags': 'iv',
+		'options': { unicodeSetsFlag: 'transform', modifiers: 'transform' },
+		'expected': '[A-Za-z\\u017F\\u212A](?:a)',
 		'expectedFlags': 'u'
 	},
 	{

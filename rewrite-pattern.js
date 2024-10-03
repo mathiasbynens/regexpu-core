@@ -631,7 +631,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 					data.transformed = true;
 					item = processCharacterClass(item, regenerateOptions, data);
 				}
-			} else if (config.transform.unicodePropertyEscapes) {
+			} else if (config.transform.unicodePropertyEscapes || configGetCaseFoldFlags()) {
 				update(
 					item,
 					data.singleChars.toString(regenerateOptions)
