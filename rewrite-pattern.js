@@ -128,7 +128,17 @@ const getUnicodePropertyEscapeSet = (value, isNegative) => {
 const getUnicodePropertyEscapeCharacterClassData = (property, isNegative) => {
 	const set = getUnicodePropertyEscapeSet(property, isNegative);
 	const data = getCharacterClassEmptyData();
-	data.singleChars = set.characters;
+	const singleChars = set.characters;
+	const caseFoldFlags = configGetCaseFoldFlags();
+	if (caseFoldFlags) {
+		for (const codepoint of singleChars.toArray()) {
+			const folded = caseFold(codepoint, caseFoldFlags);
+			if (folded) {
+				singleChars.add(folded);
+			}
+		}
+	}
+	data.singleChars = singleChars;
 	if (set.strings.size > 0) {
 		data.longStrings = set.strings;
 		data.maybeIncludesStrings = true;
@@ -622,16 +632,6 @@ const processTerm = (item, regenerateOptions, groups) => {
 					item = processCharacterClass(item, regenerateOptions, data);
 				}
 			} else if (config.transform.unicodePropertyEscapes) {
-				const caseFoldFlags = configGetCaseFoldFlags();
-				const singleChars = data.singleChars;
-				if (caseFoldFlags) {
-					for (const codepoint of singleChars.toArray()) {
-						const folded = caseFold(codepoint, caseFoldFlags);
-						if (folded) {
-							singleChars.add(folded);
-						}
-					}
-				}
 				update(
 					item,
 					data.singleChars.toString(regenerateOptions)
