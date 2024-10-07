@@ -18,8 +18,8 @@ const { unicodeSetFixtures } = require("./fixtures/unicode-set.js");
 const { modifiersFixtures } = require("./fixtures/modifiers.js");
 
 /** For node 6 compat */
-assert.match || (assert.match = function match(value, regex) { assert.ok(regex.exec(value) !== null) });
-assert.doesNotMatch || (assert.doesNotMatch = function doesNotMatch(value, regex) { assert.ok(regex.exec(value) === null) });
+assert.match || (assert.match = function match(value, regex) { assert.ok(regex.exec(value) !== null, `${value} does not match ${regex.toString()}`) });
+assert.doesNotMatch || (assert.doesNotMatch = function doesNotMatch(value, regex) { assert.ok(regex.exec(value) === null, `${value} does match ${regex.toString()}`) });
 
 /**
  * comput output regex flags from input flags and transform options
@@ -71,6 +71,7 @@ const getPropertyValuePattern = (path) => {
 };
 
 describe('unicodePropertyEscapes', () => {
+	// ignore tests as @unicode/unicode-* library does not support node.js 6
 	if (IS_NODE_6) return;
 
 	const features = {
@@ -530,16 +531,18 @@ describe('modifiers', () => {
 
 		it('rewrites `/' + pattern + '/' + flags + '` correctly', () => {
 			const transpiled = rewritePattern(pattern, flags, options);
-			assert.strictEqual(transpiled, expected);
+			if (expected != undefined) {
+				assert.strictEqual(transpiled, expected);
+			}
 			if (fixture.expectedFlags != undefined) {
 				assert.strictEqual(actualFlags, fixture.expectedFlags);
 			}
 			for (const match of fixture.matches || []) {
-				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
+				const transpiledRegex = new RegExp(transpiled, actualFlags);
 				assert.match(match, transpiledRegex);
 			}
 			for (const nonMatch of fixture.nonMatches || []) {
-				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
+				const transpiledRegex = new RegExp(transpiled, actualFlags);
 				assert.doesNotMatch(nonMatch, transpiledRegex);
 			}
 		});
