@@ -810,13 +810,9 @@ const validateOptions = (options) => {
 			case 'unicodePropertyEscapes':
 			case 'unicodeSetsFlag':
 			case 'namedGroups':
+			case 'modifiers':
 				if (value != null && value !== false && value !== 'transform') {
 					throw new Error(`.${key} must be false (default) or 'transform'.`);
-				}
-				break;
-			case 'modifiers':
-				if (value != null && value !== false && value !== 'parse' && value !== 'transform') {
-					throw new Error(`.${key} must be false (default), 'parse' or 'transform'.`);
 				}
 				break;
 			case 'onNamedGroup':
@@ -859,9 +855,8 @@ const rewritePattern = (pattern, flags, options) => {
 	config.modifiersData.m = undefined;
 
 	const regjsparserFeatures = {
-		'modifiers': Boolean(options && options.modifiers),
-
-		// Enable every stable RegExp feature by default
+		// Always enable every stable RegExp feature
+		'modifiers': true,
 		'unicodePropertyEscape': true,
 		'unicodeSet': true,
 		'namedGroups': true,
