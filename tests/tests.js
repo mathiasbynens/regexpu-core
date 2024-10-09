@@ -21,26 +21,6 @@ const { modifiersFixtures } = require("./fixtures/modifiers.js");
 assert.match || (assert.match = function match(value, regex) { assert.ok(regex.exec(value) !== null, `${value} does not match ${regex.toString()}`) });
 assert.doesNotMatch || (assert.doesNotMatch = function doesNotMatch(value, regex) { assert.ok(regex.exec(value) === null, `${value} does match ${regex.toString()}`) });
 
-/**
- * comput output regex flags from input flags and transform options
- *
- * @param {string} inputFlags
- * @param {*} regexpuOptions
- */
-function getOutputFlags(inputFlags, options) {
-	let result = inputFlags;
-	if (options.unicodeSetsFlag === "transform") {
-		result = result.replace("v", "u");
-	}
-	if (options.unicodeFlag === "transform") {
-		result = result.replace("u", "");
-	}
-	if (options.dotAllFlag === "transform") {
-		result = result.replace("s", "");
-	}
-	return result;
-}
-
 describe('rewritePattern { unicodeFlag }', () => {
 	const options = {
 		'unicodeFlag': 'transform'
@@ -417,17 +397,19 @@ describe('character classes', () => {
 		const options = fixture.options;
 		const transformUnicodeFlag = options.unicodeFlag === 'transform';
 		it('rewrites `/' + pattern + '/' + flags + '` with' + (transformUnicodeFlag ? 'out' : '') + ' unicode correctly', () => {
+			let actualFlags = flags;
+			options.onNewFlags = (flags) => { actualFlags = flags };
 			const transpiled = rewritePattern(pattern, flags, options);
 			const expected = fixture.expected;
 			if (transpiled != '(?:' + expected + ')') {
 				assert.strictEqual(transpiled, expected);
 			}
 			for (const match of fixture.matches || []) {
-				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
+				const transpiledRegex = new RegExp(transpiled, actualFlags);
 				assert.match(match, transpiledRegex);
 			}
 			for (const nonMatch of fixture.nonMatches || []) {
-				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
+				const transpiledRegex = new RegExp(transpiled, actualFlags);
 				assert.doesNotMatch(nonMatch, transpiledRegex);
 			}
 		});
@@ -443,20 +425,24 @@ describe('unicodeSets (v) flag', () => {
 				const { pattern, transpiled: expected } = fixture;
 				const inputRE = `/${pattern}/${flag}`;
 				it(`rewrites \`${inputRE}\` correctly without using the u flag`, () => {
+					let actualFlags = flag;
 					const options = {
 						unicodeSetsFlag: "transform",
 						unicodeFlag: "transform",
+						onNewFlags(flags) {
+							actualFlags = flags;
+						}
 					};
 					const transpiled = rewritePattern(pattern, flag, options);
 					if (transpiled != "(?:" + expected + ")") {
 						assert.strictEqual(transpiled, expected);
 					}
 					for (const match of fixture.matches || []) {
-						const transpiledRegex = new RegExp(transpiled, getOutputFlags(flag, options));
+						const transpiledRegex = new RegExp(transpiled, actualFlags);
 						assert.match(match, transpiledRegex);
 					}
 					for (const nonMatch of fixture.nonMatches || []) {
-						const transpiledRegex = new RegExp(transpiled, getOutputFlags(flag, options));
+						const transpiledRegex = new RegExp(transpiled, actualFlags);
 						assert.doesNotMatch(nonMatch, transpiledRegex);
 					}
 				});
@@ -488,16 +474,18 @@ describe('unicodeSets (v) flag', () => {
 			});
 		} else {
 			it(`rewrites \`${inputRE}\` correctly ${transformUnicodeFlag ? 'without ' : ''}using the u flag`, () => {
+				let actualFlags = flags;
+				options.onNewFlags = (flags) => { actualFlags = flags };
 				const transpiled = rewritePattern(pattern, flags, options);
 				if (transpiled != '(?:' + expected + ')') {
 					assert.strictEqual(transpiled, expected);
 				}
 				for (const match of fixture.matches || []) {
-					const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
+					const transpiledRegex = new RegExp(transpiled, actualFlags);
 					assert.match(match, transpiledRegex);
 				}
 				for (const nonMatch of fixture.nonMatches || []) {
-					const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
+					const transpiledRegex = new RegExp(transpiled, actualFlags);
 					assert.doesNotMatch(nonMatch, transpiledRegex);
 				}
 			});
