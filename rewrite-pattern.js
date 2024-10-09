@@ -27,7 +27,8 @@ function regenerateContainsAstral(regenerateData) {
 	return data.length >= 1 && data[data.length - 1] >= 0x10000;
 }
 
-const SPECIAL_CHARS = /([\\^$.*+?()[\]{}|])/g;
+// https://tc39.es/ecma262/#prod-SyntaxCharacter
+const SYNTAX_CHARS = /[\\^$.*+?()[\]{}|]/g;
 
 // Prepare a Regenerate set containing all code points, used for negative
 // character classes (if any).
@@ -120,7 +121,7 @@ const getUnicodePropertyEscapeSet = (value, isNegative) => {
 		characters: set.characters.clone(),
 		strings: set.strings
 			// We need to escape strings like *️⃣ to make sure that they can be safely used in unions.
-			? new Set(set.strings.map(str => str.replace(SPECIAL_CHARS, '\\$1')))
+			? new Set(set.strings.map(str => str.replace(SYNTAX_CHARS, '\\$&')))
 			: new Set()
 	};
 };
