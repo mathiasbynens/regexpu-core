@@ -487,20 +487,20 @@ describe('unicodeSets (v) flag', () => {
 				}, throws);
 			});
 		} else {
-			const transpiled = rewritePattern(pattern, flags, options);
 			it(`rewrites \`${inputRE}\` correctly ${transformUnicodeFlag ? 'without ' : ''}using the u flag`, () => {
+				const transpiled = rewritePattern(pattern, flags, options);
 				if (transpiled != '(?:' + expected + ')') {
 					assert.strictEqual(transpiled, expected);
 				}
+				for (const match of fixture.matches || []) {
+					const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
+					assert.match(match, transpiledRegex);
+				}
+				for (const nonMatch of fixture.nonMatches || []) {
+					const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
+					assert.doesNotMatch(nonMatch, transpiledRegex);
+				}
 			});
-			for (const match of fixture.matches || []) {
-				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
-				assert.match(match, transpiledRegex);
-			}
-			for (const nonMatch of fixture.nonMatches || []) {
-				const transpiledRegex = new RegExp(transpiled, getOutputFlags(flags, options));
-				assert.doesNotMatch(nonMatch, transpiledRegex);
-			}
 		}
 	}
 
