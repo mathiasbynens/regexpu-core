@@ -10,7 +10,7 @@ const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 const IS_NODE_6 = process.version.startsWith('v6.');
 
 const { unicodeFixtures } = require("./fixtures/unicode.js");
-const { unicodePropertyEscapePathExpressionsFixtures } = require("./fixtures/unicode-property-escape.js");
+const { unicodePropertyEscapeFixtures, unicodePropertyEscapePathExpressionsFixtures } = require("./fixtures/unicode-property-escape.js");
 const { dotAllFlagFixtures } = require("./fixtures/dot-all-flag.js");
 const { namedGroupFixtures } = require("./fixtures/named-group.js");
 const { characterClassFixtures } = require("./fixtures/character-class.js");
@@ -51,13 +51,56 @@ const getPropertyValuePattern = (path) => {
 };
 
 describe('unicodePropertyEscapes', () => {
-	// ignore tests as @unicode/unicode-* library does not support node.js 6
-	if (IS_NODE_6) return;
-
 	const features = {
 		'unicodePropertyEscapes': 'transform',
 		'unicodeFlag': 'transform'
 	};
+	for (const fixture of unicodePropertyEscapeFixtures) {
+		const pattern = fixture.pattern;
+		const flags = fixture.flags || "u";
+		const options = fixture.options || features;
+		const transformUnicodeFlag = options.unicodeFlag === "transform";
+
+		const inputRE = `/${pattern}/${flags}`;
+
+		const expected = fixture.expected;
+		const throws = fixture.throws;
+
+		if (throws) {
+			if (expected) {
+				throw new Error(
+					`TEST ERROR: ${inputRE} cannot both throw and have an expected output.`
+				);
+			}
+			it(`throws for \`${inputRE}\` ${transformUnicodeFlag ? "without " : ""}using the u flag`, () => {
+				assert.throws(() => {
+					rewritePattern(pattern, flags, options);
+				}, throws);
+			});
+		} else {
+			it(`rewrites \`${inputRE}\` correctly ${transformUnicodeFlag ? "without " : ""}using the u flag`, () => {
+				let actualFlags = flags;
+				options.onNewFlags = (flags) => {
+					actualFlags = flags;
+				};
+				const transpiled = rewritePattern(pattern, flags, options);
+				if (transpiled != "(?:" + expected + ")") {
+					assert.strictEqual(transpiled, expected);
+				}
+				for (const match of fixture.matches || []) {
+					const transpiledRegex = new RegExp(transpiled, actualFlags);
+					assert.match(match, transpiledRegex);
+				}
+				for (const nonMatch of fixture.nonMatches || []) {
+					const transpiledRegex = new RegExp(transpiled, actualFlags);
+					assert.doesNotMatch(nonMatch, transpiledRegex);
+				}
+			});
+		}
+	}
+	
+	// ignore unicodePropertyEscapePathExpressionsFixtures tests as @unicode/unicode-* library does not support node.js 6
+	if (IS_NODE_6) return;
 	for (const fixture of unicodePropertyEscapePathExpressionsFixtures) {
 		const expected = getPropertyValuePattern(fixture.path);
 		for (const pattern of fixture.expressions) {
@@ -77,183 +120,6 @@ describe('unicodePropertyEscapes', () => {
 			});
 		}
 	}
-	it('transpiles Unicode property escapes within various constructions', () => {
-		assert.equal(
-			rewritePattern('\\p{ASCII_Hex_Digit}', 'u', features),
-			'[0-9A-Fa-f]'
-		);
-		assert.equal(
-			rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', features),
-			'(?:\\uD811[\\uDC00-\\uDE46])'
-		);
-		assert.equal(
-			rewritePattern('\\p{ASCII_Hex_Digit}+', 'u', features),
-			'[0-9A-Fa-f]+'
-		);
-		assert.equal(
-			rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}+', 'u', features),
-			'(?:\\uD811[\\uDC00-\\uDE46])+'
-		);
-		assert.equal(
-			rewritePattern('[\\p{ASCII_Hex_Digit}_]', 'u', features),
-			'[0-9A-F_a-f]'
-		);
-		assert.equal(
-			rewritePattern('[^\\p{ASCII_Hex_Digit}_]', 'u', features),
-			'(?:[\\0-\\/:-@G-\\^`g-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
-		);
-		assert.equal(
-			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', features),
-			'(?:[\\0-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF])'
-		);
-		assert.equal(
-			rewritePattern('[\\p{Script_Extensions=Anatolian_Hieroglyphs}_]', 'u', features),
-			'(?:_|\\uD811[\\uDC00-\\uDE46])'
-		);
-		assert.equal(
-			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}_]', 'u', features),
-			'(?:[\\0-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF])'
-		);
-		assert.equal(
-			rewritePattern('(?:\\p{ASCII_Hex_Digit})', 'u', features),
-			'(?:[0-9A-Fa-f])'
-		);
-		assert.equal(
-			rewritePattern('(?:\\p{Script_Extensions=Anatolian_Hieroglyphs})', 'u', features),
-			'(?:(?:\\uD811[\\uDC00-\\uDE46]))'
-		);
-		assert.equal(
-			rewritePattern('(?:\\p{Script_Extensions=Wancho})', 'u', features),
-			'(?:(?:\\uD838[\\uDEC0-\\uDEF9\\uDEFF]))'
-		);
-	});
-	it('throws on unknown binary properties', () => {
-		assert.throws(() => {
-			rewritePattern('\\p{UnknownBinaryProperty}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{UnknownBinaryProperty}', 'u', features);
-		}, Error);
-	});
-	it('throws on explicitly unsupported properties', () => {
-		// https://github.com/tc39/proposal-regexp-unicode-property-escapes/issues/27
-		assert.throws(() => {
-			rewritePattern('\\P{Composition_Exclusion}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\p{Expands_On_NFC}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\p{Expands_On_NFD}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\p{Expands_On_NFKC}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\p{Expands_On_NFKD}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\p{FC_NFKC_Closure}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\p{Full_Composition_Exclusion}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Grapheme_Link}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Hyphen}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Other_Alphabetic}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Other_Default_Ignorable_Code_Point}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Other_Grapheme_Extend}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Other_ID_Continue}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Other_ID_Start}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Other_Lowercase}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Other_Math}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Other_Uppercase}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{Prepended_Concatenation_Mark}', 'u', features);
-		}, Error);
-	});
-	it('throws on non-binary properties without a value', () => {
-		assert.throws(() => {
-			rewritePattern('\\p{General_Category}', 'u', features);
-		}, Error);
-	});
-	it('throws on unknown property values', () => {
-		assert.throws(() => {
-			rewritePattern('\\p{General_Category=UnknownCategory}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{General_Category=UnknownCategory}', 'u', features);
-		}, Error);
-	});
-	it('throws when loose matching is attempted', () => {
-		assert.throws(() => {
-			rewritePattern('\\p{gc=uppercaseletter}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\p{Block=Superscripts and Subscripts}', 'u', features);
-		}, Error);
-		assert.throws(() => {
-			rewritePattern('\\P{_-_lOwEr_C-A_S-E_-_}', 'u', features);
-		}, Error);
-	});
-	it('simplifies the output using Unicode code point escapes when not transforming the u flag', () => {
-		assert.equal(
-			rewritePattern('\\p{Script_Extensions=Anatolian_Hieroglyphs}', 'u', {
-				'unicodePropertyEscapes': 'transform',
-			}),
-			'[\\u{14400}-\\u{14646}]'
-		);
-		assert.equal(
-			rewritePattern('[\\P{Script_Extensions=Anatolian_Hieroglyphs}]', 'u', {
-				'unicodePropertyEscapes': 'transform',
-			}),
-			'[\\0-\\u{143FF}\\u{14647}-\\u{10FFFF}]'
-		);
-	});
-	it('should not transpile unicode property when unicodePropertyEscapes is not enabled', () => {
-		assert.equal(
-			rewritePattern('\\p{ASCII_Hex_Digit}\\P{ASCII_Hex_Digit}', 'u'),
-			'\\p{ASCII_Hex_Digit}\\P{ASCII_Hex_Digit}'
-		);
-	});
-	it('should transpile to minimal case-insensitive set', () => {
-		assert.equal(
-			rewritePattern('\u03B8', 'iu', {
-				'unicodeFlag': 'transform'
-			}),
-			'[\\u03B8\\u03F4]'
-		);
-		assert.equal(
-			rewritePattern('\u03B8', 'iu'),
-			'\\u03B8'
-		);
-	});
-	it('should not replace `-` symbol when not in character class range', () => {
-		assert.equal(
-			rewritePattern('-'),
-			'-'
-		)
-	})
 });
 
 describe('dotAllFlag', () => {

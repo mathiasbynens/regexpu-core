@@ -1,4 +1,206 @@
-const unicodePropertyEscapeFixtures = [];
+const unicodePropertyEscapeFixtures = [
+	{
+		pattern: '\\p{ASCII_Hex_Digit}',
+		expected: '[0-9A-Fa-f]'
+	},
+	{
+		pattern: '\\p{Script_Extensions=Anatolian_Hieroglyphs}',
+		expected: '(?:\\uD811[\\uDC00-\\uDE46])'
+	},
+	{
+		pattern: '\\p{ASCII_Hex_Digit}+',
+		expected: '[0-9A-Fa-f]+',
+	},
+	{
+		pattern: '\\p{Script_Extensions=Anatolian_Hieroglyphs}+',
+		expected: '(?:\\uD811[\\uDC00-\\uDE46])+',
+	},
+	{
+		pattern: '[\\p{ASCII_Hex_Digit}_]',
+		expected: '[0-9A-F_a-f]',
+	},
+	{
+		pattern: '[^\\p{ASCII_Hex_Digit}_]',
+		expected: '(?:[\\0-\\/:-@G-\\^`g-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])',
+	},
+	{
+		pattern: '[\\P{Script_Extensions=Anatolian_Hieroglyphs}]',
+		expected: '(?:[\\0-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF])'
+	},
+	{
+		pattern: '[\\p{Script_Extensions=Anatolian_Hieroglyphs}_]',
+		expected: '(?:_|\\uD811[\\uDC00-\\uDE46])',
+	},
+	{
+		pattern: '[\\P{Script_Extensions=Anatolian_Hieroglyphs}_]',
+		expected: '(?:[\\0-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF])',
+	},
+	{
+		pattern: '(?:\\p{ASCII_Hex_Digit})',
+		expected: '(?:[0-9A-Fa-f])',
+	},
+	{
+		pattern: '(?:\\p{Script_Extensions=Anatolian_Hieroglyphs})',
+		expected: '(?:(?:\\uD811[\\uDC00-\\uDE46]))',
+	},
+	{
+		pattern: '(?:\\p{Script_Extensions=Wancho})',
+		expected: '(?:(?:\\uD838[\\uDEC0-\\uDEF9\\uDEFF]))',
+	},
+	// simplifies the output using Unicode code point escapes when not transforming the u flag
+	{
+		pattern: '\\p{Script_Extensions=Anatolian_Hieroglyphs}',
+		options: {
+			'unicodePropertyEscapes': 'transform',
+		},
+		expected: '[\\u{14400}-\\u{14646}]',
+	},
+	{
+		pattern: '[\\P{Script_Extensions=Anatolian_Hieroglyphs}]',
+		options: {
+			'unicodePropertyEscapes': 'transform',
+		},
+		expected: '[\\0-\\u{143FF}\\u{14647}-\\u{10FFFF}]',
+	},
+	// should transpile to minimal case-insensitive set
+	{
+		pattern: '\u03B8',
+		flags: 'iu',
+		options: {
+			'unicodeFlag': 'transform'
+		},
+		expected: '[\\u03B8\\u03F4]',
+	},
+	{
+		pattern: '\u03B8',
+		flags: 'iu',
+		options: {},
+		expected: '\\u03B8',
+	},
+	// should not replace `-` symbol when not in character class range
+	{
+		pattern: '-',
+		options: {},
+		expected: '-',
+	},
+	// should not transpile unicode property when unicodePropertyEscapes is not enabled
+	{
+		pattern: '\\p{ASCII_Hex_Digit}\\P{ASCII_Hex_Digit}',
+		options: {},
+		expected: '\\p{ASCII_Hex_Digit}\\P{ASCII_Hex_Digit}'
+	},
+
+	// throws on unknown binary properties
+	{
+		pattern: '\\p{UnknownBinaryProperty}',
+		throws: /Unknown property: UnknownBinaryProperty/
+	},
+	{
+		pattern: '\\P{UnknownBinaryProperty}',
+		throws: /Unknown property: UnknownBinaryProperty/
+	},
+	// throws on explicitly unsupported properties
+	// https://github.com/tc39/proposal-regexp-unicode-property-escapes/issues/27
+	{
+		pattern: '\\P{Composition_Exclusion}',
+		throws: /Unknown property: Composition_Exclusion/
+	},
+	{
+		pattern: '\\p{Expands_On_NFC}',
+		throws: /Unknown property: Expands_On_NFC/
+	},
+	{
+		pattern: '\\p{Expands_On_NFD}',
+		throws: /Unknown property: Expands_On_NFD/
+	},
+	{
+		pattern: '\\p{Expands_On_NFKC}',
+		throws: /Unknown property: Expands_On_NFKC/
+	},
+	{
+		pattern: '\\p{Expands_On_NFKD}',
+		throws: /Unknown property: Expands_On_NFKD/
+	},
+	{
+		pattern: '\\p{FC_NFKC_Closure}',
+		throws: /Unknown property: FC_NFKC_Closure/
+	},
+	{
+		pattern: '\\p{Full_Composition_Exclusion}',
+		throws: /Unknown property: Full_Composition_Exclusion/
+	},
+	{
+		pattern: '\\P{Grapheme_Link}',
+		throws: /Unknown property: Grapheme_Link/
+	},
+	{
+		pattern: '\\P{Hyphen}',
+		throws: /Unknown property: Hyphen/
+	},
+	{
+		pattern: '\\P{Other_Alphabetic}',
+		throws: /Unknown property: Other_Alphabetic/
+	},
+	{
+		pattern: '\\P{Other_Default_Ignorable_Code_Point}',
+		throws: /Unknown property: Other_Default_Ignorable_Code_Point/
+	},
+	{
+		pattern: '\\P{Other_Grapheme_Extend}',
+		throws: /Unknown property: Other_Grapheme_Extend/
+	},
+	{
+		pattern: '\\P{Other_ID_Continue}',
+		throws: /Unknown property: Other_ID_Continue/
+	},
+	{
+		pattern: '\\P{Other_ID_Start}',
+		throws: /Unknown property: Other_ID_Start/
+	},
+	{
+		pattern: '\\P{Other_Lowercase}',
+		throws: /Unknown property: Other_Lowercase/
+	},
+	{
+		pattern: '\\P{Other_Math}',
+		throws: /Unknown property: Other_Math/
+	},
+	{
+		pattern: '\\P{Other_Uppercase}',
+		throws: /Unknown property: Other_Uppercase/
+	},
+	{
+		pattern: '\\P{Prepended_Concatenation_Mark}',
+		throws: /Unknown property: Prepended_Concatenation_Mark/
+	},
+	// throws on non-binary properties without a value
+	{
+		pattern: '\\p{General_Category}',
+		throws: /Failed to recognize value `undefined` for property `General_Category`\./
+	},
+	// throws on unknown property values
+	{
+		pattern: '\\p{General_Category=UnknownCategory}',
+		throws: /Unknown value `UnknownCategory` for property `General_Category`\./
+	},
+	{
+		pattern: '\\P{General_Category=UnknownCategory}',
+		throws: /Unknown value `UnknownCategory` for property `General_Category`\./
+	},
+	// throws when loose matching is attempted
+	{
+		pattern: '\\p{gc=uppercaseletter}',
+		throws: /Unknown value `uppercaseletter` for property `General_Category`\./
+	},
+	{
+		pattern: '\\p{Block=Superscripts and Subscripts}',
+		throws: /Unknown property: Block/
+	},
+	{
+		pattern: '\\P{_-_lOwEr_C-A_S-E_-_}',
+		throws: /Unknown property: _-_lOwEr_C-A_S-E_-_/
+	}
+];
 
 const unicodePropertyEscapePathExpressionsFixtures = [
 	// https://unicode.org/reports/tr18/#RL1.2 item 1
