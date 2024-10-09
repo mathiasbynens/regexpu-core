@@ -1,4 +1,6 @@
-const unicodePropertyEscapeFixtures = [
+const unicodePropertyEscapeFixtures = [];
+
+const unicodePropertyEscapePathExpressionsFixtures = [
 	// https://unicode.org/reports/tr18/#RL1.2 item 1
 	{
 		'path': 'General_Category/Uppercase_Letter',
@@ -495,3 +497,4 @@ const unicodePropertyEscapeFixtures = [
 ];
 
 exports.unicodePropertyEscapeFixtures = unicodePropertyEscapeFixtures;
+exports.unicodePropertyEscapePathExpressionsFixtures = unicodePropertyEscapePathExpressionsFixtures;

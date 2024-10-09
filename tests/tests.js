@@ -10,7 +10,7 @@ const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 const IS_NODE_6 = process.version.startsWith('v6.');
 
 const { unicodeFixtures } = require("./fixtures/unicode.js");
-const { unicodePropertyEscapeFixtures } = require("./fixtures/unicode-property-escape.js");
+const { unicodePropertyEscapePathExpressionsFixtures } = require("./fixtures/unicode-property-escape.js");
 const { dotAllFlagFixtures } = require("./fixtures/dot-all-flag.js");
 const { namedGroupFixtures } = require("./fixtures/named-group.js");
 const { characterClassFixtures } = require("./fixtures/character-class.js");
@@ -58,7 +58,7 @@ describe('unicodePropertyEscapes', () => {
 		'unicodePropertyEscapes': 'transform',
 		'unicodeFlag': 'transform'
 	};
-	for (const fixture of unicodePropertyEscapeFixtures) {
+	for (const fixture of unicodePropertyEscapePathExpressionsFixtures) {
 		const expected = getPropertyValuePattern(fixture.path);
 		for (const pattern of fixture.expressions) {
 			const p = `\\p{${ pattern }}`;
