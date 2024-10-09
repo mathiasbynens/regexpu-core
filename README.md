@@ -140,13 +140,7 @@ These options can be set to `false` or `'transform'`. When using `'transform'`, 
   // → '(?:(?![f-h])[\s\S])' (to be used without /u)
   ```
 
-#### Experimental regular expression features
-
-These options can be set to `false`, `'parse'` and `'transform'`. When using `'transform'`, the corresponding features are compiled to older syntax that can run in older browsers. When using `'parse'`, they are parsed and left as-is in the output pattern. When using `false` (the default), they result in a syntax error if used.
-
-Once these features become stable (when the proposals are accepted as part of ECMAScript), they will be parsed by default and thus `'parse'` will behave like `false`.
-
-- `modifiers` - [Inline `m`/`s`/`i` modifiers](https://github.com/tc39/proposal-regexp-modifiers)
+- `modifiers` - [Inline `i`/`m`/`s` modifiers](https://github.com/tc39/proposal-regexp-modifiers)
 
   ```js
   rewritePattern('(?i:[a-z])[a-z]', '', {
@@ -154,6 +148,12 @@ Once these features become stable (when the proposals are accepted as part of EC
   });
   // → '(?:[a-zA-Z])([a-z])'
   ```
+
+#### Experimental regular expression features
+
+These options can be set to `false`, `'parse'` and `'transform'`. When using `'transform'`, the corresponding features are compiled to older syntax that can run in older browsers. When using `'parse'`, they are parsed and left as-is in the output pattern. When using `false` (the default), they result in a syntax error if used.
+
+Once these features become stable (when the proposals are accepted as part of ECMAScript), they will be parsed by default and thus `'parse'` will behave like `false`.
 
 #### Miscellaneous options
 
