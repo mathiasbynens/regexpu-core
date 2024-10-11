@@ -477,7 +477,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				const nestedData = getUnicodePropertyEscapeCharacterClassData(
 					item.value,
 					item.negative,
-					config.isIVMode
+					config.flags.unicodeSets && config.isIgnoreCaseMode
 				);
 				handlePositive.nested(data, nestedData);
 				data.transformed =
@@ -622,7 +622,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 			item = processCharacterClass(item, regenerateOptions);
 			break;
 		case 'unicodePropertyEscape':
-			const data = getUnicodePropertyEscapeCharacterClassData(item.value, item.negative, config.isIVMode);
+			const data = getUnicodePropertyEscapeCharacterClassData(item.value, item.negative, config.flags.unicodeSets && config.isIgnoreCaseMode);
 			if (data.maybeIncludesStrings) {
 				if (!config.flags.unicodeSets) {
 					throw new Error(
@@ -802,8 +802,8 @@ const config = {
 	get isDotAllMode() {
 		return (this.modifiersData.s !== undefined ? this.modifiersData.s : this.flags.dotAll);
 	},
-	get isIVMode() {
-		return this.flags.unicodeSets && (this.modifiersData.i !== undefined ? this.modifiersData.i : this.flags.ignoreCase);
+	get isIgnoreCaseMode() {
+		return (this.modifiersData.i !== undefined ? this.modifiersData.i : this.flags.ignoreCase);
 	}
 };
 
