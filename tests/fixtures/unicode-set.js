@@ -381,6 +381,27 @@ const unicodeSetFixtures = [
 		matches: ['\n'],
 		options: { unicodeSetsFlag: 'transform', dotAllFlag: 'transform' },
 		expected: '[^]'
+	},
+	{
+		pattern: '[\\p{ASCII}]',
+		flags: 'iv',
+		expected: '[\\p{ASCII}]',
+		expectedFlags: 'iu',
+		matches: ['k', 'K', '\u{212A}'],
+		nonMatches: ['\u{0131}']
+	},
+	{
+		pattern: '[^\\P{ASCII}]',
+		flags: 'iv',
+		expectedFlags: 'iu',
+		matches: ['k', 'K', '\u{212A}'],
+		nonMatches: ['\u{0131}']
+	},
+	{
+		pattern: '[^\\P{Lowercase_Letter}]',
+		flags: 'iv',
+		matches: ['k', 'K', '\u{212A}', '\u{0131}'],
+		nonMatches: ['0', ',']
 	}
 ];
 

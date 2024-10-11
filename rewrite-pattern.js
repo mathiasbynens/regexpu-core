@@ -8,6 +8,7 @@ const unicodeMatchPropertyValue = require('unicode-match-property-value-ecmascri
 const iuMappings = require('./data/iu-mappings.js');
 const iBMPMappings = require('./data/i-bmp-mappings.js');
 const ESCAPE_SETS = require('./data/character-class-escape-sets.js');
+const { UNICODE_SET, UNICODE_IV_SET } = require('./data/all-characters.js');
 
 function flatMap(array, callback) {
 	const result = [];
@@ -29,10 +30,6 @@ function regenerateContainsAstral(regenerateData) {
 
 // https://tc39.es/ecma262/#prod-SyntaxCharacter
 const SYNTAX_CHARS = /[\\^$.*+?()[\]{}|]/g;
-
-// Prepare a Regenerate set containing all code points, used for negative
-// character classes (if any).
-const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 
 const ASTRAL_SET = regenerate().addRange(0x10000, 0x10FFFF);
 
@@ -96,7 +93,7 @@ const handleLoneUnicodePropertyNameOrValue = (value) => {
 	return getUnicodePropertyValueSet(property);
 };
 
-const getUnicodePropertyEscapeSet = (value, isNegative) => {
+const getUnicodePropertyEscapeSet = (value, isNegative, isUnicodeSetIgnoreCase) => {
 	const parts = value.split('=');
 	const firstPart = parts[0];
 	let set;
@@ -113,7 +110,7 @@ const getUnicodePropertyEscapeSet = (value, isNegative) => {
 			throw new Error('Cannot negate Unicode property of strings');
 		}
 		return {
-			characters: UNICODE_SET.clone().remove(set.characters),
+			characters: (isUnicodeSetIgnoreCase ? UNICODE_IV_SET : UNICODE_SET).clone().remove(set.characters),
 			strings: new Set()
 		};
 	}
@@ -126,8 +123,8 @@ const getUnicodePropertyEscapeSet = (value, isNegative) => {
 	};
 };
 
-const getUnicodePropertyEscapeCharacterClassData = (property, isNegative) => {
-	const set = getUnicodePropertyEscapeSet(property, isNegative);
+const getUnicodePropertyEscapeCharacterClassData = (property, isNegative, isUnicodeSetIgnoreCase) => {
+	const set = getUnicodePropertyEscapeSet(property, isNegative, isUnicodeSetIgnoreCase);
 	const data = getCharacterClassEmptyData();
 	const singleChars = set.characters;
 	const caseFoldFlags = configGetCaseFoldFlags();
@@ -477,12 +474,16 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				));
 				break;
 			case 'unicodePropertyEscape':
-				const nestedData = getUnicodePropertyEscapeCharacterClassData(item.value, item.negative);
+				const nestedData = getUnicodePropertyEscapeCharacterClassData(
+					item.value,
+					item.negative,
+					config.isIVMode
+				);
 				handlePositive.nested(data, nestedData);
 				data.transformed =
 					data.transformed ||
 					config.transform.unicodePropertyEscapes ||
-					(config.transform.unicodeSetsFlag && (nestedData.maybeIncludesStrings || characterClassItem.kind !== "union"));
+					(config.transform.unicodeSetsFlag && (nestedData.maybeIncludesStrings || characterClassItem.kind !== "union" || item.negative));
 				break;
 			case 'characterClass':
 				const handler = item.negative ? handleNegative : handlePositive;
@@ -621,7 +622,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 			item = processCharacterClass(item, regenerateOptions);
 			break;
 		case 'unicodePropertyEscape':
-			const data = getUnicodePropertyEscapeCharacterClassData(item.value, item.negative);
+			const data = getUnicodePropertyEscapeCharacterClassData(item.value, item.negative, config.isIVMode);
 			if (data.maybeIncludesStrings) {
 				if (!config.flags.unicodeSets) {
 					throw new Error(
@@ -800,6 +801,9 @@ const config = {
 	},
 	get isDotAllMode() {
 		return (this.modifiersData.s !== undefined ? this.modifiersData.s : this.flags.dotAll);
+	},
+	get isIVMode() {
+		return this.flags.unicodeSets && (this.modifiersData.i !== undefined ? this.modifiersData.i : this.flags.ignoreCase);
 	}
 };
 

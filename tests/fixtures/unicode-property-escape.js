@@ -47,6 +47,20 @@ const unicodePropertyEscapeFixtures = [
 		pattern: '(?:\\p{Script_Extensions=Wancho})',
 		expected: '(?:(?:\\uD838[\\uDEC0-\\uDEF9\\uDEFF]))',
 	},
+	{
+		pattern: '[\\p{ASCII}]',
+		flags: 'iu',
+		expected: '[\\0-\\x7F\\u017F\\u212A]',
+		expectedFlags: 'iu',
+		matches: ['k', 'K', '\u{212A}'],
+		nonMatches: ['\u{0131}']
+	},
+	{
+		pattern: '[^\\P{Lowercase_Letter}]',
+		flags: 'iu',
+		matches: ['\u{0131}'],
+		nonMatches: ['0', ',', 'k', 'K', '\u{212A}']
+	},
 	// simplifies the output using Unicode code point escapes when not transforming the u flag
 	{
 		pattern: '\\p{Script_Extensions=Anatolian_Hieroglyphs}',
