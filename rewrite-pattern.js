@@ -610,9 +610,9 @@ const processTerm = (item, regenerateOptions, groups) => {
 			if (config.transform.unicodeFlag) {
 				update(
 					item,
-					getUnicodeDotSet(config.flags.dotAll || config.modifiersData.s).toString(regenerateOptions)
+					getUnicodeDotSet(config.isDotAllMode).toString(regenerateOptions)
 				);
-			} else if (config.transform.dotAllFlag || config.modifiersData.s) {
+			} else if ((config.modifiersData.s != null ? config.modifiersData.s : config.transform.dotAllFlag)) {
 				// TODO: consider changing this at the regenerate level.
 				update(item, '[^]');
 			}
@@ -797,6 +797,9 @@ const config = {
 	},
 	get useUnicodeFlag() {
 		return (this.flags.unicode || this.flags.unicodeSets) && !this.transform.unicodeFlag;
+	},
+	get isDotAllMode() {
+		return (this.modifiersData.s !== undefined ? this.modifiersData.s : this.flags.dotAll);
 	}
 };
 
