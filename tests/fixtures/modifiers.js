@@ -263,6 +263,29 @@ const modifiersFixtures = [
 		'expected': '([^](?:.))',
 		'expectedFlags': ''
 	},
+	{
+		'pattern': '(.(?-s:.))',
+		'flags': 's',
+		'options': { dotAllFlag: 'transform', modifiers: 'transform' },
+		'expected': '([^](?:.))',
+		'expectedFlags': ''
+	},
+	{
+		'pattern': '(.(?-s:.))',
+		'flags': 'su',
+		'options': { dotAllFlag: 'transform', modifiers: 'transform' },
+		'expected': '([^](?:.))',
+		'expectedFlags': 'u'
+	},
+	{
+		'pattern': '(.(?-s:.))',
+		'flags': 'su',
+		'options': { dotAllFlag: 'transform', modifiers: 'transform', unicodeFlag: 'transform' },
+		'expected': '((?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])(?:(?:[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])))',
+		'expectedFlags': '',
+		'matches': ['\na'],
+		'nonMatches': ['a\n']
+	},
 	// +ims
 	{
 		'pattern': '(?ims:^[a-z])',
