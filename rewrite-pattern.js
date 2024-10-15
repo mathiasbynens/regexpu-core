@@ -384,10 +384,8 @@ const maybeFold = (codePoint, caseFoldFlags) => {
 	return [codePoint];
 };
 
-const computeClassStrings = (classStrings, regenerateOptions) => {
+const computeClassStrings = (classStrings, regenerateOptions, caseFoldFlags) => {
 	let data = getCharacterClassEmptyData();
-
-	const caseFoldFlags = configGetCaseFoldFlags();
 
 	for (const string of classStrings.strings) {
 		if (string.characters.length === 1) {
@@ -422,6 +420,8 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 	let handlePositive;
 	let handleNegative;
 
+	let caseFoldFlags = configGetCaseFoldFlags();
+
 	switch (characterClassItem.kind) {
 		case 'union':
 			handlePositive = buildHandler('union');
@@ -430,11 +430,17 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 		case 'intersection':
 			handlePositive = buildHandler('intersection');
 			handleNegative = buildHandler('subtraction');
+			if (config.isIgnoreCaseMode) {
+				caseFoldFlags |= CASE_FOLD_FLAG_BMP | CASE_FOLD_FLAG_UNICODE;
+			}
 			if (config.transform.unicodeSetsFlag) data.transformed = true;
 			break;
 		case 'subtraction':
 			handlePositive = buildHandler('subtraction');
 			handleNegative = buildHandler('intersection');
+			if (config.isIgnoreCaseMode) {
+				caseFoldFlags |= CASE_FOLD_FLAG_BMP | CASE_FOLD_FLAG_UNICODE;
+			}
 			if (config.transform.unicodeSetsFlag) data.transformed = true;
 			break;
 		// The `default` clause is only here as a safeguard; it should never be
@@ -444,15 +450,11 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 			throw new Error(`Unknown character class kind: ${ characterClassItem.kind }`);
 	}
 
-	const caseFoldFlags = configGetCaseFoldFlags();
-
 	for (const item of characterClassItem.body) {
 		switch (item.type) {
 			case 'value':
 				const folded = maybeFold(item.codePoint, caseFoldFlags);
-				folded.forEach((cp) => {
-					handlePositive.single(data, cp);
-				});
+				handlePositive.regSet(data, regenerate(folded));
 				if (folded.length > 1) {
 					data.transformed = true;
 				}
@@ -492,7 +494,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				data.transformed = true;
 				break;
 			case 'classStrings':
-				handlePositive.nested(data, computeClassStrings(item, regenerateOptions));
+				handlePositive.nested(data, computeClassStrings(item, regenerateOptions, caseFoldFlags));
 				data.transformed = true;
 				break;
 			// The `default` clause is only here as a safeguard; it should never be
@@ -584,9 +586,6 @@ const processModifiers = (item, regenerateOptions, groups) => {
 	const enabling = item.modifierFlags.enabling;
 	const disabling = item.modifierFlags.disabling;
 
-	delete item.modifierFlags;
-	item.behavior = 'ignore';
-
 	const oldData = Object.assign({}, config.modifiersData);
 
 	for (const flag of enabling) {
@@ -594,6 +593,11 @@ const processModifiers = (item, regenerateOptions, groups) => {
 	}
 	for (const flag of disabling) {
 		config.modifiersData[flag] = false;
+	}
+
+	if (config.transform.modifiers) {
+		delete item.modifierFlags;
+		item.behavior = 'ignore';
 	}
 
 	item.body = item.body.map(term => {
@@ -684,7 +688,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 					delete groups.unmatchedReferences[name];
 				}
 			}
-			if (item.modifierFlags && config.transform.modifiers) {
+			if (item.modifierFlags) {
 				return processModifiers(item, regenerateOptions, groups);
 			}
 			/* falls through */

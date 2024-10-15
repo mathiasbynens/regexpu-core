@@ -61,7 +61,7 @@ const modifiersFixtures = [
 		'pattern': '(?i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
 		'flags': 'v',
 		'options':  { unicodeSetsFlag: 'transform', modifiers: 'parse' },
-		'expected': '(?i:(?:ab))',
+		'expected': '(?i:(?:[Aa][Bb]))',
 		'expectedFlags': 'u',
 	},	{
 		'pattern': '(?i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
@@ -249,6 +249,30 @@ const modifiersFixtures = [
 		'options': { unicodeSetsFlag: 'transform', unicodePropertyEscapes: 'transform', modifiers: 'transform' },
 		'expected': '[A-Za-z\\u017F\\u212A](?:a)',
 		'expectedFlags': 'u'
+	},
+	{
+		'pattern': '(?i:[[AB]&&B])',
+		'options': { unicodeSetsFlag: 'transform', modifiers: 'transform' },
+		'flags': 'v',
+		'expected': '(?:[Bb])'
+	},
+	{
+		'pattern': '(?i:[[AB]&&B])',
+		'options': { modifiers: 'transform' },
+		'flags': 'v',
+		'expected': '(?:[Bb])'
+	},
+	{
+		'pattern': '(?i:[K&&k])',
+		'flags': 'v',
+		'expected': '(?:[Kk\\u212A])',
+		'expectedFlags': 'v'
+	},
+	{
+		'pattern': '(?i:[K--k])',
+		'flags': 'v',
+		'expected': '(?:[])',
+		'expectedFlags': 'v'
 	},
 	// -m
 	{
