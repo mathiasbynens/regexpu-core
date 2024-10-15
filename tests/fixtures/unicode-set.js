@@ -402,6 +402,30 @@ const unicodeSetFixtures = [
 		flags: 'iv',
 		matches: ['k', 'K', '\u{212A}', '\u{0131}'],
 		nonMatches: ['0', ',']
+	},
+	{
+		pattern: '[K&&k]',
+		flags: 'iv',
+		expected: '[Kk\\u212A]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[K&&\\u212A]',
+		flags: 'iv',
+		expected: '[Kk\\u212A]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[K--k]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\u212A--k]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
 	}
 ];
 

@@ -422,6 +422,8 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 	let handlePositive;
 	let handleNegative;
 
+	let caseFoldFlags = configGetCaseFoldFlags();
+
 	switch (characterClassItem.kind) {
 		case 'union':
 			handlePositive = buildHandler('union');
@@ -430,11 +432,17 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 		case 'intersection':
 			handlePositive = buildHandler('intersection');
 			handleNegative = buildHandler('subtraction');
+			if (config.isIgnoreCaseMode) {
+				caseFoldFlags |= CASE_FOLD_FLAG_BMP | CASE_FOLD_FLAG_UNICODE;
+			}
 			if (config.transform.unicodeSetsFlag) data.transformed = true;
 			break;
 		case 'subtraction':
 			handlePositive = buildHandler('subtraction');
 			handleNegative = buildHandler('intersection');
+			if (config.isIgnoreCaseMode) {
+				caseFoldFlags |= CASE_FOLD_FLAG_BMP | CASE_FOLD_FLAG_UNICODE;
+			}
 			if (config.transform.unicodeSetsFlag) data.transformed = true;
 			break;
 		// The `default` clause is only here as a safeguard; it should never be
@@ -444,15 +452,11 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 			throw new Error(`Unknown character class kind: ${ characterClassItem.kind }`);
 	}
 
-	const caseFoldFlags = configGetCaseFoldFlags();
-
 	for (const item of characterClassItem.body) {
 		switch (item.type) {
 			case 'value':
 				const folded = maybeFold(item.codePoint, caseFoldFlags);
-				folded.forEach((cp) => {
-					handlePositive.single(data, cp);
-				});
+				handlePositive.regSet(data, regenerate(folded));
 				if (folded.length > 1) {
 					data.transformed = true;
 				}

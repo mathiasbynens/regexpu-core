@@ -250,6 +250,30 @@ const modifiersFixtures = [
 		'expected': '[A-Za-z\\u017F\\u212A](?:a)',
 		'expectedFlags': 'u'
 	},
+	{
+		'pattern': '(?i:[[AB]&&B])',
+		'options': { unicodeSetsFlag: 'transform', modifiers: 'transform' },
+		'flags': 'v',
+		'expected': '(?:[Bb])'
+	},
+	{
+		'pattern': '(?i:[[AB]&&B])',
+		'options': { modifiers: 'transform' },
+		'flags': 'v',
+		'expected': '(?:[Bb])'
+	},
+	{
+		'pattern': '(?i:[K&&k])',
+		'flags': 'v',
+		'expected': '(?:[Kk\\u212A])',
+		'expectedFlags': 'v'
+	},
+	{
+		'pattern': '(?i:[K--k])',
+		'flags': 'v',
+		'expected': '(?:[])',
+		'expectedFlags': 'v'
+	},
 	// -m
 	{
 		'pattern': '(?-m:^[a-z])(^[a-z])',
