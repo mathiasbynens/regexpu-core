@@ -384,10 +384,8 @@ const maybeFold = (codePoint, caseFoldFlags) => {
 	return [codePoint];
 };
 
-const computeClassStrings = (classStrings, regenerateOptions) => {
+const computeClassStrings = (classStrings, regenerateOptions, caseFoldFlags) => {
 	let data = getCharacterClassEmptyData();
-
-	const caseFoldFlags = configGetCaseFoldFlags();
 
 	for (const string of classStrings.strings) {
 		if (string.characters.length === 1) {
@@ -496,7 +494,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				data.transformed = true;
 				break;
 			case 'classStrings':
-				handlePositive.nested(data, computeClassStrings(item, regenerateOptions));
+				handlePositive.nested(data, computeClassStrings(item, regenerateOptions, caseFoldFlags));
 				data.transformed = true;
 				break;
 			// The `default` clause is only here as a safeguard; it should never be
