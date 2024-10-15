@@ -588,9 +588,6 @@ const processModifiers = (item, regenerateOptions, groups) => {
 	const enabling = item.modifierFlags.enabling;
 	const disabling = item.modifierFlags.disabling;
 
-	delete item.modifierFlags;
-	item.behavior = 'ignore';
-
 	const oldData = Object.assign({}, config.modifiersData);
 
 	for (const flag of enabling) {
@@ -598,6 +595,11 @@ const processModifiers = (item, regenerateOptions, groups) => {
 	}
 	for (const flag of disabling) {
 		config.modifiersData[flag] = false;
+	}
+
+	if (config.transform.modifiers) {
+		delete item.modifierFlags;
+		item.behavior = 'ignore';
 	}
 
 	item.body = item.body.map(term => {
@@ -688,7 +690,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 					delete groups.unmatchedReferences[name];
 				}
 			}
-			if (item.modifierFlags && config.transform.modifiers) {
+			if (item.modifierFlags) {
 				return processModifiers(item, regenerateOptions, groups);
 			}
 			/* falls through */
