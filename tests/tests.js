@@ -84,7 +84,7 @@ describe('unicodePropertyEscapes', () => {
 					actualFlags = flags;
 				};
 				const transpiled = rewritePattern(pattern, flags, options);
-				if (transpiled != "(?:" + expected + ")") {
+				if (expected !== undefined && transpiled != "(?:" + expected + ")") {
 					assert.strictEqual(transpiled, expected);
 				}
 				for (const match of fixture.matches || []) {
@@ -343,7 +343,7 @@ describe('unicodeSets (v) flag', () => {
 				let actualFlags = flags;
 				options.onNewFlags = (flags) => { actualFlags = flags };
 				const transpiled = rewritePattern(pattern, flags, options);
-				if (transpiled != '(?:' + expected + ')') {
+				if (expected !== undefined && transpiled != '(?:' + expected + ')') {
 					assert.strictEqual(transpiled, expected);
 				}
 				for (const match of fixture.matches || []) {
