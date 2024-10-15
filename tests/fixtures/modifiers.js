@@ -60,7 +60,7 @@ const modifiersFixtures = [
 	{
 		'pattern': '(?i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
 		'flags': 'v',
-		'options':  { unicodeSetsFlag: 'transform', modifiers: 'parse' },
+		'options':  { unicodeSetsFlag: 'transform', modifiers: false },
 		'expected': '(?i:(?:ab))',
 		'expectedFlags': 'u',
 	},	{
@@ -200,7 +200,7 @@ const modifiersFixtures = [
 	{
 		'pattern': '(?-i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
 		'flags': 'iv',
-		'options':  { unicodeSetsFlag: 'transform', modifiers: 'parse' },
+		'options':  { unicodeSetsFlag: 'transform', modifiers: false },
 		'expected': '(?-i:(?:ab))',
 		'expectedFlags': 'iu',
 	},	{
@@ -314,6 +314,13 @@ const modifiersFixtures = [
 		'expected': '(?:(?:^|(?<=[\\n\\r\\u2028\\u2029]))[A-Za-z])',
 		'expectedFlags': '',
 	},
+	{
+		'pattern': '(?ims:^[a-z])',
+		'flags': '',
+		'expected': '(?ims:^[a-z])',
+		'expectedFlags': '',
+		'options': { 'modifiers': false }
+	},
 	// -ims
 	{
 		'pattern': '(?-ims:^[a-z].)(^[a-z].)',
@@ -325,6 +332,12 @@ const modifiersFixtures = [
 		'pattern': '(?-ims:^[a-z].)(^[a-z].)',
 		'expected': '(?:^[a-z].)(^[a-z].)',
 		'expectedFlags': '',
+	},
+	{
+		'pattern': '(?-ims:^[a-z].)(^[a-z].)',
+		'expected': '(?-ims:^[a-z].)(^[a-z].)',
+		'expectedFlags': '',
+		'options': { 'modifiers': false }
 	},
 ].filter(Boolean);
 

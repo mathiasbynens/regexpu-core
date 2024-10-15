@@ -822,6 +822,7 @@ const validateOptions = (options) => {
 					throw new Error(`.${key} must be false (default) or 'transform'.`);
 				}
 				break;
+			// todo: remove modifiers: 'parse' in regexpu-core v7
 			case 'modifiers':
 				if (value != null && value !== false && value !== 'parse' && value !== 'transform') {
 					throw new Error(`.${key} must be false (default), 'parse' or 'transform'.`);
@@ -867,9 +868,8 @@ const rewritePattern = (pattern, flags, options) => {
 	config.modifiersData.m = undefined;
 
 	const regjsparserFeatures = {
-		'modifiers': Boolean(options && options.modifiers),
-
 		// Enable every stable RegExp feature by default
+		'modifiers': true,
 		'unicodePropertyEscape': true,
 		'unicodeSet': true,
 		'namedGroups': true,

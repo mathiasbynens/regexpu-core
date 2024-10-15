@@ -401,11 +401,5 @@ describe('modifiers', () => {
 			}
 		});
 	}
-
-	it('No `modifiers:"transform"`', () => {
-		assert.throws(() => {
-			rewritePattern('(?i:a)', '');
-		});
-	})
 });
 
