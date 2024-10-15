@@ -422,7 +422,31 @@ const unicodeSetFixtures = [
 		expectedFlags: 'iu'
 	},
 	{
+		pattern: '[K--\\q{k}]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
 		pattern: '[\\u212A--k]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\q{\\u212A}--k]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[K--\\u212A]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\q{K}--\\q{\\u212A}]',
 		flags: 'iv',
 		expected: '[]',
 		expectedFlags: 'iu'

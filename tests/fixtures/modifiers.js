@@ -61,7 +61,7 @@ const modifiersFixtures = [
 		'pattern': '(?i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
 		'flags': 'v',
 		'options':  { unicodeSetsFlag: 'transform', modifiers: false },
-		'expected': '(?i:(?:ab))',
+		'expected': '(?i:(?:[Aa][Bb]))',
 		'expectedFlags': 'u',
 	},	{
 		'pattern': '(?i:[\\q{ab|cd|abc}--\\q{abc}--\\q{cd}])',
