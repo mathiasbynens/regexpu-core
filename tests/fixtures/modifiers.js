@@ -162,13 +162,28 @@ const modifiersFixtures = [
 		'expected': '(?:(?:^|(?<=[\\n\\r\\u2028\\u2029]))[a-z])',
 	},
 	{
+		'pattern': '(?m:^[a-z])',
+		'options': { modifiers: false },
+		'expected': '(?m:^[a-z])',
+	},
+	{
 		'pattern': '(?m:[a-z]$)',
 		'expected': '(?:[a-z](?:$|(?=[\\n\\r\\u2028\\u2029])))',
+	},
+	{
+		'pattern': '(?m:[a-z]$)',
+		'options': { modifiers: false },
+		'expected': '(?m:[a-z]$)',
 	},
 	// +s
 	{
 		'pattern': '(?s:.)',
 		'expected': '(?:[^])',
+	},
+	{
+		'pattern': '(?s:.)',
+		'options': { modifiers: false },
+		'expected': '(?s:.)',
 	},
 	// -i
 	{
