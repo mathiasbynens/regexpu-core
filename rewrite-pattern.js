@@ -617,7 +617,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 					item,
 					getUnicodeDotSet(config.isDotAllMode).toString(regenerateOptions)
 				);
-			} else if ((config.modifiersData.s != null ? config.modifiersData.s : config.transform.dotAllFlag)) {
+			} else if ((config.modifiersData.s != null ? config.modifiersData.s && config.transform.modifiers : config.transform.dotAllFlag)) {
 				// TODO: consider changing this at the regenerate level.
 				update(item, '[^]');
 			}
@@ -760,7 +760,7 @@ const processTerm = (item, regenerateOptions, groups) => {
 			}
 			break;
 		case 'anchor':
-			if (config.modifiersData.m) {
+			if (config.modifiersData.m && config.transform.modifiers) {
 				if (item.kind == 'start') {
 					update(item, `(?:^|(?<=${NEWLINE_SET.toString()}))`);
 				} else if (item.kind == 'end') {
