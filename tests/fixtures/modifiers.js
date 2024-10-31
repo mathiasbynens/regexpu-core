@@ -289,6 +289,18 @@ const modifiersFixtures = [
 		'expected': '(?:[])',
 		'expectedFlags': 'v'
 	},
+	{
+		pattern: '(?i:[\\q{KK}&&\\q{kk}])',
+		flags: 'v',
+		expected: '(?:(?:[Kk\\u212A][Kk\\u212A]))',
+		expectedFlags: 'v',
+	},
+	{
+		pattern: '(?i:[\\q{KK}--\\q{k\\u212A}])',
+		flags: 'v',
+		expected: '(?:[])',
+		expectedFlags: 'v'
+	},
 	// -m
 	{
 		'pattern': '(?-m:^[a-z])(^[a-z])',
