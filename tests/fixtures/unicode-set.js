@@ -490,6 +490,20 @@ const unicodeSetFixtures = [
 		nonMatches: ['Σ', 'σ'],
 		matches: ['Θ', 'θ'],
 		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\D--Σ]',
+		flags: 'iv',
+		nonMatches: ['Σ', 'σ'],
+		matches: ['Θ', 'θ'],
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\S--Σ]',
+		flags: 'iv',
+		nonMatches: ['Σ', 'σ'],
+		matches: ['Θ', 'θ'],
+		expectedFlags: 'iu'
 	}
 ];
 

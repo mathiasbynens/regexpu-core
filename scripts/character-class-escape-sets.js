@@ -55,6 +55,16 @@ const addCharacterClassEscape = (lower, set) => {
 	const iuUpperSet = UNICODE_SET.clone().remove(iuLowerSet);
 	ESCAPE_CHARS_UNICODE_IGNORE_CASE[lower] = iuLowerSet;
 	ESCAPE_CHARS_UNICODE_IGNORE_CASE[upper] = iuUpperSet;
+
+	ESCAPE_CHARS_UNICODESET_IGNORE_CASE[lower] = regenerate(
+		iuLowerSet.toArray().map(ch => simpleCaseFolding(ch))
+	);
+
+	ESCAPE_CHARS_UNICODESET_IGNORE_CASE[upper] = {
+		toCode() {
+			return 'UNICODE_IV_SET.clone().remove(' + ESCAPE_CHARS_UNICODESET_IGNORE_CASE[lower].toCode() + ')';
+		}
+	}
 }
 
 // Prepare a Regenerate set for every existing character class escape.
@@ -86,11 +96,6 @@ addCharacterClassEscape(
 	regenerate('_').addRange('a', 'z').addRange('A', 'Z').addRange('0', '9')
 );
 
-ESCAPE_CHARS_UNICODESET_IGNORE_CASE['w'] = regenerate(
-	ESCAPE_CHARS_UNICODE_IGNORE_CASE['w'].toArray().map(ch => simpleCaseFolding(ch))
-);
-ESCAPE_CHARS_UNICODESET_IGNORE_CASE['W'] = UNICODE_IV_SET.clone().remove(ESCAPE_CHARS_UNICODESET_IGNORE_CASE['w']);
-
 /*----------------------------------------------------------------------------*/
 
 const stringify = (name, object) => {
@@ -103,7 +108,7 @@ const stringify = (name, object) => {
 
 const source = [
 	'// Generated using `npm run build`. Do not edit.\n' +
-	`'use strict';\n\nconst regenerate = require('regenerate');`,
+	`'use strict';\n\nconst regenerate = require('regenerate');\nconst UNICODE_IV_SET = require('./all-characters.js').UNICODE_IV_SET`,
 	stringify('REGULAR', ESCAPE_CHARS),
 	stringify('UNICODE', ESCAPE_CHARS_UNICODE),
 	stringify('UNICODE_IGNORE_CASE', ESCAPE_CHARS_UNICODE_IGNORE_CASE),

@@ -511,7 +511,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 					item.value,
 					config.flags.unicode || config.flags.unicodeSets,
 					config.flags.ignoreCase,
-					shouldApplySCF && (item.value === "w" || item.value === "W")
+					shouldApplySCF
 				));
 				break;
 			case 'unicodePropertyEscape':
