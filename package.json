@@ -42,6 +42,7 @@
 		"data/all-characters.js",
 		"data/character-class-escape-sets.js",
 		"data/i-bmp-mappings.js",
+		"data/iu-foldings.js",
 		"data/iu-mappings.js"
 	],
 	"scripts": {

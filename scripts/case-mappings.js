@@ -194,3 +194,4 @@ const iBMPMappings = flattenMapping(filteredBMPMappings);
 
 writeMap('data/i-bmp-mappings.js', iBMPMappings);
 writeMap('data/iu-mappings.js', iuMappings);
+writeMap('data/iu-foldings.js', oneWayMappings);
