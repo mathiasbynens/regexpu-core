@@ -464,6 +464,32 @@ const unicodeSetFixtures = [
 		flags: 'iv',
 		expected: '[]',
 		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\p{Lu}&&k]',
+		flags: 'iv',
+		expected: 'k',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\p{Lu}--k]',
+		flags: 'iv',
+		expectedFlags: 'iu',
+		nonMatches: ['K', 'k', '\u212A'],
+	},
+	{
+		pattern: '[\\w--k]',
+		flags: 'iv',
+		expected: '[0-9_a-jl-z]',
+		expectedFlags: 'iu',
+		nonMatches: ['K', 'k', '\u212A'],
+	},
+	{
+		pattern: '[\\W--Σ]',
+		flags: 'iv',
+		nonMatches: ['Σ', 'σ'],
+		matches: ['Θ', 'θ'],
+		expectedFlags: 'iu'
 	}
 ];
 

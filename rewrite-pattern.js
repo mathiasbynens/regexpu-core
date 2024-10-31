@@ -47,10 +47,15 @@ const NEWLINE_SET = regenerate().add(
 const DOT_SET_UNICODE = UNICODE_SET.clone() // all Unicode code points
 	.remove(NEWLINE_SET);
 
-const getCharacterClassEscapeSet = (character, unicode, ignoreCase) => {
+const getCharacterClassEscapeSet = (character, unicode, ignoreCase, shouldApplySCF) => {
 	if (unicode) {
 		if (ignoreCase) {
-			return ESCAPE_SETS.UNICODE_IGNORE_CASE.get(character);
+			const result = ESCAPE_SETS.UNICODE_IGNORE_CASE.get(character);
+			if (shouldApplySCF) {
+				return ESCAPE_SETS.UNICODESET_IGNORE_CASE.get(character);
+			} else {
+				return result;
+			}
 		}
 		return ESCAPE_SETS.UNICODE.get(character);
 	}
@@ -124,10 +129,10 @@ const getUnicodePropertyEscapeSet = (value, isNegative, isUnicodeSetIgnoreCase) 
 	};
 };
 
-const getUnicodePropertyEscapeCharacterClassData = (property, isNegative, isUnicodeSetIgnoreCase) => {
+const getUnicodePropertyEscapeCharacterClassData = (property, isNegative, isUnicodeSetIgnoreCase, shouldApplySCF) => {
 	const set = getUnicodePropertyEscapeSet(property, isNegative, isUnicodeSetIgnoreCase);
 	const data = getCharacterClassEmptyData();
-	const singleChars = set.characters;
+	const singleChars = shouldApplySCF ? regenerate(set.characters.toArray().map(ch => simpleCaseFolding(ch))) : set.characters;
 	const caseEqFlags = configGetCaseEqFlags();
 	if (caseEqFlags) {
 		for (const codepoint of singleChars.toArray()) {
@@ -505,14 +510,16 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				handlePositive.regSet(data, getCharacterClassEscapeSet(
 					item.value,
 					config.flags.unicode || config.flags.unicodeSets,
-					config.flags.ignoreCase
+					config.flags.ignoreCase,
+					shouldApplySCF && (item.value === "w" || item.value === "W")
 				));
 				break;
 			case 'unicodePropertyEscape':
 				const nestedData = getUnicodePropertyEscapeCharacterClassData(
 					item.value,
 					item.negative,
-					config.flags.unicodeSets && config.isIgnoreCaseMode
+					config.flags.unicodeSets && config.isIgnoreCaseMode,
+					shouldApplySCF
 				);
 				handlePositive.nested(data, nestedData);
 				data.transformed =
