@@ -301,6 +301,13 @@ const modifiersFixtures = [
 		expected: '(?:[])',
 		expectedFlags: 'v'
 	},
+	{
+		pattern: '(?i:[[J-Lj-l]--\\u212A])',
+		flags: 'v',
+		expected: '(?:[JLjl])',
+		expectedFlags: 'v',
+		nonMatches: ['K', 'k', '\u212A'],
+	},
 	// -m
 	{
 		'pattern': '(?-m:^[a-z])(^[a-z])',

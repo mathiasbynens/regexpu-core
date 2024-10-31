@@ -450,14 +450,13 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 	return data;
 }
 
-const computeCharacterClass = (characterClassItem, regenerateOptions) => {
+const computeCharacterClass = (characterClassItem, regenerateOptions, shouldApplySCF) => {
 	let data = getCharacterClassEmptyData();
 
 	let handlePositive;
 	let handleNegative;
 
 	let caseEqFlags = configGetCaseEqFlags();
-	let shouldApplySCF = false;
 
 	switch (characterClassItem.kind) {
 		case 'union':
@@ -500,8 +499,18 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 			case 'characterClassRange':
 				const min = item.min.codePoint;
 				const max = item.max.codePoint;
-				handlePositive.range(data, min, max);
+				if (shouldApplySCF) {
+					let list = [];
+					for (let cp = min; cp <= max; cp++) {
+						list.push(simpleCaseFolding(cp));
+					}
+					handlePositive.regSet(data, regenerate(list));
+				} else {
+					handlePositive.range(data, min, max);
+				}
 				if (caseEqFlags) {
+					// If shouldApplySCF is true, it is still ok to call iuRange because 
+					// the set [min, max] shares the same case equivalents with scf([min, max])
 					handlePositive.iuRange(data, min, max, caseEqFlags);
 					data.transformed = true;
 				}
@@ -529,7 +538,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				break;
 			case 'characterClass':
 				const handler = item.negative ? handleNegative : handlePositive;
-				const res = computeCharacterClass(item, regenerateOptions);
+				const res = computeCharacterClass(item, regenerateOptions, shouldApplySCF);
 				handler.nested(data, res);
 				data.transformed = true;
 				break;
