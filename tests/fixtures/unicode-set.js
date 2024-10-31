@@ -173,13 +173,15 @@ const unicodeSetFixtures = [
 	{
 		pattern: '[\\q{sA}asb]',
 		flags: 'iv',
-		expected: '(?:sA|[abs])'
+		expected: '(?:sa|[abs])',
+		expectedFlags: 'iu'
 	},
 	{
 		pattern: '[\\q{sA}asb]',
 		flags: 'iv',
 		options: TRANSFORM_U,
-		expected: '(?:[s\\u017F]A|[abs\\u017F])'
+		expected: '(?:[s\\u017F]a|[abs\\u017F])',
+		expectedFlags: 'i'
 	},
 	{
 		pattern: '[[ab\\q{cd}]--a]',
@@ -406,13 +408,13 @@ const unicodeSetFixtures = [
 	{
 		pattern: '[K&&k]',
 		flags: 'iv',
-		expected: '[Kk\\u212A]',
+		expected: 'k',
 		expectedFlags: 'iu'
 	},
 	{
 		pattern: '[K&&\\u212A]',
 		flags: 'iv',
-		expected: '[Kk\\u212A]',
+		expected: 'k',
 		expectedFlags: 'iu'
 	},
 	{
@@ -447,6 +449,18 @@ const unicodeSetFixtures = [
 	},
 	{
 		pattern: '[\\q{K}--\\q{\\u212A}]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\q{KK}&&\\q{kk}]',
+		flags: 'iv',
+		expected: '(?:kk)',
+		expectedFlags: 'iu',
+	},
+	{
+		pattern: '[\\q{KK}--\\q{k\\u212A}]',
 		flags: 'iv',
 		expected: '[]',
 		expectedFlags: 'iu'

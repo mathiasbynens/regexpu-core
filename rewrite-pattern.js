@@ -7,6 +7,7 @@ const unicodeMatchProperty = require('unicode-match-property-ecmascript');
 const unicodeMatchPropertyValue = require('unicode-match-property-value-ecmascript');
 const iuMappings = require('./data/iu-mappings.js');
 const iBMPMappings = require('./data/i-bmp-mappings.js');
+const iuFoldings = require('./data/iu-foldings.js');
 const ESCAPE_SETS = require('./data/character-class-escape-sets.js');
 const { UNICODE_SET, UNICODE_IV_SET } = require('./data/all-characters.js');
 
@@ -251,6 +252,21 @@ const getCaseEquivalents = (codePoint, flags) => {
 	return result.length == 0 ? false : result;
 };
 
+// https://tc39.es/ecma262/#sec-maybesimplecasefolding
+const maybeSimpleCaseFolding = (codePoint, isUnicodeCaseIgnore) => {
+	if (!isUnicodeCaseIgnore) {
+		return codePoint;
+	}
+	// Fast path for ASCII characters
+	if (codePoint <= 0x7F) {
+		if (codePoint >= 0x41 && codePoint <= 0x5A) {
+			return codePoint + 0x20;
+		}
+		return codePoint;
+	}
+	return iuFoldings.get(codePoint) || codePoint;
+}
+
 const buildHandler = (action) => {
 	switch (action) {
 		case 'union':
@@ -396,24 +412,32 @@ const concatCaseEquivalents = (codePoint, caseEqFlags) => {
 	return [codePoint];
 };
 
-const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags) => {
+const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, isUnicodeSetIgnoreCaseMode) => {
 	let data = getCharacterClassEmptyData();
 
 	for (const string of classStrings.strings) {
 		if (string.characters.length === 1) {
-			concatCaseEquivalents(string.characters[0].codePoint, caseEqFlags).forEach((cp) => {
+			const codePoint = maybeSimpleCaseFolding(string.characters[0].codePoint, isUnicodeSetIgnoreCaseMode)
+			concatCaseEquivalents(codePoint, caseEqFlags).forEach((cp) => {
 				data.singleChars.add(cp);
 			});
 		} else {
-			let stringifiedString;
+			let stringifiedString = '';
 			if (caseEqFlags) {
-				stringifiedString = '';
 				for (const ch of string.characters) {
-					const set = regenerate(concatCaseEquivalents(ch.codePoint, caseEqFlags));
+					const codePoint = maybeSimpleCaseFolding(ch.codePoint, isUnicodeSetIgnoreCaseMode)
+					const set = regenerate(concatCaseEquivalents(codePoint, caseEqFlags));
 					stringifiedString += set.toString(regenerateOptions);
 				}
 			} else {
-				stringifiedString = string.characters.map(ch => generate(ch)).join('')
+				for (const ch of string.characters) {
+					const codePoint = maybeSimpleCaseFolding(ch.codePoint, isUnicodeSetIgnoreCaseMode)
+					if (codePoint !== ch.codePoint) {
+						stringifiedString += regenerate(codePoint).toString(regenerateOptions);
+					} else {
+						stringifiedString += generate(ch);
+					}
+				}
 			}
 
 			data.longStrings.add(stringifiedString);
@@ -431,6 +455,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 	let handleNegative;
 
 	let caseEqFlags = configGetCaseEqFlags();
+	const isUnicodeSetIgnoreCaseMode = config.flags.unicodeSets && config.isIgnoreCaseMode;
 
 	switch (characterClassItem.kind) {
 		case 'union':
@@ -440,17 +465,11 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 		case 'intersection':
 			handlePositive = buildHandler('intersection');
 			handleNegative = buildHandler('subtraction');
-			if (config.isIgnoreCaseMode) {
-				caseEqFlags |= CASE_EQ_FLAG_BMP | CASE_EQ_FLAG_UNICODE;
-			}
 			if (config.transform.unicodeSetsFlag) data.transformed = true;
 			break;
 		case 'subtraction':
 			handlePositive = buildHandler('subtraction');
 			handleNegative = buildHandler('intersection');
-			if (config.isIgnoreCaseMode) {
-				caseEqFlags |= CASE_EQ_FLAG_BMP | CASE_EQ_FLAG_UNICODE;
-			}
 			if (config.transform.unicodeSetsFlag) data.transformed = true;
 			break;
 		// The `default` clause is only here as a safeguard; it should never be
@@ -463,7 +482,8 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 	for (const item of characterClassItem.body) {
 		switch (item.type) {
 			case 'value':
-				const list = concatCaseEquivalents(item.codePoint, caseEqFlags);
+				const codePoint = maybeSimpleCaseFolding(item.codePoint, isUnicodeSetIgnoreCaseMode);
+				const list = concatCaseEquivalents(codePoint, caseEqFlags);
 				handlePositive.regSet(data, regenerate(list));
 				if (list.length > 1) {
 					data.transformed = true;
@@ -504,7 +524,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				data.transformed = true;
 				break;
 			case 'classStrings':
-				handlePositive.nested(data, computeClassStrings(item, regenerateOptions, caseEqFlags));
+				handlePositive.nested(data, computeClassStrings(item, regenerateOptions, caseEqFlags, isUnicodeSetIgnoreCaseMode));
 				data.transformed = true;
 				break;
 			// The `default` clause is only here as a safeguard; it should never be
