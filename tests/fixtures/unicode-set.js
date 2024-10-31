@@ -173,14 +173,14 @@ const unicodeSetFixtures = [
 	{
 		pattern: '[\\q{sA}asb]',
 		flags: 'iv',
-		expected: '(?:sa|[abs])',
+		expected: '(?:sA|[abs])',
 		expectedFlags: 'iu'
 	},
 	{
 		pattern: '[\\q{sA}asb]',
 		flags: 'iv',
 		options: TRANSFORM_U,
-		expected: '(?:[s\\u017F]a|[abs\\u017F])',
+		expected: '(?:[s\\u017F]A|[abs\\u017F])',
 		expectedFlags: 'i'
 	},
 	{

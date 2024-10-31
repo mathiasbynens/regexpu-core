@@ -253,10 +253,7 @@ const getCaseEquivalents = (codePoint, flags) => {
 };
 
 // https://tc39.es/ecma262/#sec-maybesimplecasefolding
-const maybeSimpleCaseFolding = (codePoint, isUnicodeCaseIgnore) => {
-	if (!isUnicodeCaseIgnore) {
-		return codePoint;
-	}
+const simpleCaseFolding = (codePoint) => {
 	// Fast path for ASCII characters
 	if (codePoint <= 0x7F) {
 		if (codePoint >= 0x41 && codePoint <= 0x5A) {
@@ -412,12 +409,12 @@ const concatCaseEquivalents = (codePoint, caseEqFlags) => {
 	return [codePoint];
 };
 
-const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, isUnicodeSetIgnoreCaseMode) => {
+const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shouldApplySCF) => {
 	let data = getCharacterClassEmptyData();
 
 	for (const string of classStrings.strings) {
 		if (string.characters.length === 1) {
-			const codePoint = maybeSimpleCaseFolding(string.characters[0].codePoint, isUnicodeSetIgnoreCaseMode)
+			const codePoint = shouldApplySCF ? simpleCaseFolding(string.characters[0].codePoint) : string.characters[0].codePoint
 			concatCaseEquivalents(codePoint, caseEqFlags).forEach((cp) => {
 				data.singleChars.add(cp);
 			});
@@ -425,13 +422,13 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, isUni
 			let stringifiedString = '';
 			if (caseEqFlags) {
 				for (const ch of string.characters) {
-					const codePoint = maybeSimpleCaseFolding(ch.codePoint, isUnicodeSetIgnoreCaseMode)
+					const codePoint = shouldApplySCF ? simpleCaseFolding(ch.codePoint) : ch.codePoint;
 					const set = regenerate(concatCaseEquivalents(codePoint, caseEqFlags));
 					stringifiedString += set.toString(regenerateOptions);
 				}
 			} else {
 				for (const ch of string.characters) {
-					const codePoint = maybeSimpleCaseFolding(ch.codePoint, isUnicodeSetIgnoreCaseMode)
+					const codePoint = shouldApplySCF ? simpleCaseFolding(ch.codePoint) : ch.codePoint;
 					if (codePoint !== ch.codePoint) {
 						stringifiedString += regenerate(codePoint).toString(regenerateOptions);
 					} else {
@@ -455,7 +452,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 	let handleNegative;
 
 	let caseEqFlags = configGetCaseEqFlags();
-	const isUnicodeSetIgnoreCaseMode = config.flags.unicodeSets && config.isIgnoreCaseMode;
+	let shouldApplySCF = false;
 
 	switch (characterClassItem.kind) {
 		case 'union':
@@ -466,11 +463,17 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 			handlePositive = buildHandler('intersection');
 			handleNegative = buildHandler('subtraction');
 			if (config.transform.unicodeSetsFlag) data.transformed = true;
+			if (config.isIgnoreCaseMode) {
+				shouldApplySCF = true;
+			}
 			break;
 		case 'subtraction':
 			handlePositive = buildHandler('subtraction');
 			handleNegative = buildHandler('intersection');
 			if (config.transform.unicodeSetsFlag) data.transformed = true;
+			if (config.isIgnoreCaseMode) {
+				shouldApplySCF = true;
+			}
 			break;
 		// The `default` clause is only here as a safeguard; it should never be
 		// reached. Code coverage tools should ignore it.
@@ -482,7 +485,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 	for (const item of characterClassItem.body) {
 		switch (item.type) {
 			case 'value':
-				const codePoint = maybeSimpleCaseFolding(item.codePoint, isUnicodeSetIgnoreCaseMode);
+				const codePoint = shouldApplySCF ? simpleCaseFolding(item.codePoint) : item.codePoint;
 				const list = concatCaseEquivalents(codePoint, caseEqFlags);
 				handlePositive.regSet(data, regenerate(list));
 				if (list.length > 1) {
@@ -524,7 +527,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions) => {
 				data.transformed = true;
 				break;
 			case 'classStrings':
-				handlePositive.nested(data, computeClassStrings(item, regenerateOptions, caseEqFlags, isUnicodeSetIgnoreCaseMode));
+				handlePositive.nested(data, computeClassStrings(item, regenerateOptions, caseEqFlags, shouldApplySCF));
 				data.transformed = true;
 				break;
 			// The `default` clause is only here as a safeguard; it should never be
