@@ -77,6 +77,36 @@ const flattenMapping = (mapping, extendFilter) => {
 	return result;
 };
 
+const simpleUppercaseMapping = require('@unicode/unicode-16.0.0/Simple_Case_Mapping/Uppercase/symbols.js');
+const specialUppercaseMapping = require('@unicode/unicode-16.0.0/Special_Casing/Uppercase/symbols.js');
+
+const characterToUppercase = (character) => {
+	// Note: While the spec requires pulling in the Final_Sigma casing context data
+	// (can be accessed from ./Special_Casing/Uppercase--Final_Sigma/) to do a locale-
+	// insensitive full case conversion, we intentionally skip this data because
+	// Final_Sigma should not be activated when there is only one character in the string
+	return (
+		specialUppercaseMapping.get(character) ??
+		simpleUppercaseMapping.get(character) ??
+		character
+	);
+};
+
+// https://tc39.es/ecma262/#sec-runtime-semantics-canonicalize-ch
+const canonicalize = (codepoint) => {
+	// when HasEitherUnicodeFlag is false and rer.[[IgnoreCase]] is true
+	const character = String.fromCodePoint(codepoint);
+	const u = characterToUppercase(character);
+	if (u.length !== 1) {
+		return codepoint;
+	}
+	const cu = u.codePointAt(0);
+	if (codepoint >= 0x7f && cu < 0x7f) {
+		return codepoint;
+	}
+	return cu;
+}
+
 // From <http://unicode.org/Public/UCD/latest/ucd/CaseFolding.txt>:
 //
 // The status field is:
@@ -161,11 +191,7 @@ for (const [from, to] of oneWayMappings) {
 		extend(filteredMappings, from, to);
 	} else {
 		// https://mths.be/es6#sec-runtime-semantics-canonicalize-abstract-operation
-		if(
-			// TODO: Make this not depend on the engine in which this build script
-			// runs. (If V8 has a bug, then the generated data has the same bug.)
-			!RegExp(String.fromCodePoint(from), 'i').test(String.fromCodePoint(to))
-		) {
+		if (canonicalize(from) !== canonicalize(to)) {
 			extend(filteredMappings, from, to);
 		} else if (from > 0x80 || to > 0x80) {
 			extend(filteredBMPMappings, from, to);
