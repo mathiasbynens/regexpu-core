@@ -101,7 +101,7 @@ const canonicalize = (codepoint) => {
 		return codepoint;
 	}
 	const cu = u.codePointAt(0);
-	if (codepoint >= 0x7f && cu < 0x7f) {
+	if (codepoint >= 0x7F && cu < 0x7F) {
 		return codepoint;
 	}
 	return cu;
