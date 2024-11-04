@@ -14,9 +14,6 @@ jobs:
       - name: Set up Node.js 22
         uses: actions/setup-node@v3
         with:
-          # Always build using the same Node.js version, to ensure consistent
-          # results from scripts/iu-mappings.js.
-          # This version should be the same as the one used in the main workflow.
           node-version: 22
       - name: Install dependencies
         run: npm install
