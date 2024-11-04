@@ -13,7 +13,7 @@ const { UNICODE_SET, UNICODE_IV_SET } = require('../data/all-characters.js');
 
 const simpleCaseFolding = (codePoint) => {
 	return iuFoldings.get(codePoint) || codePoint;
-}
+};
 
 const getCaseEquivalents = (codePoint) => {
 	return iuMappings.get(codePoint) || false;
