@@ -60,6 +60,6 @@
 	},
 	"devDependencies": {
 		"jsesc": "^3.0.2",
-		"@unicode/unicode-16.0.0": "^1.6.0"
+		"@unicode/unicode-16.0.0": "^1.6.2"
 	}
 }

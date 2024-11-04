@@ -156,6 +156,11 @@ const modifiersFixtures = [
 		'matches': ['k', 'K', '\u{212A}', '\u{0131}'],
 		'nonMatches': ['0', ',']
 	},
+	{
+		// Unicode 16
+		'pattern': '(?i:\u1C89)',
+		'expected': '(?:[\\u1C89\\u1C8A])'
+	},
 	// +m
 	{
 		'pattern': '(?m:^[a-z])',
