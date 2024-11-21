@@ -8,14 +8,17 @@ require('./utils/regenerate-plugin-to-code.js');
 const Zs = require('@unicode/unicode-16.0.0/General_Category/Space_Separator/code-points.js');
 
 const iuMappings = require('../data/iu-mappings.js');
+const iuFoldings = require('../data/iu-foldings.js');
+const { UNICODE_SET, UNICODE_IV_SET } = require('../data/all-characters.js');
 
-const caseFold = (codePoint) => {
+const simpleCaseFolding = (codePoint) => {
+	return iuFoldings.get(codePoint) || codePoint;
+};
+
+const getCaseEquivalents = (codePoint) => {
 	return iuMappings.get(codePoint) || false;
 };
 
-// Prepare a Regenerate set containing all code points, used for negative
-// character classes (if any).
-const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);
 // Without the `u` flag, the range stops at 0xFFFF.
 // https://mths.be/es#sec-pattern-semantics
 const BMP_SET = regenerate().addRange(0x0, 0xFFFF);
@@ -23,6 +26,7 @@ const BMP_SET = regenerate().addRange(0x0, 0xFFFF);
 const ESCAPE_CHARS = {};
 const ESCAPE_CHARS_UNICODE = {};
 const ESCAPE_CHARS_UNICODE_IGNORE_CASE = {};
+const ESCAPE_CHARS_UNICODESET_IGNORE_CASE = {};
 const addCharacterClassEscape = (lower, set) => {
 	ESCAPE_CHARS[lower] = ESCAPE_CHARS_UNICODE[lower] = set;
 	const upper = lower.toUpperCase();
@@ -33,24 +37,34 @@ const addCharacterClassEscape = (lower, set) => {
 	// regular expressions that have both the `u` and `i` flags set.
 	const codePoints = set.toArray();
 	const iuSet = regenerate();
-	let containsFoldingSymbols = false;
+	let containsSimpleCaseFolding = false;
 	for (const codePoint of codePoints) {
-		let folded = caseFold(codePoint);
-		if (folded) {
-			containsFoldingSymbols = true;
-			iuSet.add(folded);
-			folded = caseFold(folded);
-			if (folded) {
-				iuSet.add(folded);
+		let caseEquivalents = getCaseEquivalents(codePoint);
+		if (caseEquivalents) {
+			containsSimpleCaseFolding = true;
+			iuSet.add(caseEquivalents);
+			caseEquivalents = getCaseEquivalents(caseEquivalents);
+			if (caseEquivalents) {
+				iuSet.add(caseEquivalents);
 			}
 		}
 	}
-	const iuLowerSet = containsFoldingSymbols ?
+	const iuLowerSet = containsSimpleCaseFolding ?
 		iuSet.clone().add(set) :
 		set;
 	const iuUpperSet = UNICODE_SET.clone().remove(iuLowerSet);
 	ESCAPE_CHARS_UNICODE_IGNORE_CASE[lower] = iuLowerSet;
 	ESCAPE_CHARS_UNICODE_IGNORE_CASE[upper] = iuUpperSet;
+
+	ESCAPE_CHARS_UNICODESET_IGNORE_CASE[lower] = regenerate(
+		iuLowerSet.toArray().map(ch => simpleCaseFolding(ch))
+	);
+
+	ESCAPE_CHARS_UNICODESET_IGNORE_CASE[upper] = {
+		toCode() {
+			return 'UNICODE_IV_SET.clone().remove(' + ESCAPE_CHARS_UNICODESET_IGNORE_CASE[lower].toCode() + ')';
+		}
+	}
 }
 
 // Prepare a Regenerate set for every existing character class escape.
@@ -94,10 +108,11 @@ const stringify = (name, object) => {
 
 const source = [
 	'// Generated using `npm run build`. Do not edit.\n' +
-	`'use strict';\n\nconst regenerate = require('regenerate');`,
+	`'use strict';\n\nconst regenerate = require('regenerate');\nconst UNICODE_IV_SET = require('./all-characters.js').UNICODE_IV_SET`,
 	stringify('REGULAR', ESCAPE_CHARS),
 	stringify('UNICODE', ESCAPE_CHARS_UNICODE),
-	stringify('UNICODE_IGNORE_CASE', ESCAPE_CHARS_UNICODE_IGNORE_CASE)
+	stringify('UNICODE_IGNORE_CASE', ESCAPE_CHARS_UNICODE_IGNORE_CASE),
+	stringify('UNICODESET_IGNORE_CASE', ESCAPE_CHARS_UNICODESET_IGNORE_CASE)
 ].join('\n\n');
 
 // Save the precompiled sets to a static file.

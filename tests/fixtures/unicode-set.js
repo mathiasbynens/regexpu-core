@@ -173,13 +173,15 @@ const unicodeSetFixtures = [
 	{
 		pattern: '[\\q{sA}asb]',
 		flags: 'iv',
-		expected: '(?:sA|[abs])'
+		expected: '(?:sA|[abs])',
+		expectedFlags: 'iu'
 	},
 	{
 		pattern: '[\\q{sA}asb]',
 		flags: 'iv',
 		options: TRANSFORM_U,
-		expected: '(?:[s\\u017F]A|[abs\\u017F])'
+		expected: '(?:[s\\u017F]A|[abs\\u017F])',
+		expectedFlags: 'i'
 	},
 	{
 		pattern: '[[ab\\q{cd}]--a]',
@@ -402,6 +404,148 @@ const unicodeSetFixtures = [
 		flags: 'iv',
 		matches: ['k', 'K', '\u{212A}', '\u{0131}'],
 		nonMatches: ['0', ',']
+	},
+	{
+		pattern: '[K&&k]',
+		flags: 'iv',
+		expected: 'k',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[K&&\\u212A]',
+		flags: 'iv',
+		expected: 'k',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[K--k]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[K--\\q{k}]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\u212A--k]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\q{\\u212A}--k]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[K--\\u212A]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\q{K}--\\q{\\u212A}]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\q{KK}&&\\q{kk}]',
+		flags: 'iv',
+		expected: '(?:kk)',
+		expectedFlags: 'iu',
+	},
+	{
+		pattern: '[\\q{KK}--\\q{k\\u212A}]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\p{Lu}&&k]',
+		flags: 'iv',
+		expected: 'k',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\p{Lu}--k]',
+		flags: 'iv',
+		expectedFlags: 'iu',
+		nonMatches: ['K', 'k', '\u212A'],
+	},
+	{
+		pattern: '[[\\p{Lu}]--k]',
+		flags: 'iv',
+		expectedFlags: 'iu',
+		nonMatches: ['K', 'k', '\u212A'],
+	},
+	{
+		pattern: '[\\w--k]',
+		flags: 'iv',
+		expected: '[0-9_a-jl-z]',
+		expectedFlags: 'iu',
+		nonMatches: ['K', 'k', '\u212A'],
+	},
+	{
+		pattern: '[[\\w]--k]',
+		flags: 'iv',
+		expected: '[0-9_a-jl-z]',
+		expectedFlags: 'iu',
+		nonMatches: ['K', 'k', '\u212A'],
+	},
+	{
+		pattern: '[\\W--Σ]',
+		flags: 'iv',
+		nonMatches: ['Σ', 'σ'],
+		matches: ['Θ', 'θ'],
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[[\\W]--Σ]',
+		flags: 'iv',
+		nonMatches: ['Σ', 'σ'],
+		matches: ['Θ', 'θ'],
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\D--Σ]',
+		flags: 'iv',
+		nonMatches: ['Σ', 'σ'],
+		matches: ['Θ', 'θ'],
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[[\\D]--Σ]',
+		flags: 'iv',
+		nonMatches: ['Σ', 'σ'],
+		matches: ['Θ', 'θ'],
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[\\S--Σ]',
+		flags: 'iv',
+		nonMatches: ['Σ', 'σ'],
+		matches: ['Θ', 'θ'],
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[[\\S]--Σ]',
+		flags: 'iv',
+		nonMatches: ['Σ', 'σ'],
+		matches: ['Θ', 'θ'],
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '[[J-Lj-l]--\\u212A]',
+		flags: 'iv',
+		expected: '[jl]',
+		expectedFlags: 'iu',
+		nonMatches: ['K', 'k', '\u212A'],
+		matches: ['j', 'J', 'l', 'L']
 	}
 ];
 

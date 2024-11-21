@@ -167,13 +167,28 @@ const modifiersFixtures = [
 		'expected': '(?:(?:^|(?<=[\\n\\r\\u2028\\u2029]))[a-z])',
 	},
 	{
+		'pattern': '(?m:^[a-z])',
+		'options': { modifiers: false },
+		'expected': '(?m:^[a-z])',
+	},
+	{
 		'pattern': '(?m:[a-z]$)',
 		'expected': '(?:[a-z](?:$|(?=[\\n\\r\\u2028\\u2029])))',
+	},
+	{
+		'pattern': '(?m:[a-z]$)',
+		'options': { modifiers: false },
+		'expected': '(?m:[a-z]$)',
 	},
 	// +s
 	{
 		'pattern': '(?s:.)',
 		'expected': '(?:[^])',
+	},
+	{
+		'pattern': '(?s:.)',
+		'options': { modifiers: false },
+		'expected': '(?s:.)',
 	},
 	// -i
 	{
@@ -254,6 +269,48 @@ const modifiersFixtures = [
 		'options': { unicodeSetsFlag: 'transform', unicodePropertyEscapes: 'transform', modifiers: 'transform' },
 		'expected': '[A-Za-z\\u017F\\u212A](?:a)',
 		'expectedFlags': 'u'
+	},
+	{
+		'pattern': '(?i:[[AB]&&B])',
+		'options': { unicodeSetsFlag: 'transform', modifiers: 'transform' },
+		'flags': 'v',
+		'expected': '(?:[Bb])'
+	},
+	{
+		'pattern': '(?i:[[AB]&&B])',
+		'options': { modifiers: 'transform' },
+		'flags': 'v',
+		'expected': '(?:[Bb])'
+	},
+	{
+		'pattern': '(?i:[K&&k])',
+		'flags': 'v',
+		'expected': '(?:[Kk\\u212A])',
+		'expectedFlags': 'v'
+	},
+	{
+		'pattern': '(?i:[K--k])',
+		'flags': 'v',
+		'expected': '(?:[])',
+		'expectedFlags': 'v'
+	},
+	{
+		pattern: '(?i:[\\q{KK}&&\\q{kk}])',
+		flags: 'v',
+		expected: '(?:(?:[Kk\\u212A][Kk\\u212A]))',
+		expectedFlags: 'v',
+	},
+	{
+		pattern: '(?i:[\\q{KK}--\\q{k\\u212A}])',
+		flags: 'v',
+		expected: '(?:[])',
+		expectedFlags: 'v'
+	},
+	{
+		pattern: '(?i:[[J-Lj-l]--\\u212A])',
+		flags: 'v',
+		expected: '(?:[JLjl])',
+		expectedFlags: 'v'
 	},
 	// -m
 	{
