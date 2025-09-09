@@ -254,6 +254,15 @@ const unicodePropertyEscapePathExpressionsFixtures = [
 			'sc=Kawi',
 		]
 	},
+	{
+		'path': 'Script/Unknown',
+		'expressions': [
+			'sc=Zzzz',
+			'sc=Unknown',
+			'Script=Zzzz',
+			'Script=Unknown',
+		]
+	},
 	// https://unicode.org/reports/tr18/#RL1.2 item 2b
 	{
 		'path': 'Script_Extensions/Greek',
@@ -687,11 +696,20 @@ const unicodePropertyEscapePathExpressionsFixtures = [
 			'Emoji_Presentation'
 		]
 	},
-	// https://unicode.org/reports/tr51/proposed.html
+	// https://unicode.org/reports/tr51/
 	{
 		'path': 'Binary_Property/Extended_Pictographic',
 		'expressions': [
 			'Extended_Pictographic'
+		]
+	},
+	{
+		'path': 'Script_Extensions/Unknown',
+		'expressions': [
+			'scx=Zzzz',
+			'scx=Unknown',
+			'Script_Extensions=Zzzz',
+			'Script_Extensions=Unknown',
 		]
 	},
 	{
