@@ -39,6 +39,7 @@
 	"files": [
 		"LICENSE-MIT.txt",
 		"rewrite-pattern.js",
+		"rewrite-pattern.d.ts",
 		"data/all-characters.js",
 		"data/character-class-escape-sets.js",
 		"data/i-bmp-mappings.js",
