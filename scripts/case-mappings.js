@@ -77,8 +77,8 @@ const flattenMapping = (mapping, extendFilter) => {
 	return result;
 };
 
-const simpleUppercaseMapping = require('@unicode/unicode-16.0.0/Simple_Case_Mapping/Uppercase/symbols.js');
-const specialUppercaseMapping = require('@unicode/unicode-16.0.0/Special_Casing/Uppercase/symbols.js');
+const simpleUppercaseMapping = require('@unicode/unicode-17.0.0/Simple_Case_Mapping/Uppercase/symbols.js');
+const specialUppercaseMapping = require('@unicode/unicode-17.0.0/Special_Casing/Uppercase/symbols.js');
 
 const characterToUppercase = (character) => {
 	// Note: While the spec requires pulling in the Final_Sigma casing context data
@@ -127,8 +127,8 @@ const canonicalize = (codepoint) => {
 //  A. To do a simple case folding, use the mappings with status C + S.
 //  B. To do a full case folding, use the mappings with status C + F.
 
-const commonMappings = require('@unicode/unicode-16.0.0/Case_Folding/C/code-points.js');
-const simpleMappings = require('@unicode/unicode-16.0.0/Case_Folding/S/code-points.js');
+const commonMappings = require('@unicode/unicode-17.0.0/Case_Folding/C/code-points.js');
+const simpleMappings = require('@unicode/unicode-17.0.0/Case_Folding/S/code-points.js');
 
 // We want the `C` mappings in both directions (i.e. `A` should fold to `a`
 // and `a` to `A`), and the `S` mappings in both directions (i.e. `ẞ` should

@@ -5,7 +5,7 @@ const jsesc = require('jsesc');
 const regenerate = require('regenerate');
 require('./utils/regenerate-plugin-to-code.js');
 
-const Zs = require('@unicode/unicode-16.0.0/General_Category/Space_Separator/code-points.js');
+const Zs = require('@unicode/unicode-17.0.0/General_Category/Space_Separator/code-points.js');
 
 const iuMappings = require('../data/iu-mappings.js');
 const iuFoldings = require('../data/iu-foldings.js');
@@ -108,7 +108,7 @@ const stringify = (name, object) => {
 
 const source = [
 	'// Generated using `npm run build`. Do not edit.\n' +
-	`'use strict';\n\nconst regenerate = require('regenerate');\nconst UNICODE_IV_SET = require('./all-characters.js').UNICODE_IV_SET`,
+	`'use strict';\n\nconst regenerate = require('regenerate');\nconst UNICODE_IV_SET = require('./all-characters.js').UNICODE_IV_SET;`,
 	stringify('REGULAR', ESCAPE_CHARS),
 	stringify('UNICODE', ESCAPE_CHARS_UNICODE),
 	stringify('UNICODE_IGNORE_CASE', ESCAPE_CHARS_UNICODE_IGNORE_CASE),

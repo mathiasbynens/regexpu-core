@@ -42,7 +42,7 @@ describe('rewritePattern { unicodeFlag }', () => {
 });
 
 const getPropertyValuePattern = (path) => {
-	const codePoints = require(`@unicode/unicode-16.0.0/${
+	const codePoints = require(`@unicode/unicode-17.0.0/${
 		path }/code-points.js`);
 	return {
 		'p': regenerate(codePoints).toString(),
@@ -98,7 +98,7 @@ describe('unicodePropertyEscapes', () => {
 			});
 		}
 	}
-	
+
 	// ignore unicodePropertyEscapePathExpressionsFixtures tests as @unicode/unicode-* library does not support node.js 6
 	if (IS_NODE_6) return;
 	for (const fixture of unicodePropertyEscapePathExpressionsFixtures) {
