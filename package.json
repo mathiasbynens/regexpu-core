@@ -56,7 +56,7 @@
 		"regenerate": "^1.4.2",
 		"regenerate-unicode-properties": "^10.2.2",
 		"regjsgen": "^0.8.0",
-		"regjsparser": "^0.12.0",
+		"regjsparser": "^0.13.0",
 		"unicode-match-property-ecmascript": "^2.0.0",
 		"unicode-match-property-value-ecmascript": "^2.2.1"
 	},
