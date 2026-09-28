@@ -43,6 +43,7 @@ const unicodeFixtures = [
 	},
 	{
 		'pattern': '[\\s\\S]',
+		'matches': ["a", "0", "\u{12345}", "\uDAAA", "\uDDDD"],
 		'flags': FLAGS_WITH_UNICODE,
 		'transpiled': '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
 	},

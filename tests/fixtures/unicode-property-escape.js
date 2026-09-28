@@ -25,7 +25,9 @@ const unicodePropertyEscapeFixtures = [
 	},
 	{
 		pattern: '[\\P{Script_Extensions=Anatolian_Hieroglyphs}]',
-		expected: '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+		expected: '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])',
+		matches: ['a', '_', '\u{143FF}', '\u{14647}', '\u{1F600}', '\uD811', '\uDC00'],
+		nonMatches: ['\u{14400}', '\u{14646}'],
 	},
 	{
 		pattern: '[\\p{Script_Extensions=Anatolian_Hieroglyphs}_]',
@@ -34,6 +36,8 @@ const unicodePropertyEscapeFixtures = [
 	{
 		pattern: '[\\P{Script_Extensions=Anatolian_Hieroglyphs}_]',
 		expected: '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uD810\\uD812-\\uDBFF][\\uDC00-\\uDFFF]|\\uD811[\\uDE47-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])',
+		matches: ['a', '_', '\u{143FF}', '\u{14647}', '\u{1F600}', '\uD811', '\uDC00'],
+		nonMatches: ['\u{14400}', '\u{14646}'],
 	},
 	// https://github.com/mathiasbynens/regexpu-core/issues/112
 	{
