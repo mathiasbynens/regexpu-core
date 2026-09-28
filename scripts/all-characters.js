@@ -2,8 +2,8 @@ const fs = require('node:fs');
 const regenerate = require('regenerate');
 require('./utils/regenerate-plugin-to-code.js');
 
-const commonMappings = require('@unicode/unicode-17.0.0/Case_Folding/C/code-points.js');
-const simpleMappings = require('@unicode/unicode-17.0.0/Case_Folding/S/code-points.js');
+const { default: commonMappings } = require('@unicode/unicode-18.0.0/Case_Folding/C/code-points.mjs');
+const { default: simpleMappings } = require('@unicode/unicode-18.0.0/Case_Folding/S/code-points.mjs');
 
 // https://tc39.es/ecma262/#sec-allcharacters
 const UNICODE_SET = regenerate().addRange(0x0, 0x10FFFF);

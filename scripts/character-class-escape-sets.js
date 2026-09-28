@@ -5,7 +5,7 @@ const jsesc = require('jsesc');
 const regenerate = require('regenerate');
 require('./utils/regenerate-plugin-to-code.js');
 
-const Zs = require('@unicode/unicode-17.0.0/General_Category/Space_Separator/code-points.js');
+const { default: Zs } = require('@unicode/unicode-18.0.0/General_Category/Space_Separator/code-points.mjs');
 
 const iuMappings = require('../data/iu-mappings.js');
 const iuFoldings = require('../data/iu-foldings.js');
