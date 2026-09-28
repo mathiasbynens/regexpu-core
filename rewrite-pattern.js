@@ -24,11 +24,6 @@ function flatMap(array, callback) {
 	return result;
 }
 
-function regenerateContainsAstral(regenerateData) {
-	const data = regenerateData.data;
-	return data.length >= 1 && data[data.length - 1] >= 0x10000;
-}
-
 // https://tc39.es/ecma262/#prod-SyntaxCharacter
 const SYNTAX_CHARS = /[\\^$.*+?()[\]{}|]/g;
 
@@ -571,9 +566,7 @@ const processCharacterClass = (
 	const negative = characterClassItem.negative;
 	const { singleChars, transformed, longStrings } = computed;
 	if (transformed) {
-		// If single chars already contains some astral character, regenerate (bmpOnly: true) will create valid regex strings
-		const bmpOnly = regenerateContainsAstral(singleChars);
-		const setStr = singleChars.toString(Object.assign({}, regenerateOptions, { bmpOnly: bmpOnly }));
+		const setStr = singleChars.toString(regenerateOptions);
 
 		if (negative) {
 			if (config.useUnicodeFlag) {
