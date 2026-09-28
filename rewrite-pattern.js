@@ -127,15 +127,10 @@ const getUnicodePropertyEscapeSet = (value, isNegative, isUnicodeSetIgnoreCase) 
 const getUnicodePropertyEscapeCharacterClassData = (property, isNegative, isUnicodeSetIgnoreCase, shouldApplySCF) => {
 	const set = getUnicodePropertyEscapeSet(property, isNegative, isUnicodeSetIgnoreCase);
 	const data = getCharacterClassEmptyData();
-	const singleChars = shouldApplySCF ? regenerate(set.characters.toArray().map(ch => simpleCaseFolding(ch))) : set.characters;
+	const singleChars = shouldApplySCF ? simpleCaseFoldingSet(set.characters) : set.characters;
 	const caseEqFlags = configGetCaseEqFlags();
 	if (caseEqFlags) {
-		for (const codepoint of singleChars.toArray()) {
-			const list = getCaseEquivalents(codepoint, caseEqFlags);
-			if (list) {
-				singleChars.add(list);
-			}
-		}
+		singleChars.add(getCaseEquivalentsOfSet(singleChars, caseEqFlags));
 	}
 	data.singleChars = singleChars;
 	if (set.strings.size > 0) {
@@ -148,6 +143,23 @@ const getUnicodePropertyEscapeCharacterClassData = (property, isNegative, isUnic
 const CASE_EQ_FLAG_NONE = 0b00;
 const CASE_EQ_FLAG_BMP = 0b01;
 const CASE_EQ_FLAG_UNICODE = 0b10;
+
+// Code points for which getCaseEquivalents may return a non-empty list,
+// regardless of the flags.
+const CASE_EQ_CANDIDATES = regenerate(Array.from(iuMappings.keys()), Array.from(iBMPMappings.keys()))
+	.addRange(0x41, 0x5A)
+	.addRange(0x61, 0x7A);
+
+// Returns the case equivalents of all code points in the given set. Only the
+// candidates are visited, instead of every code point of a (potentially huge) set.
+const getCaseEquivalentsOfSet = (set, caseEqFlags) => {
+	const result = [];
+	for (const codePoint of set.clone().intersection(CASE_EQ_CANDIDATES).toArray()) {
+		const list = getCaseEquivalents(codePoint, caseEqFlags);
+		if (list) result.push(...list);
+	}
+	return result;
+};
 
 function configGetCaseEqFlags() {
 	let flags = CASE_EQ_FLAG_NONE;
@@ -169,24 +181,10 @@ function configGetCaseEqFlags() {
 // Given a range of code points, add any case-equivalent code points in that range
 // to a set.
 regenerate.prototype.iuAddRange = function(min, max, caseEqFlags) {
-	const $this = this;
-	do {
-		const list = getCaseEquivalents(min, caseEqFlags);
-		if (list) {
-			$this.add(list);
-		}
-	} while (++min <= max);
-	return $this;
+	return this.add(getCaseEquivalentsOfSet(regenerate().addRange(min, max), caseEqFlags));
 };
 regenerate.prototype.iuRemoveRange = function(min, max, caseEqFlags) {
-	const $this = this;
-	do {
-		const list = getCaseEquivalents(min, caseEqFlags);
-		if (list) {
-			$this.remove(list);
-		}
-	} while (++min <= max);
-	return $this;
+	return this.remove(getCaseEquivalentsOfSet(regenerate().addRange(min, max), caseEqFlags));
 };
 
 const update = (item, pattern) => {
@@ -263,6 +261,18 @@ const simpleCaseFolding = (codePoint) => {
 	}
 	return iuFoldings.get(codePoint) || codePoint;
 }
+
+// Code points that simpleCaseFolding may map to a different code point.
+const SCF_CANDIDATES = regenerate(Array.from(iuFoldings.keys())).addRange(0x41, 0x5A);
+
+// Returns a new set with simpleCaseFolding applied to every code point of the
+// given set. Only the candidates are visited, instead of every code point.
+const simpleCaseFoldingSet = (set) => {
+	const candidates = set.clone().intersection(SCF_CANDIDATES).toArray();
+	// Remove all candidates before adding the folded ones, so that a folded
+	// code point that is also in the set is not removed again.
+	return set.clone().remove(candidates).add(candidates.map(simpleCaseFolding));
+};
 
 const buildHandler = (action) => {
 	switch (action) {
@@ -495,11 +505,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 				const min = item.min.codePoint;
 				const max = item.max.codePoint;
 				if (shouldApplySCF) {
-					let list = [];
-					for (let cp = min; cp <= max; cp++) {
-						list.push(simpleCaseFolding(cp));
-					}
-					handlePositive.regSet(data, regenerate(list));
+					handlePositive.regSet(data, simpleCaseFoldingSet(regenerate().addRange(min, max)));
 				} else {
 					handlePositive.range(data, min, max);
 				}
