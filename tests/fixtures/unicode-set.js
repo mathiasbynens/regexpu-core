@@ -135,7 +135,22 @@ const unicodeSetFixtures = [
 		pattern: '[[^a-z][f-h]]',
 		matches: ["f", "A", "\u{12345}", "\uDAAA", "\uDDDD"],
 		nonMatches: ["a", "z"],
-		expected: '(?:[\\0-`f-h\\{-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF])',
+		expected: '(?:[\\0-`f-h\\{-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])',
+		options: TRANSFORM_U
+	},
+	// https://github.com/mathiasbynens/regexpu-core/issues/112
+	// The class must consume a surrogate pair as a whole, never one half of it.
+	{
+		pattern: '^[[^a-z][f-h]]{2}$',
+		matches: ["ff", "fA", "A\u{12345}", "\u{12345}\u{12345}", "\uDDDD\uDAAA", "\uDAAAA"],
+		nonMatches: ["a", "fa", "\u{12345}", "\u{1F600}", "򺧝", "\u{12345}\u{12345}\u{12345}"],
+		expected: '^[\\0-`f-h\\{-\\u{10FFFF}]{2}$'
+	},
+	{
+		pattern: '^[[^a-z][f-h]]{2}$',
+		matches: ["ff", "fA", "A\u{12345}", "\u{12345}\u{12345}", "\uDDDD\uDAAA", "\uDAAAA"],
+		nonMatches: ["a", "fa", "\u{12345}", "\u{1F600}", "򺧝", "\u{12345}\u{12345}\u{12345}"],
+		expected: '^(?:[\\0-`f-h\\{-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF]){2}$',
 		options: TRANSFORM_U
 	},
 	{

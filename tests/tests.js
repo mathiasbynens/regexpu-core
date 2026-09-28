@@ -22,15 +22,31 @@ assert.match || (assert.match = function match(value, regex) { assert.ok(regex.e
 assert.doesNotMatch || (assert.doesNotMatch = function doesNotMatch(value, regex) { assert.ok(regex.exec(value) === null, `${value} does match ${regex.toString()}`) });
 
 describe('rewritePattern { unicodeFlag }', () => {
+	let actualFlags;
 	const options = {
-		'unicodeFlag': 'transform'
+		'unicodeFlag': 'transform',
+		onNewFlags(newFlags) {
+			actualFlags = newFlags;
+		}
 	};
 	for (const fixture of unicodeFixtures) {
 		const pattern = fixture.pattern;
+		const expected = fixture.transpiled;
 		for (const flag of fixture.flags) {
 			if (flag.includes('u')) {
 				it('rewrites `/' + pattern + '/' + flag + '` correctly', () => {
-					assert.equal(rewritePattern(pattern, flag, options), fixture.transpiled);
+					const transpiled = rewritePattern(pattern, flag, options);
+					if (transpiled != "(?:" + expected + ")") {
+						assert.strictEqual(transpiled, expected);
+					}
+					for (const match of fixture.matches || []) {
+						const transpiledRegex = new RegExp(transpiled, actualFlags);
+						assert.match(match, transpiledRegex);
+					}
+					for (const nonMatch of fixture.nonMatches || []) {
+						const transpiledRegex = new RegExp(transpiled, actualFlags);
+						assert.doesNotMatch(nonMatch, transpiledRegex);
+					}
 				});
 			} else {
 				it('leaves `/' + pattern + '/' + flag + '` as-is', () => {

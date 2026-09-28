@@ -124,6 +124,15 @@ const characterClassFixtures = [
 		options: { unicodeFlag: 'transform' },
 		expected: '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uD83C\\uD83E-\\uDBFF][\\uDC00-\\uDFFF]|\\uD83D[\\uDC00-\\uDC99\\uDC9B-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])',
 		nonMatches: ['💚']
+	},
+	// https://github.com/mathiasbynens/regexpu-core/issues/112
+	{
+		pattern: '[\\uD800\\u{10000}]',
+		flags: 'u',
+		options: { unicodeFlag: 'transform' },
+		expected: '(?:\\uD800\\uDC00|\\uD800(?![\\uDC00-\\uDFFF]))',
+		matches: ['\uD800', '\u{10000}'],
+		nonMatches: ['\u{10001}']
 	}
 ];
 
