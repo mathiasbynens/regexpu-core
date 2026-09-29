@@ -28,7 +28,7 @@ This function takes a string that represents a regular expression pattern as wel
 
 ```js
 rewritePattern('foo.bar', 'u', { unicodeFlag: "transform" });
-// → 'foo(?:[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uD7FF\\uDC00-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF])bar'
+// → 'foo(?:[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])bar'
 
 rewritePattern('[\\u{1D306}-\\u{1D308}a-z]', 'u', { unicodeFlag: "transform" });
 // → '(?:[a-z]|\\uD834[\\uDF06-\\uDF08])'
@@ -42,11 +42,11 @@ _regexpu-core_ can rewrite non-ES6 regular expressions too, which is useful to d
 ```js
 // In ES5, the dot operator only matches BMP symbols:
 rewritePattern('foo.bar', '', { unicodeFlag: "transform" });
-// → 'foo(?:[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF])bar'
+// → 'foo.bar'
 
 // But with the ES2015 `u` flag, it matches astral symbols too:
 rewritePattern('foo.bar', 'u', { unicodeFlag: "transform" });
-// → 'foo(?:[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uD7FF\\uDC00-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF])bar'
+// → 'foo(?:[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])bar'
 ```
 
 The optional `options` argument recognizes the following properties:
@@ -75,17 +75,17 @@ These options can be set to `false` or `'transform'`. When using `'transform'`, 
   rewritePattern('.', '', {
     dotAllFlag: 'transform'
   });
-  // → '[\\0-\\t\\x0B\\f\\x0E-\\u2027\\u202A-\\uFFFF]'
+  // → '.'
 
   rewritePattern('.', 's', {
     dotAllFlag: 'transform'
   });
-  // → '[\\0-\\uFFFF]'
+  // → '[^]'
 
   rewritePattern('.', 'su', {
     dotAllFlag: 'transform'
   });
-  // → '(?:[\\0-\\uD7FF\\uE000-\\uFFFF]|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?:[^\\uD800-\\uDBFF]|^)[\\uDC00-\\uDFFF])'
+  // → '[^]'
   ```
 
 - `unicodePropertyEscapes` - [Unicode property escapes](property-escapes.md).
@@ -137,7 +137,7 @@ These options can be set to `false` or `'transform'`. When using `'transform'`, 
     unicodeSetsFlag: 'transform',
     unicodeFlag: 'transform'
   });
-  // → '(?:(?![f-h])[\s\S])' (to be used without /u)
+  // → '(?:[\0-ei-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])' (to be used without /u)
   ```
 
 - `modifiers` - [Inline `i`/`m`/`s` modifiers](https://github.com/tc39/proposal-regexp-modifiers)
@@ -146,7 +146,7 @@ These options can be set to `false` or `'transform'`. When using `'transform'`, 
   rewritePattern('(?i:[a-z])[a-z]', '', {
     modifiers: 'transform'
   });
-  // → '(?:[a-zA-Z])([a-z])'
+  // → '(?:[A-Za-z])[a-z]'
   ```
 
 #### Experimental regular expression features
