@@ -49,6 +49,7 @@
 	"scripts": {
 		"build": "node scripts/index.js",
 		"test": "node --test tests/tests.js",
+		"bench": "node --experimental-bench --bench benchmark.mjs",
 		"test-node6": "mocha tests",
 		"cover": "NODE_V8_COVERAGE=coverage node --test  --experimental-test-coverage tests/tests.js"
 	},
