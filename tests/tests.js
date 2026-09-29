@@ -58,11 +58,14 @@ describe('rewritePattern { unicodeFlag }', () => {
 });
 
 const getPropertyValuePattern = (path) => {
-	const codePoints = require(`@unicode/unicode-17.0.0/${
-		path }/code-points.js`);
+	const set = regenerate();
+	for (const { begin, end } of require(`@unicode/unicode-18.0.0/${
+		path }/ranges.mjs`).default) {
+		set.addRange(begin, end - 1);
+	}
 	return {
-		'p': regenerate(codePoints).toString(),
-		'P': UNICODE_SET.clone().remove(codePoints).toString()
+		'p': set.toString(),
+		'P': UNICODE_SET.clone().remove(set).toString()
 	};
 };
 
