@@ -15,20 +15,20 @@ jobs:
       matrix:
         # Include all major maintenance + active LTS + current Node.js versions.
         # https://github.com/nodejs/Release#release-schedule
-        node: [20, 22, 24]
+        node: [22, 24, 26]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Node.js 24
-        uses: actions/setup-node@v3
+      - name: Check out
+        uses: actions/checkout@v7
+      - name: Set up the latest Node.js
+        uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
       - name: Install dependencies
         run: npm install
       - name: Build
         run: npm run build
       - name: Set up Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
       - name: Test
@@ -40,7 +40,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Node.js 6
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
           node-version: 6
       - name: Install dependencies
