@@ -501,6 +501,10 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 					codePoints.push(codePoint);
 					if (codePoint !== ch.codePoint) {
 						stringifiedString += regenerate(codePoint).toString(regenerateOptions);
+					} else if (ch.kind === 'symbol') {
+						// Characters such as `*` and `.` need no escaping in `\q{}`, but
+						// they do once the string is emitted outside of a class.
+						stringifiedString += generate(ch).replace(SYNTAX_CHARS, '\\$&');
 					} else {
 						stringifiedString += generate(ch);
 					}

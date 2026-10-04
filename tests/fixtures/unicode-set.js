@@ -632,6 +632,29 @@ const unicodeSetFixtures = [
 		expected: '(?:\\uD83D\\uDE00x)',
 		expectedFlags: 'i',
 		matches: ['😀x', '😀X']
+	},
+	// Syntax characters in class strings are escaped in the output
+	{
+		pattern: '[\\q{*️⃣}]',
+		expected: '(?:\\*️⃣)',
+		matches: ['*️⃣'],
+		nonMatches: ['️⃣']
+	},
+	{
+		pattern: '[\\q{.a|a$|b^|c+|d?}]',
+		expected: '(?:\\.a|a\\$|b\\^|c\\+|d\\?)',
+		matches: ['.a', 'a$', 'b^', 'c+', 'd?'],
+		nonMatches: ['xa', 'a', 'cc', 'd']
+	},
+	{
+		pattern: '[\\q{*️⃣}&&\\p{Emoji_Keycap_Sequence}]',
+		expected: '(?:\\*️⃣)',
+		matches: ['*️⃣'],
+		nonMatches: ['#️⃣']
+	},
+	{
+		pattern: '[\\p{Emoji_Keycap_Sequence}\\q{*️⃣}]',
+		matches: ['*️⃣', '#️⃣']
 	}
 ];
 
