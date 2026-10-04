@@ -127,15 +127,10 @@ const getUnicodePropertyEscapeSet = (value, isNegative, isUnicodeSetIgnoreCase) 
 const getUnicodePropertyEscapeCharacterClassData = (property, isNegative, isUnicodeSetIgnoreCase, shouldApplySCF) => {
 	const set = getUnicodePropertyEscapeSet(property, isNegative, isUnicodeSetIgnoreCase);
 	const data = getCharacterClassEmptyData();
-	const singleChars = shouldApplySCF ? regenerate(set.characters.toArray().map(ch => simpleCaseFolding(ch))) : set.characters;
+	const singleChars = shouldApplySCF ? simpleCaseFoldingSet(set.characters) : set.characters;
 	const caseEqFlags = configGetCaseEqFlags();
 	if (caseEqFlags) {
-		for (const codepoint of singleChars.toArray()) {
-			const list = getCaseEquivalents(codepoint, caseEqFlags);
-			if (list) {
-				singleChars.add(list);
-			}
-		}
+		singleChars.add(getCaseEquivalentsOfSet(singleChars, caseEqFlags));
 	}
 	data.singleChars = singleChars;
 	if (set.strings.size > 0) {
@@ -148,6 +143,23 @@ const getUnicodePropertyEscapeCharacterClassData = (property, isNegative, isUnic
 const CASE_EQ_FLAG_NONE = 0b00;
 const CASE_EQ_FLAG_BMP = 0b01;
 const CASE_EQ_FLAG_UNICODE = 0b10;
+
+// Code points for which getCaseEquivalents may return a non-empty list,
+// regardless of the flags.
+const CASE_EQ_CANDIDATES = regenerate(Array.from(iuMappings.keys()), Array.from(iBMPMappings.keys()))
+	.addRange(0x41, 0x5A)
+	.addRange(0x61, 0x7A);
+
+// Returns the case equivalents of all code points in the given set. Only the
+// candidates are visited, instead of every code point of a (potentially huge) set.
+const getCaseEquivalentsOfSet = (set, caseEqFlags) => {
+	const result = [];
+	for (const codePoint of set.clone().intersection(CASE_EQ_CANDIDATES).toArray()) {
+		const list = getCaseEquivalents(codePoint, caseEqFlags);
+		if (list) result.push(...list);
+	}
+	return result;
+};
 
 function configGetCaseEqFlags() {
 	let flags = CASE_EQ_FLAG_NONE;
@@ -166,27 +178,30 @@ function configGetCaseEqFlags() {
 	return flags;
 }
 
+// Ranges with fewer code points than this, e.g. `a-z`, are visited code point
+// by code point, which is faster than intersecting them with the candidates.
+const SMALL_RANGE_SIZE = 32;
+
+// Returns the case equivalents of all code points in the given range.
+const getCaseEquivalentsOfRange = (min, max, caseEqFlags) => {
+	if (max - min >= SMALL_RANGE_SIZE) {
+		return getCaseEquivalentsOfSet(regenerate().addRange(min, max), caseEqFlags);
+	}
+	const result = [];
+	for (let codePoint = min; codePoint <= max; codePoint++) {
+		const list = getCaseEquivalents(codePoint, caseEqFlags);
+		if (list) result.push(...list);
+	}
+	return result;
+};
+
 // Given a range of code points, add any case-equivalent code points in that range
 // to a set.
 regenerate.prototype.iuAddRange = function(min, max, caseEqFlags) {
-	const $this = this;
-	do {
-		const list = getCaseEquivalents(min, caseEqFlags);
-		if (list) {
-			$this.add(list);
-		}
-	} while (++min <= max);
-	return $this;
+	return this.add(getCaseEquivalentsOfRange(min, max, caseEqFlags));
 };
 regenerate.prototype.iuRemoveRange = function(min, max, caseEqFlags) {
-	const $this = this;
-	do {
-		const list = getCaseEquivalents(min, caseEqFlags);
-		if (list) {
-			$this.remove(list);
-		}
-	} while (++min <= max);
-	return $this;
+	return this.remove(getCaseEquivalentsOfRange(min, max, caseEqFlags));
 };
 
 const update = (item, pattern) => {
@@ -232,24 +247,51 @@ const wrap = (tree, pattern) => {
  * @returns false | number[]
  */
 const getCaseEquivalents = (codePoint, flags) => {
-	if (flags === CASE_EQ_FLAG_NONE) {
-		return false;
+	// Most code points have no case equivalents, so look them up without
+	// allocating any arrays.
+	const unicodeMapping = (flags & CASE_EQ_FLAG_UNICODE) ? iuMappings.get(codePoint) : undefined;
+	const bmpMapping = (flags & CASE_EQ_FLAG_BMP) ? getBMPCaseMapping(codePoint) : undefined;
+	if (unicodeMapping === undefined) {
+		if (bmpMapping === undefined) return false;
+		return typeof bmpMapping === 'number' ? [bmpMapping] : bmpMapping.slice();
 	}
-	let result = ((flags & CASE_EQ_FLAG_UNICODE) ? iuMappings.get(codePoint) : undefined) || [];
-	if (typeof result === "number") result = [result];
+	const result = typeof unicodeMapping === 'number' ? [unicodeMapping] : unicodeMapping.slice();
 	if (flags & CASE_EQ_FLAG_BMP) {
-		for (const cp of [codePoint].concat(result)) {
-			// Fast path for ASCII characters
-			if (cp >= 0x41 && cp <= 0x5a) {
-				result.push(cp + 0x20);
-			} else if (cp >= 0x61 && cp <= 0x7a) {
-				result.push(cp - 0x20);
-			} else {
-				result = result.concat(iBMPMappings.get(cp) || []);
+		// Also add what the `u` flag equivalents are equivalent to without it.
+		const length = result.length;
+		for (let index = 0; index < length; index++) {
+			const mapping = getBMPCaseMapping(result[index]);
+			if (mapping !== undefined) {
+				pushMapping(result, mapping);
 			}
 		}
+		if (bmpMapping !== undefined) {
+			pushMapping(result, bmpMapping);
+		}
 	}
-	return result.length == 0 ? false : result;
+	return result;
+};
+
+// Appends a mapping value, which is a code point or an array of code points.
+const pushMapping = (array, mapping) => {
+	if (typeof mapping === 'number') {
+		array.push(mapping);
+	} else {
+		array.push(...mapping);
+	}
+};
+
+// Returns the code point or code points that the given code point is case
+// equivalent to without the `u` flag, or `undefined` if there are none.
+const getBMPCaseMapping = (codePoint) => {
+	// Fast path for ASCII characters
+	if (codePoint >= 0x41 && codePoint <= 0x5A) {
+		return codePoint + 0x20;
+	}
+	if (codePoint >= 0x61 && codePoint <= 0x7A) {
+		return codePoint - 0x20;
+	}
+	return iBMPMappings.get(codePoint);
 };
 
 // https://tc39.es/ecma262/#sec-maybesimplecasefolding
@@ -263,6 +305,18 @@ const simpleCaseFolding = (codePoint) => {
 	}
 	return iuFoldings.get(codePoint) || codePoint;
 }
+
+// Code points that simpleCaseFolding may map to a different code point.
+const SCF_CANDIDATES = regenerate(Array.from(iuFoldings.keys())).addRange(0x41, 0x5A);
+
+// Returns a new set with simpleCaseFolding applied to every code point of the
+// given set. Only the candidates are visited, instead of every code point.
+const simpleCaseFoldingSet = (set) => {
+	const candidates = set.clone().intersection(SCF_CANDIDATES).toArray();
+	// Remove all candidates before adding the folded ones, so that a folded
+	// code point that is also in the set is not removed again.
+	return set.clone().remove(candidates).add(candidates.map(simpleCaseFolding));
+};
 
 const buildHandler = (action) => {
 	switch (action) {
@@ -495,11 +549,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 				const min = item.min.codePoint;
 				const max = item.max.codePoint;
 				if (shouldApplySCF) {
-					let list = [];
-					for (let cp = min; cp <= max; cp++) {
-						list.push(simpleCaseFolding(cp));
-					}
-					handlePositive.regSet(data, regenerate(list));
+					handlePositive.regSet(data, simpleCaseFoldingSet(regenerate().addRange(min, max)));
 				} else {
 					handlePositive.range(data, min, max);
 				}

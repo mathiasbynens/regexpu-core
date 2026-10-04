@@ -49,11 +49,12 @@
 	"scripts": {
 		"build": "node scripts/index.js",
 		"test": "node --test tests/tests.js",
+		"bench": "node --experimental-bench --bench benchmark.mjs",
 		"test-node6": "mocha tests",
 		"cover": "NODE_V8_COVERAGE=coverage node --test  --experimental-test-coverage tests/tests.js"
 	},
 	"dependencies": {
-		"regenerate": "^1.4.2",
+		"regenerate": "^1.5.0",
 		"regenerate-unicode-properties": "^10.3.0",
 		"regjsgen": "^0.8.0",
 		"regjsparser": "^0.13.0",
