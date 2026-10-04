@@ -178,13 +178,30 @@ function configGetCaseEqFlags() {
 	return flags;
 }
 
+// Ranges with fewer code points than this, e.g. `a-z`, are visited code point
+// by code point, which is faster than intersecting them with the candidates.
+const SMALL_RANGE_SIZE = 32;
+
+// Returns the case equivalents of all code points in the given range.
+const getCaseEquivalentsOfRange = (min, max, caseEqFlags) => {
+	if (max - min >= SMALL_RANGE_SIZE) {
+		return getCaseEquivalentsOfSet(regenerate().addRange(min, max), caseEqFlags);
+	}
+	const result = [];
+	for (let codePoint = min; codePoint <= max; codePoint++) {
+		const list = getCaseEquivalents(codePoint, caseEqFlags);
+		if (list) result.push(...list);
+	}
+	return result;
+};
+
 // Given a range of code points, add any case-equivalent code points in that range
 // to a set.
 regenerate.prototype.iuAddRange = function(min, max, caseEqFlags) {
-	return this.add(getCaseEquivalentsOfSet(regenerate().addRange(min, max), caseEqFlags));
+	return this.add(getCaseEquivalentsOfRange(min, max, caseEqFlags));
 };
 regenerate.prototype.iuRemoveRange = function(min, max, caseEqFlags) {
-	return this.remove(getCaseEquivalentsOfSet(regenerate().addRange(min, max), caseEqFlags));
+	return this.remove(getCaseEquivalentsOfRange(min, max, caseEqFlags));
 };
 
 const update = (item, pattern) => {
@@ -230,24 +247,51 @@ const wrap = (tree, pattern) => {
  * @returns false | number[]
  */
 const getCaseEquivalents = (codePoint, flags) => {
-	if (flags === CASE_EQ_FLAG_NONE) {
-		return false;
+	// Most code points have no case equivalents, so look them up without
+	// allocating any arrays.
+	const unicodeMapping = (flags & CASE_EQ_FLAG_UNICODE) ? iuMappings.get(codePoint) : undefined;
+	const bmpMapping = (flags & CASE_EQ_FLAG_BMP) ? getBMPCaseMapping(codePoint) : undefined;
+	if (unicodeMapping === undefined) {
+		if (bmpMapping === undefined) return false;
+		return typeof bmpMapping === 'number' ? [bmpMapping] : bmpMapping.slice();
 	}
-	let result = ((flags & CASE_EQ_FLAG_UNICODE) ? iuMappings.get(codePoint) : undefined) || [];
-	if (typeof result === "number") result = [result];
+	const result = typeof unicodeMapping === 'number' ? [unicodeMapping] : unicodeMapping.slice();
 	if (flags & CASE_EQ_FLAG_BMP) {
-		for (const cp of [codePoint].concat(result)) {
-			// Fast path for ASCII characters
-			if (cp >= 0x41 && cp <= 0x5a) {
-				result.push(cp + 0x20);
-			} else if (cp >= 0x61 && cp <= 0x7a) {
-				result.push(cp - 0x20);
-			} else {
-				result = result.concat(iBMPMappings.get(cp) || []);
+		// Also add what the `u` flag equivalents are equivalent to without it.
+		const length = result.length;
+		for (let index = 0; index < length; index++) {
+			const mapping = getBMPCaseMapping(result[index]);
+			if (mapping !== undefined) {
+				pushMapping(result, mapping);
 			}
 		}
+		if (bmpMapping !== undefined) {
+			pushMapping(result, bmpMapping);
+		}
 	}
-	return result.length == 0 ? false : result;
+	return result;
+};
+
+// Appends a mapping value, which is a code point or an array of code points.
+const pushMapping = (array, mapping) => {
+	if (typeof mapping === 'number') {
+		array.push(mapping);
+	} else {
+		array.push(...mapping);
+	}
+};
+
+// Returns the code point or code points that the given code point is case
+// equivalent to without the `u` flag, or `undefined` if there are none.
+const getBMPCaseMapping = (codePoint) => {
+	// Fast path for ASCII characters
+	if (codePoint >= 0x41 && codePoint <= 0x5A) {
+		return codePoint + 0x20;
+	}
+	if (codePoint >= 0x61 && codePoint <= 0x7A) {
+		return codePoint - 0x20;
+	}
+	return iBMPMappings.get(codePoint);
 };
 
 // https://tc39.es/ecma262/#sec-maybesimplecasefolding
