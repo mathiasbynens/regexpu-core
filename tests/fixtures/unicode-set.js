@@ -655,6 +655,40 @@ const unicodeSetFixtures = [
 	{
 		pattern: '[\\p{Emoji_Keycap_Sequence}\\q{*️⃣}]',
 		matches: ['*️⃣', '#️⃣']
+	},
+	{
+		pattern: '[\\q{.a|a$|b^|c+|d?}]',
+		options: TRANSFORM_U,
+		expected: '(?:\\.a|a\\$|b\\^|c\\+|d\\?)',
+		expectedFlags: '',
+		matches: ['.a', 'a$', 'b^', 'c+', 'd?'],
+		nonMatches: ['xa', 'a', 'cc', 'd']
+	},
+	{
+		pattern: '[\\q{.a|A$}]',
+		flags: 'iv',
+		options: TRANSFORM_U,
+		expected: '(?:\\.a|A\\$)',
+		expectedFlags: 'i',
+		matches: ['.a', '.A', 'a$', 'A$'],
+		nonMatches: ['xa', 'a']
+	},
+	{
+		pattern: '[\\q{*️⃣}]',
+		options: TRANSFORM_U,
+		expected: '(?:\\*️⃣)',
+		expectedFlags: '',
+		matches: ['*️⃣'],
+		nonMatches: ['️⃣']
+	},
+	{
+		// Without the `u` flag, the escapes are valid outside of a class too.
+		pattern: '[\\q{a\\&b|c\\-d}]',
+		options: TRANSFORM_U,
+		expected: '(?:a\\&b|c\\-d)',
+		expectedFlags: '',
+		matches: ['a&b', 'c-d'],
+		nonMatches: ['ab', 'cd']
 	}
 ];
 
