@@ -112,15 +112,18 @@ const getUnicodePropertyEscapeSet = (value, isNegative, isUnicodeSetIgnoreCase) 
 		}
 		return {
 			characters: (isUnicodeSetIgnoreCase ? UNICODE_IV_SET : UNICODE_SET).clone().remove(set.characters),
-			strings: new Set()
+			strings: new Map()
 		};
 	}
 	return {
 		characters: set.characters.clone(),
 		strings: set.strings
 			// We need to escape strings like *️⃣ to make sure that they can be safely used in unions.
-			? new Set(set.strings.map(str => str.replace(SYNTAX_CHARS, '\\$&')))
-			: new Set()
+			? new Map(set.strings.map(str => [
+				getClassStringKey(Array.from(str, ch => ch.codePointAt(0))),
+				{ source: str.replace(SYNTAX_CHARS, '\\$&'), length: str.length }
+			]))
+			: new Map()
 	};
 };
 
@@ -336,7 +339,7 @@ const buildHandler = (action) => {
 				},
 				nested: (data, nestedData) => {
 					data.singleChars.add(nestedData.singleChars);
-					for (const str of nestedData.longStrings) data.longStrings.add(str);
+					nestedData.longStrings.forEach((value, key) => data.longStrings.set(key, value));
 					if (nestedData.maybeIncludesStrings) data.maybeIncludesStrings = true;
 				}
 			};
@@ -397,8 +400,8 @@ const buildHandler = (action) => {
 						data.longStrings = nestedData.longStrings;
 						data.maybeIncludesStrings = nestedData.maybeIncludesStrings;
 					} else {
-						for (const str of data.longStrings) {
-							if (!nestedData.longStrings.has(str)) data.longStrings.delete(str);
+						for (const key of data.longStrings.keys()) {
+							if (!nestedData.longStrings.has(key)) data.longStrings.delete(key);
 						}
 						if (!nestedData.maybeIncludesStrings) data.maybeIncludesStrings = false;
 					}
@@ -431,8 +434,8 @@ const buildHandler = (action) => {
 						data.longStrings = nestedData.longStrings;
 						data.maybeIncludesStrings = nestedData.maybeIncludesStrings;
 					} else {
-						for (const str of data.longStrings) {
-							if (nestedData.longStrings.has(str)) data.longStrings.delete(str);
+						for (const key of data.longStrings.keys()) {
+							if (nestedData.longStrings.has(key)) data.longStrings.delete(key);
 						}
 					}
 				}
@@ -446,10 +449,20 @@ const buildHandler = (action) => {
 	}
 };
 
+// Returns the key that identifies a class string by the code points it matches.
+// The code points are not joined into a string, which would give a lone lead
+// surrogate followed by a lone trail surrogate, e.g. `\uD83D\u{DE00}`, the same
+// key as the astral code point they encode.
+const getClassStringKey = (codePoints) => codePoints.join(',');
+
 const getCharacterClassEmptyData = () => ({
 	transformed: config.transform.unicodeFlag,
 	singleChars: regenerate(),
-	longStrings: new Set(),
+	// Maps the key of each string (see `getClassStringKey`) to its pattern
+	// `source` and its `length` in code units. Strings are compared by their
+	// keys, since the same string can be spelled in different ways, e.g.
+	// `\q{ab}` and `\q{\x61b}`.
+	longStrings: new Map(),
 	hasEmptyString: false,
 	first: true,
 	maybeIncludesStrings: false
@@ -473,16 +486,19 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 				data.singleChars.add(cp);
 			});
 		} else {
+			const codePoints = [];
 			let stringifiedString = '';
 			if (caseEqFlags) {
 				for (const ch of string.characters) {
 					const codePoint = shouldApplySCF ? simpleCaseFolding(ch.codePoint) : ch.codePoint;
 					const set = regenerate(concatCaseEquivalents(codePoint, caseEqFlags));
+					codePoints.push(codePoint);
 					stringifiedString += set.toString(regenerateOptions);
 				}
 			} else {
 				for (const ch of string.characters) {
 					const codePoint = shouldApplySCF ? simpleCaseFolding(ch.codePoint) : ch.codePoint;
+					codePoints.push(codePoint);
 					if (codePoint !== ch.codePoint) {
 						stringifiedString += regenerate(codePoint).toString(regenerateOptions);
 					} else {
@@ -491,7 +507,10 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 				}
 			}
 
-			data.longStrings.add(stringifiedString);
+			data.longStrings.set(getClassStringKey(codePoints), {
+				source: stringifiedString,
+				length: codePoints.reduce((length, codePoint) => length + (codePoint > 0xFFFF ? 2 : 1), 0)
+			});
 			data.maybeIncludesStrings = true;
 		}
 	}
@@ -655,7 +674,8 @@ const processCharacterClass = (
 			}
 		} else {
 			const hasEmptyString = longStrings.has('');
-			const pieces = Array.from(longStrings).sort((a, b) => b.length - a.length);
+			const strings = Array.from(longStrings.values()).sort((a, b) => b.length - a.length);
+			const pieces = Array.from(new Set(strings.map(string => string.source)));
 
 			if (setStr !== '[]' || longStrings.size === 0) {
 				pieces.splice(pieces.length - (hasEmptyString ? 1 : 0), 0, setStr);
