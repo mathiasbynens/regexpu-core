@@ -681,14 +681,57 @@ const unicodeSetFixtures = [
 		matches: ['*️⃣'],
 		nonMatches: ['️⃣']
 	},
+	// Escapes that only have their meaning in classes are generated from their
+	// code points
 	{
-		// Without the `u` flag, the escapes are valid outside of a class too.
+		pattern: '[\\q{a\\&b|c\\-d}]',
+		expected: '(?:a&b|c\\x2Dd)',
+		matches: ['a&b', 'c-d'],
+		nonMatches: ['ab', 'cd']
+	},
+	{
 		pattern: '[\\q{a\\&b|c\\-d}]',
 		options: TRANSFORM_U,
-		expected: '(?:a\\&b|c\\-d)',
+		expected: '(?:a&b|c\\x2Dd)',
 		expectedFlags: '',
 		matches: ['a&b', 'c-d'],
 		nonMatches: ['ab', 'cd']
+	},
+	{
+		pattern: '[\\q{a\\!b|a\\#b|a\\%b|a\\,b|a\\:b|a\\;b|a\\<b|a\\=b|a\\>b|a\\@b|a\\`b|a\\~b}]',
+		expected: '(?:a!b|a#b|a%b|a,b|a:b|a;b|a<b|a=b|a>b|a@b|a`b|a~b)',
+		matches: ['a!b', 'a#b', 'a%b', 'a,b', 'a:b', 'a;b', 'a<b', 'a=b', 'a>b', 'a@b', 'a`b', 'a~b'],
+		nonMatches: ['ab']
+	},
+	{
+		// In a class, `\b` is U+0008 rather than a word boundary.
+		pattern: '[\\q{a\\bc}]',
+		expected: '(?:a\\x08c)',
+		matches: ['a\bc'],
+		nonMatches: ['ac', 'abc']
+	},
+	{
+		pattern: '[\\q{a\\bc}]',
+		options: TRANSFORM_U,
+		expected: '(?:a\\x08c)',
+		expectedFlags: '',
+		matches: ['a\bc'],
+		nonMatches: ['ac', 'abc']
+	},
+	{
+		// Without the `u` flag, `\u{...}` is not a code point escape.
+		pattern: '[\\q{\\u{1F600}x}]',
+		options: TRANSFORM_U,
+		expected: '(?:\\uD83D\\uDE00x)',
+		expectedFlags: '',
+		matches: ['\u{1F600}x'],
+		nonMatches: ['x']
+	},
+	{
+		// Other escapes keep their spelling.
+		pattern: '[\\q{\\x61b|\\u0061c|a\\/b|a\\*b|a\\tb}]',
+		expected: '(?:a\\/b|a\\*b|a\\tb|\\x61b|\\u0061c)',
+		matches: ['ab', 'ac', 'a/b', 'a*b', 'a\tb']
 	}
 ];
 

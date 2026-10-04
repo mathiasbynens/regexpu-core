@@ -521,6 +521,15 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 						// Characters such as `*` and `.` need no escaping in `\q{}`, but
 						// they do once the string is emitted outside of a class.
 						stringifiedString += generate(ch).replace(SYNTAX_CHARS, '\\$&');
+					} else if (
+						ch.kind === 'identifier' ||
+						ch.kind === 'singleEscape' ||
+						(ch.kind === 'unicodeCodePointEscape' && !config.useUnicodeFlag)
+					) {
+						// Escapes such as `\&` and `\-` are only valid in classes, `\b`
+						// only means U+0008 in classes, and `\u{...}` needs the `u` flag,
+						// so generate these from their code point instead.
+						stringifiedString += regenerate(codePoint).toString(regenerateOptions);
 					} else {
 						stringifiedString += generate(ch);
 					}
