@@ -117,14 +117,30 @@ const getUnicodePropertyEscapeSet = (value, isNegative, isUnicodeSetIgnoreCase) 
 	}
 	return {
 		characters: set.characters.clone(),
-		strings: set.strings
-			// We need to escape strings like *️⃣ to make sure that they can be safely used in unions.
-			? new Map(set.strings.map(str => [
-				getClassStringKey(Array.from(str, ch => ch.codePointAt(0))),
-				{ source: str.replace(SYNTAX_CHARS, '\\$&'), length: str.length }
-			]))
-			: new Map()
+		strings: set.strings ? getPropertyOfStringsEntries(set) : new Map()
 	};
+};
+
+// The `longStrings` entries of each property of strings, which only depend on
+// the property's data, so that they are computed once per property.
+const PROPERTY_OF_STRINGS_ENTRIES = new WeakMap();
+
+const getPropertyOfStringsEntries = (set) => {
+	let entries = PROPERTY_OF_STRINGS_ENTRIES.get(set);
+	if (!entries) {
+		entries = new Map();
+		for (const str of set.strings) {
+			entries.set(getClassStringKey(Array.from(str, ch => ch.codePointAt(0))), {
+				// We need to escape strings like *️⃣ to make sure that they can be safely used in unions.
+				source: str.replace(SYNTAX_CHARS, '\\$&'),
+				length: str.length
+			});
+		}
+		PROPERTY_OF_STRINGS_ENTRIES.set(set, entries);
+	}
+	// This is shared by all patterns, so it must not be modified: set operations
+	// copy the `longStrings` of their first operand before modifying them.
+	return entries;
 };
 
 const getUnicodePropertyEscapeCharacterClassData = (property, isNegative, isUnicodeSetIgnoreCase, shouldApplySCF) => {
@@ -397,7 +413,7 @@ const buildHandler = (action) => {
 					regSet(data, nestedData.singleChars);
 
 					if (data.first) {
-						data.longStrings = nestedData.longStrings;
+						data.longStrings = new Map(nestedData.longStrings);
 						data.maybeIncludesStrings = nestedData.maybeIncludesStrings;
 					} else {
 						for (const key of data.longStrings.keys()) {
@@ -431,7 +447,7 @@ const buildHandler = (action) => {
 					regSet(data, nestedData.singleChars);
 
 					if (data.first) {
-						data.longStrings = nestedData.longStrings;
+						data.longStrings = new Map(nestedData.longStrings);
 						data.maybeIncludesStrings = nestedData.maybeIncludesStrings;
 					} else {
 						for (const key of data.longStrings.keys()) {
