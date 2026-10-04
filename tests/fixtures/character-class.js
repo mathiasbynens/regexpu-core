@@ -133,6 +133,31 @@ const characterClassFixtures = [
 		expected: '(?:\\uD800\\uDC00|\\uD800(?![\\uDC00-\\uDFFF]))',
 		matches: ['\uD800', '\u{10000}'],
 		nonMatches: ['\u{10001}']
+	},
+	// https://github.com/mathiasbynens/regenerate/pull/48
+	{
+		pattern: '[b-da-c]',
+		flags: 'u',
+		options: { unicodeFlag: 'transform' },
+		expected: '[a-d]',
+		matches: ['a', 'b', 'c', 'd'],
+		nonMatches: ['f', 'g']
+	},
+	{
+		pattern: '[\\u{1F604}-\\u{1F608}\\u{1F600}-\\u{1F606}]',
+		flags: 'u',
+		options: { unicodeFlag: 'transform' },
+		expected: '\\uD83D[\\uDE00-\\uDE08]',
+		matches: ['\u{1F600}', '\u{1F608}'],
+		nonMatches: ['\u{1F5FF}', '\u{1F609}']
+	},
+	{
+		pattern: '[^\\u{1F604}-\\u{1F608}\\u{1F600}-\\u{1F606}]',
+		flags: 'iu',
+		options: { unicodeFlag: 'transform' },
+		expected: '(?:(?![\\uD800-\\uDFFF])[^]|[\\uD800-\\uD83C\\uD83E-\\uDBFF][\\uDC00-\\uDFFF]|\\uD83D[\\uDC00-\\uDDFF\\uDE09-\\uDFFF])',
+		matches: ['\u{1F5FF}', '\u{1F609}'],
+		nonMatches: ['\u{1F600}', '\u{1F603}', '\u{1F608}']
 	}
 ];
 

@@ -561,6 +561,30 @@ const unicodeSetFixtures = [
 		expectedFlags: 'iu',
 		nonMatches: ['K', 'k', '\u212A'],
 		matches: ['j', 'J', 'l', 'L']
+	},
+	// https://github.com/mathiasbynens/regenerate/pull/48
+	{
+		pattern: '[[b-da-c]&&a]',
+		expected: 'a'
+	},
+	{
+		pattern: '[[d-fa-e]--[e]]',
+		expected: '[a-df]',
+		nonMatches: ['e'],
+		matches: ['a', 'd', 'f']
+	},
+	{
+		pattern: '[[d-fa-e]&&[b-c]]',
+		expected: '[bc]',
+		nonMatches: ['a', 'd'],
+		matches: ['b', 'c']
+	},
+	{
+		pattern: '[[\\u{1F604}-\\u{1F608}\\u{1F600}-\\u{1F606}]--\\u{1F605}]',
+		options: TRANSFORM_U,
+		expected: '\\uD83D[\\uDE00-\\uDE04\\uDE06-\\uDE08]',
+		nonMatches: ['\u{1F605}', '\u{1F609}'],
+		matches: ['\u{1F600}', '\u{1F604}', '\u{1F606}', '\u{1F608}']
 	}
 ];
 
