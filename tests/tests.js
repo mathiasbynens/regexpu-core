@@ -382,6 +382,17 @@ describe('unicodeSets (v) flag', () => {
 			rewritePattern('\\p{Basic_Emoji}', 'u')
 		}, /Properties of strings are only supported when using the unicodeSets \(v\) flag/);
 	})
+
+	it('does not mutate shared character class escape sets', () => {
+		const options = { unicodeSetsFlag: 'transform' };
+		assert.strictEqual(rewritePattern('[\\d&&[0-4]]', 'v', options), '[0-4]');
+		assert.strictEqual(rewritePattern('[\\d&&[5-9]]', 'v', options), '[5-9]');
+		assert.strictEqual(rewritePattern('[\\d--5]', 'v', options), '[0-46-9]');
+		assert.strictEqual(rewritePattern('\\d', 'u', { unicodeFlag: 'transform' }), '[0-9]');
+		assert.strictEqual(rewritePattern('[\\w&&[a-c]]', 'iv', options), '[a-c]');
+		assert.strictEqual(rewritePattern('[\\w&&[x-z]]', 'iv', options), '[x-z]');
+		assert.strictEqual(rewritePattern('[\\w--_]', 'iv', options), '[0-9a-z]');
+	})
 });
 
 describe('modifiers', () => {

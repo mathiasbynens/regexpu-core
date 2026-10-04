@@ -239,7 +239,7 @@ const wrap = (tree, pattern) => {
  * Given any codepoint ch, returns false or an array of characters,
  * such that for every c in the array,
  *   c != ch and Canonicalize(~, c) == Canonicalize(~, ch)
- * 
+ *
  * where Canonicalize is defined in
  * https://tc39.es/ecma262/#sec-runtime-semantics-canonicalize-ch
  * @param {number} codePoint input code point
@@ -364,7 +364,7 @@ const buildHandler = (action) => {
 		}
 		case 'intersection': {
 			const regSet = (data, set2) => {
-				if (data.first) data.singleChars = set2;
+				if (data.first) data.singleChars = set2.clone();
 				else data.singleChars.intersection(set2);
 			};
 			return {
@@ -554,7 +554,7 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 					handlePositive.range(data, min, max);
 				}
 				if (caseEqFlags) {
-					// If shouldApplySCF is true, it is still ok to call iuRange because 
+					// If shouldApplySCF is true, it is still ok to call iuRange because
 					// the set [min, max] shares the same case equivalents with scf([min, max])
 					handlePositive.iuRange(data, min, max, caseEqFlags);
 					data.transformed = true;
