@@ -728,6 +728,41 @@ const unicodeSetFixtures = [
 		nonMatches: ['x']
 	},
 	{
+		// A lone trail surrogate needs no guard against a preceding lead
+		// surrogate when it follows another code point of the string.
+		pattern: '[\\q{a\\u{DE00}}]',
+		options: TRANSFORM_U,
+		expected: '(?:a\\uDE00)',
+		expectedFlags: '',
+		matches: ['a\uDE00'],
+		nonMatches: ['a']
+	},
+	{
+		pattern: '[\\q{a\\u{DE00}}]',
+		flags: 'iv',
+		options: TRANSFORM_U,
+		expected: '(?:a\\uDE00)',
+		expectedFlags: 'i',
+		matches: ['a\uDE00', 'A\uDE00'],
+		nonMatches: ['a']
+	},
+	{
+		// A lone lead surrogate must not match the start of a surrogate pair.
+		pattern: '[\\q{a\\uD83D}]',
+		options: TRANSFORM_U,
+		expected: '(?:a\\uD83D(?![\\uDC00-\\uDFFF]))',
+		expectedFlags: '',
+		matches: ['a\uD83D', 'a\uD83Dx'],
+		nonMatches: ['a\u{1F600}']
+	},
+	{
+		pattern: '[\\q{\\uD83D\\u{DE00}x}]',
+		options: TRANSFORM_U,
+		expected: '(?:\\uD83D(?![\\uDC00-\\uDFFF])\\uDE00x)',
+		expectedFlags: '',
+		nonMatches: ['\u{1F600}x']
+	},
+	{
 		// Other escapes keep their spelling.
 		pattern: '[\\q{\\x61b|\\u0061c|a\\/b|a\\*b|a\\tb}]',
 		expected: '(?:a\\/b|a\\*b|a\\tb|\\x61b|\\u0061c)',

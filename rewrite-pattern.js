@@ -492,6 +492,19 @@ const concatCaseEquivalents = (codePoint, caseEqFlags) => {
 	return [codePoint];
 };
 
+const isSurrogate = (codePoint) => codePoint >= 0xD800 && codePoint <= 0xDFFF;
+
+// Without the `u` flag, regenerate keeps a lone surrogate from matching half of
+// a surrogate pair: a lead surrogate is followed by `(?![\uDC00-\uDFFF])`, and
+// a trail surrogate is preceded by `(?:[^\uD800-\uDBFF]|^)`, which matches the
+// preceding character as well. In a class string, the character preceding a
+// trail surrogate is the previous code point of the string, so the guard is
+// left out there. If that code point is a lead surrogate, its lookahead fails.
+const classStringCodePointToString = (set, codePoint, isFirst, regenerateOptions) =>
+	!isFirst && !regenerateOptions.hasUnicodeFlag && codePoint >= 0xDC00 && codePoint <= 0xDFFF
+		? set.toString({ bmpOnly: true })
+		: set.toString(regenerateOptions);
+
 const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shouldApplySCF) => {
 	let data = getCharacterClassEmptyData();
 
@@ -508,14 +521,17 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 				for (const ch of string.characters) {
 					const codePoint = shouldApplySCF ? simpleCaseFolding(ch.codePoint) : ch.codePoint;
 					const set = regenerate(concatCaseEquivalents(codePoint, caseEqFlags));
+					stringifiedString += classStringCodePointToString(set, codePoint, codePoints.length === 0, regenerateOptions);
 					codePoints.push(codePoint);
-					stringifiedString += set.toString(regenerateOptions);
 				}
 			} else {
 				for (const ch of string.characters) {
 					const codePoint = shouldApplySCF ? simpleCaseFolding(ch.codePoint) : ch.codePoint;
-					codePoints.push(codePoint);
-					if (codePoint !== ch.codePoint) {
+					if (!config.useUnicodeFlag && isSurrogate(codePoint)) {
+						// However it's spelled, a lone surrogate needs a guard against
+						// matching half of a surrogate pair.
+						stringifiedString += classStringCodePointToString(regenerate(codePoint), codePoint, codePoints.length === 0, regenerateOptions);
+					} else if (codePoint !== ch.codePoint) {
 						stringifiedString += regenerate(codePoint).toString(regenerateOptions);
 					} else if (ch.kind === 'symbol') {
 						// Characters such as `*` and `.` need no escaping in `\q{}`, but
@@ -533,6 +549,7 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 					} else {
 						stringifiedString += generate(ch);
 					}
+					codePoints.push(codePoint);
 				}
 			}
 
