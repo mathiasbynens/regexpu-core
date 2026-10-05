@@ -26,6 +26,7 @@ function flatMap(array, callback) {
 
 // https://tc39.es/ecma262/#prod-SyntaxCharacter
 const SYNTAX_CHARS = /[\\^$.*+?()[\]{}|]/g;
+const SYNTAX_CODE_POINTS = new Set(Array.from('\\^$.*+?()[]{}|', (ch) => ch.codePointAt(0)));
 
 const ASTRAL_SET = regenerate().addRange(0x10000, 0x10FFFF);
 
@@ -533,10 +534,10 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 						stringifiedString += classStringCodePointToString(regenerate(codePoint), codePoint, codePoints.length === 0, regenerateOptions);
 					} else if (codePoint !== ch.codePoint) {
 						stringifiedString += regenerate(codePoint).toString(regenerateOptions);
-					} else if (ch.kind === 'symbol') {
+					} else if (ch.kind === 'symbol' && SYNTAX_CODE_POINTS.has(codePoint)) {
 						// Characters such as `*` and `.` need no escaping in `\q{}`, but
 						// they do once the string is emitted outside of a class.
-						stringifiedString += generate(ch).replace(SYNTAX_CHARS, '\\$&');
+						stringifiedString += '\\' + generate(ch);
 					} else if (
 						ch.kind === 'identifier' ||
 						ch.kind === 'singleEscape' ||
@@ -721,7 +722,9 @@ const processCharacterClass = (
 		} else {
 			const hasEmptyString = longStrings.has('');
 			const strings = Array.from(longStrings.values()).sort((a, b) => b.length - a.length);
-			const pieces = Array.from(new Set(strings.map(string => string.source)));
+			const sources = strings.map(string => string.source);
+			// With case folding, strings like `ab` and `AB` both become `[Aa][Bb]`.
+			const pieces = configGetCaseEqFlags() ? Array.from(new Set(sources)) : sources;
 
 			if (setStr !== '[]' || longStrings.size === 0) {
 				pieces.splice(pieces.length - (hasEmptyString ? 1 : 0), 0, setStr);
