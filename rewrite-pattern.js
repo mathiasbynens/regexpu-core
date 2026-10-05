@@ -118,26 +118,29 @@ const getUnicodePropertyEscapeSet = (value, isNegative, isUnicodeSetIgnoreCase) 
 	}
 	return {
 		characters: set.characters.clone(),
-		strings: set.strings ? getPropertyOfStringsEntries(set) : new Map()
+		strings: set.strings ? getPropertyOfStringsEntries(set, isUnicodeSetIgnoreCase) : new Map()
 	};
 };
 
 // The `longStrings` entries of each property of strings, which only depend on
-// the property's data, so that they are computed once per property.
+// the property's data and on whether the keys are case-folded, so that they
+// are computed once per property.
 const PROPERTY_OF_STRINGS_ENTRIES = new WeakMap();
+const PROPERTY_OF_STRINGS_ENTRIES_IGNORE_CASE = new WeakMap();
 
-const getPropertyOfStringsEntries = (set) => {
-	let entries = PROPERTY_OF_STRINGS_ENTRIES.get(set);
+const getPropertyOfStringsEntries = (set, ignoreCase) => {
+	const cache = ignoreCase ? PROPERTY_OF_STRINGS_ENTRIES_IGNORE_CASE : PROPERTY_OF_STRINGS_ENTRIES;
+	let entries = cache.get(set);
 	if (!entries) {
 		entries = new Map();
 		for (const str of set.strings) {
-			entries.set(getClassStringKey(Array.from(str, ch => ch.codePointAt(0))), {
+			entries.set(getClassStringKey(Array.from(str, ch => ch.codePointAt(0)), ignoreCase), {
 				// We need to escape strings like *️⃣ to make sure that they can be safely used in unions.
 				source: str.replace(SYNTAX_CHARS, '\\$&'),
 				length: str.length
 			});
 		}
-		PROPERTY_OF_STRINGS_ENTRIES.set(set, entries);
+		cache.set(set, entries);
 	}
 	// This is shared by all patterns, so it must not be modified: set operations
 	// copy the `longStrings` of their first operand before modifying them.
@@ -469,8 +472,10 @@ const buildHandler = (action) => {
 // Returns the key that identifies a class string by the code points it matches.
 // The code points are not joined into a string, which would give a lone lead
 // surrogate followed by a lone trail surrogate, e.g. `\uD83D\u{DE00}`, the same
-// key as the astral code point they encode.
-const getClassStringKey = (codePoints) => codePoints.join(',');
+// key as the astral code point they encode. With `ignoreCase`, the code points
+// are simple case folded, so that e.g. `ab` and `AB` get the same key.
+const getClassStringKey = (codePoints, ignoreCase) =>
+	(ignoreCase ? codePoints.map(simpleCaseFolding) : codePoints).join(',');
 
 const getCharacterClassEmptyData = () => ({
 	transformed: config.transform.unicodeFlag,
@@ -478,7 +483,7 @@ const getCharacterClassEmptyData = () => ({
 	// Maps the key of each string (see `getClassStringKey`) to its pattern
 	// `source` and its `length` in code units. Strings are compared by their
 	// keys, since the same string can be spelled in different ways, e.g.
-	// `\q{ab}` and `\q{\x61b}`.
+	// `\q{ab}` and `\q{\x61b}`, and under the `i` flag in different cases.
 	longStrings: new Map(),
 	hasEmptyString: false,
 	first: true,
@@ -554,7 +559,7 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 				}
 			}
 
-			data.longStrings.set(getClassStringKey(codePoints), {
+			data.longStrings.set(getClassStringKey(codePoints, config.isIgnoreCaseMode), {
 				source: stringifiedString,
 				length: codePoints.reduce((length, codePoint) => length + (codePoint > 0xFFFF ? 2 : 1), 0)
 			});
@@ -722,9 +727,7 @@ const processCharacterClass = (
 		} else {
 			const hasEmptyString = longStrings.has('');
 			const strings = Array.from(longStrings.values()).sort((a, b) => b.length - a.length);
-			const sources = strings.map(string => string.source);
-			// With case folding, strings like `ab` and `AB` both become `[Aa][Bb]`.
-			const pieces = configGetCaseEqFlags() ? Array.from(new Set(sources)) : sources;
+			const pieces = strings.map(string => string.source);
 
 			if (setStr !== '[]' || longStrings.size === 0) {
 				pieces.splice(pieces.length - (hasEmptyString ? 1 : 0), 0, setStr);

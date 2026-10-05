@@ -613,6 +613,44 @@ const unicodeSetFixtures = [
 		expectedFlags: 'iu',
 		nonMatches: ['ab', 'AB']
 	},
+	// With the `i` flag, class strings are compared by their simple case folding,
+	// including strings of properties such as Ⓜ️ (U+24C2 folds to U+24DC)
+	{
+		pattern: '[\\p{Basic_Emoji}&&\\q{\\u24C2\\uFE0F}]',
+		flags: 'iv',
+		expected: '(?:Ⓜ️)',
+		expectedFlags: 'iu',
+		matches: ['Ⓜ️', 'ⓜ️']
+	},
+	{
+		pattern: '[\\p{Basic_Emoji}&&\\q{\\u24DC\\uFE0F}]',
+		flags: 'iv',
+		expected: '(?:Ⓜ️)',
+		expectedFlags: 'iu',
+		matches: ['Ⓜ️', 'ⓜ️']
+	},
+	{
+		pattern: '[\\p{RGI_Emoji}--\\q{\\u24DC\\uFE0F}]',
+		flags: 'iv',
+		expectedFlags: 'iu',
+		matches: ['\u{1F600}'],
+		nonMatches: ['Ⓜ️', 'ⓜ️']
+	},
+	{
+		pattern: '[\\q{ab|AB|aB}]',
+		flags: 'iv',
+		expected: '(?:aB)',
+		expectedFlags: 'iu',
+		matches: ['ab', 'AB']
+	},
+	{
+		pattern: '[\\q{ab|c}&&\\q{aB}]',
+		flags: 'iv',
+		expected: '(?:ab)',
+		expectedFlags: 'iu',
+		matches: ['ab', 'AB'],
+		nonMatches: ['c']
+	},
 	// A lone lead and trail surrogate are a different string than the astral
 	// code point they encode
 	{
