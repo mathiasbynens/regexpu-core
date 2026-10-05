@@ -26,6 +26,7 @@ function flatMap(array, callback) {
 
 // https://tc39.es/ecma262/#prod-SyntaxCharacter
 const SYNTAX_CHARS = /[\\^$.*+?()[\]{}|]/g;
+const SYNTAX_CODE_POINTS = new Set(Array.from('\\^$.*+?()[]{}|', (ch) => ch.codePointAt(0)));
 
 const ASTRAL_SET = regenerate().addRange(0x10000, 0x10FFFF);
 
@@ -112,16 +113,38 @@ const getUnicodePropertyEscapeSet = (value, isNegative, isUnicodeSetIgnoreCase) 
 		}
 		return {
 			characters: (isUnicodeSetIgnoreCase ? UNICODE_IV_SET : UNICODE_SET).clone().remove(set.characters),
-			strings: new Set()
+			strings: new Map()
 		};
 	}
 	return {
 		characters: set.characters.clone(),
-		strings: set.strings
-			// We need to escape strings like *️⃣ to make sure that they can be safely used in unions.
-			? new Set(set.strings.map(str => str.replace(SYNTAX_CHARS, '\\$&')))
-			: new Set()
+		strings: set.strings ? getPropertyOfStringsEntries(set, isUnicodeSetIgnoreCase) : new Map()
 	};
+};
+
+// The `longStrings` entries of each property of strings, which only depend on
+// the property's data and on whether the keys are case-folded, so that they
+// are computed once per property.
+const PROPERTY_OF_STRINGS_ENTRIES = new WeakMap();
+const PROPERTY_OF_STRINGS_ENTRIES_IGNORE_CASE = new WeakMap();
+
+const getPropertyOfStringsEntries = (set, ignoreCase) => {
+	const cache = ignoreCase ? PROPERTY_OF_STRINGS_ENTRIES_IGNORE_CASE : PROPERTY_OF_STRINGS_ENTRIES;
+	let entries = cache.get(set);
+	if (!entries) {
+		entries = new Map();
+		for (const str of set.strings) {
+			entries.set(getClassStringKey(Array.from(str, ch => ch.codePointAt(0)), ignoreCase), {
+				// We need to escape strings like *️⃣ to make sure that they can be safely used in unions.
+				source: str.replace(SYNTAX_CHARS, '\\$&'),
+				length: str.length
+			});
+		}
+		cache.set(set, entries);
+	}
+	// This is shared by all patterns, so it must not be modified: set operations
+	// copy the `longStrings` of their first operand before modifying them.
+	return entries;
 };
 
 const getUnicodePropertyEscapeCharacterClassData = (property, isNegative, isUnicodeSetIgnoreCase, shouldApplySCF) => {
@@ -336,7 +359,7 @@ const buildHandler = (action) => {
 				},
 				nested: (data, nestedData) => {
 					data.singleChars.add(nestedData.singleChars);
-					for (const str of nestedData.longStrings) data.longStrings.add(str);
+					nestedData.longStrings.forEach((value, key) => data.longStrings.set(key, value));
 					if (nestedData.maybeIncludesStrings) data.maybeIncludesStrings = true;
 				}
 			};
@@ -394,11 +417,11 @@ const buildHandler = (action) => {
 					regSet(data, nestedData.singleChars);
 
 					if (data.first) {
-						data.longStrings = nestedData.longStrings;
+						data.longStrings = new Map(nestedData.longStrings);
 						data.maybeIncludesStrings = nestedData.maybeIncludesStrings;
 					} else {
-						for (const str of data.longStrings) {
-							if (!nestedData.longStrings.has(str)) data.longStrings.delete(str);
+						for (const key of data.longStrings.keys()) {
+							if (!nestedData.longStrings.has(key)) data.longStrings.delete(key);
 						}
 						if (!nestedData.maybeIncludesStrings) data.maybeIncludesStrings = false;
 					}
@@ -428,11 +451,11 @@ const buildHandler = (action) => {
 					regSet(data, nestedData.singleChars);
 
 					if (data.first) {
-						data.longStrings = nestedData.longStrings;
+						data.longStrings = new Map(nestedData.longStrings);
 						data.maybeIncludesStrings = nestedData.maybeIncludesStrings;
 					} else {
-						for (const str of data.longStrings) {
-							if (nestedData.longStrings.has(str)) data.longStrings.delete(str);
+						for (const key of data.longStrings.keys()) {
+							if (nestedData.longStrings.has(key)) data.longStrings.delete(key);
 						}
 					}
 				}
@@ -446,10 +469,22 @@ const buildHandler = (action) => {
 	}
 };
 
+// Returns the key that identifies a class string by the code points it matches.
+// The code points are not joined into a string, which would give a lone lead
+// surrogate followed by a lone trail surrogate, e.g. `\uD83D\u{DE00}`, the same
+// key as the astral code point they encode. With `ignoreCase`, the code points
+// are simple case folded, so that e.g. `ab` and `AB` get the same key.
+const getClassStringKey = (codePoints, ignoreCase) =>
+	(ignoreCase ? codePoints.map(simpleCaseFolding) : codePoints).join(',');
+
 const getCharacterClassEmptyData = () => ({
 	transformed: config.transform.unicodeFlag,
 	singleChars: regenerate(),
-	longStrings: new Set(),
+	// Maps the key of each string (see `getClassStringKey`) to its pattern
+	// `source` and its `length` in code units. Strings are compared by their
+	// keys, since the same string can be spelled in different ways, e.g.
+	// `\q{ab}` and `\q{\x61b}`, and under the `i` flag in different cases.
+	longStrings: new Map(),
 	hasEmptyString: false,
 	first: true,
 	maybeIncludesStrings: false
@@ -463,6 +498,19 @@ const concatCaseEquivalents = (codePoint, caseEqFlags) => {
 	return [codePoint];
 };
 
+const isSurrogate = (codePoint) => codePoint >= 0xD800 && codePoint <= 0xDFFF;
+
+// Without the `u` flag, regenerate keeps a lone surrogate from matching half of
+// a surrogate pair: a lead surrogate is followed by `(?![\uDC00-\uDFFF])`, and
+// a trail surrogate is preceded by `(?:[^\uD800-\uDBFF]|^)`, which matches the
+// preceding character as well. In a class string, the character preceding a
+// trail surrogate is the previous code point of the string, so the guard is
+// left out there. If that code point is a lead surrogate, its lookahead fails.
+const classStringCodePointToString = (set, codePoint, isFirst, regenerateOptions) =>
+	!isFirst && !regenerateOptions.hasUnicodeFlag && codePoint >= 0xDC00 && codePoint <= 0xDFFF
+		? set.toString({ bmpOnly: true })
+		: set.toString(regenerateOptions);
+
 const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shouldApplySCF) => {
 	let data = getCharacterClassEmptyData();
 
@@ -473,25 +521,48 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 				data.singleChars.add(cp);
 			});
 		} else {
+			const codePoints = [];
 			let stringifiedString = '';
 			if (caseEqFlags) {
 				for (const ch of string.characters) {
 					const codePoint = shouldApplySCF ? simpleCaseFolding(ch.codePoint) : ch.codePoint;
 					const set = regenerate(concatCaseEquivalents(codePoint, caseEqFlags));
-					stringifiedString += set.toString(regenerateOptions);
+					stringifiedString += classStringCodePointToString(set, codePoint, codePoints.length === 0, regenerateOptions);
+					codePoints.push(codePoint);
 				}
 			} else {
 				for (const ch of string.characters) {
 					const codePoint = shouldApplySCF ? simpleCaseFolding(ch.codePoint) : ch.codePoint;
-					if (codePoint !== ch.codePoint) {
+					if (!config.useUnicodeFlag && isSurrogate(codePoint)) {
+						// However it's spelled, a lone surrogate needs a guard against
+						// matching half of a surrogate pair.
+						stringifiedString += classStringCodePointToString(regenerate(codePoint), codePoint, codePoints.length === 0, regenerateOptions);
+					} else if (codePoint !== ch.codePoint) {
+						stringifiedString += regenerate(codePoint).toString(regenerateOptions);
+					} else if (ch.kind === 'symbol' && SYNTAX_CODE_POINTS.has(codePoint)) {
+						// Characters such as `*` and `.` need no escaping in `\q{}`, but
+						// they do once the string is emitted outside of a class.
+						stringifiedString += '\\' + generate(ch);
+					} else if (
+						ch.kind === 'identifier' ||
+						ch.kind === 'singleEscape' ||
+						(ch.kind === 'unicodeCodePointEscape' && !config.useUnicodeFlag)
+					) {
+						// Escapes such as `\&` and `\-` are only valid in classes, `\b`
+						// only means U+0008 in classes, and `\u{...}` needs the `u` flag,
+						// so generate these from their code point instead.
 						stringifiedString += regenerate(codePoint).toString(regenerateOptions);
 					} else {
 						stringifiedString += generate(ch);
 					}
+					codePoints.push(codePoint);
 				}
 			}
 
-			data.longStrings.add(stringifiedString);
+			data.longStrings.set(getClassStringKey(codePoints, config.isIgnoreCaseMode), {
+				source: stringifiedString,
+				length: codePoints.reduce((length, codePoint) => length + (codePoint > 0xFFFF ? 2 : 1), 0)
+			});
 			data.maybeIncludesStrings = true;
 		}
 	}
@@ -655,7 +726,8 @@ const processCharacterClass = (
 			}
 		} else {
 			const hasEmptyString = longStrings.has('');
-			const pieces = Array.from(longStrings).sort((a, b) => b.length - a.length);
+			const strings = Array.from(longStrings.values()).sort((a, b) => b.length - a.length);
+			const pieces = strings.map(string => string.source);
 
 			if (setStr !== '[]' || longStrings.size === 0) {
 				pieces.splice(pieces.length - (hasEmptyString ? 1 : 0), 0, setStr);
