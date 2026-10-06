@@ -1,0 +1,13 @@
+{
+	// For the TSTyche type tests in `index.tst.ts`. `rewrite-pattern.d.ts`
+	// declares the `regexpu-core` module.
+	"compilerOptions": {
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
+		"target": "es2020",
+		"strict": true,
+		"noEmit": true,
+		"types": []
+	},
+	"files": ["../../rewrite-pattern.d.ts", "index.tst.ts"]
+}

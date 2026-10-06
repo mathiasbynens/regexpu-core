@@ -51,7 +51,8 @@
 		"test": "node --test tests/tests.js",
 		"bench": "node --experimental-bench --bench benchmark.mjs",
 		"test-node6": "mocha tests",
-		"cover": "NODE_V8_COVERAGE=coverage node --test  --experimental-test-coverage tests/tests.js"
+		"cover": "NODE_V8_COVERAGE=coverage node --test  --experimental-test-coverage tests/tests.js",
+		"test-types": "tstyche"
 	},
 	"dependencies": {
 		"regenerate": "^1.5.0",
@@ -63,6 +64,8 @@
 	},
 	"devDependencies": {
 		"jsesc": "^3.0.2",
-		"@unicode/unicode-18.0.0": "^2.0.7"
+		"@unicode/unicode-18.0.0": "^2.0.7",
+		"tstyche": "^7.2.5",
+		"typescript": "6.0.3"
 	}
 }

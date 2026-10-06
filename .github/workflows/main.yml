@@ -33,6 +33,8 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Test
         run: npm test
+      - name: Test types
+        run: npm run test-types
 
   node-6-compat:
     runs-on: ubuntu-latest
