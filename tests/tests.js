@@ -236,10 +236,10 @@ describe('namedGroups', () => {
 
 	it('named references must reference a group', () => {
 		assert.throws(() => {
-			rewritePattern('\\k<name>', '', {
+			rewritePattern('\\k<name>', 'u', {
 				namedGroups: 'transform'
 			});
-		});
+		}, /Invalid named capture referenced at position 3: name/);
 	});
 
 	it('should not transpile when namedGroups is not enabled', () => {
@@ -261,7 +261,7 @@ describe('namedGroups', () => {
 	});
 
 	it('should validate named group references when namedGroups is not enabled', () => {
-		assert.throws(() => rewritePattern('\\k<foo>', ''), /Unknown group names: foo/);
+		assert.throws(() => rewritePattern('(?<name>)\\k<foo>', ''), /Invalid named capture referenced at position 12: foo/);
 	});
 
 	it('should call onNamedGroup even if namedGroups is not enabled', () => {
