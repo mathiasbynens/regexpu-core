@@ -393,6 +393,19 @@ describe('unicodeSets (v) flag', () => {
 		assert.strictEqual(rewritePattern('[\\w&&[x-z]]', 'iv', options), '[x-z]');
 		assert.strictEqual(rewritePattern('[\\w--_]', 'iv', options), '[0-9a-z]');
 	})
+
+	it('does not mutate the cached strings of properties of strings', () => {
+		const options = { unicodeSetsFlag: 'transform' };
+		const all = '(?:#️⃣|\\*️⃣|0️⃣|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣|8️⃣|9️⃣)';
+		// Set operations remove strings from their first operand, which must not
+		// change the strings of the property for later patterns.
+		assert.strictEqual(rewritePattern('\\p{Emoji_Keycap_Sequence}', 'v', options), all);
+		assert.strictEqual(rewritePattern('[\\p{Emoji_Keycap_Sequence}&&\\q{#️⃣}]', 'v', options), '(?:#️⃣)');
+		assert.strictEqual(rewritePattern('[\\p{Emoji_Keycap_Sequence}--\\q{#️⃣}]', 'v', options), '(?:\\*️⃣|0️⃣|1️⃣|2️⃣|3️⃣|4️⃣|5️⃣|6️⃣|7️⃣|8️⃣|9️⃣)');
+		// An operand without strings clears the strings of the intersection.
+		assert.strictEqual(rewritePattern('[\\p{Emoji_Keycap_Sequence}&&#]', 'v', options), '[]');
+		assert.strictEqual(rewritePattern('\\p{Emoji_Keycap_Sequence}', 'v', options), all);
+	})
 });
 
 describe('modifiers', () => {
