@@ -272,23 +272,23 @@ const unicodeSetFixtures = [
 	},
 	{
 		pattern: '[^\\q{abc}]',
-		throws: /Cannot negate set containing strings/
+		throws: /Negated character class may contain strings/
 	},
 	{
 		pattern: '[^\\q{}]',
-		throws: /Cannot negate set containing strings/
+		throws: /Negated character class may contain strings/
 	},
 	{
 		pattern: '[^\\q{a|}]',
-		throws: /Cannot negate set containing strings/
+		throws: /Negated character class may contain strings/
 	},
 	{
 		pattern: '[^\\q{}--\\q{}]',
-		throws: /Cannot negate set containing strings/
+		throws: /Negated character class may contain strings/
 	},
 	{
 		pattern: '[^\\q{ab}--\\q{ab}]',
-		throws: /Cannot negate set containing strings/
+		throws: /Negated character class may contain strings/
 	},
 	{
 		pattern: '[^\\q{a}--\\q{ab}]',
@@ -296,7 +296,7 @@ const unicodeSetFixtures = [
 	},
 	{
 		pattern: '[^[\\q{ab}--\\q{ab}]]',
-		throws: /Cannot negate set containing strings/
+		throws: /Negated character class may contain strings/
 	},
 	{
 		pattern: '[^\\q{}&&a]',
@@ -308,15 +308,15 @@ const unicodeSetFixtures = [
 	},
 	{
 		pattern: '[^\\q{}&&\\q{}]',
-		throws: /Cannot negate set containing strings/
+		throws: /Negated character class may contain strings/
 	},
 	{
 		pattern: '[^\\q{ab}&&\\q{ab}]',
-		throws: /Cannot negate set containing strings/
+		throws: /Negated character class may contain strings/
 	},
 	{
 		pattern: '[^\\q{}&&\\q{ab}]',
-		throws: /Cannot negate set containing strings/
+		throws: /Negated character class may contain strings/
 	},
 	{
 		pattern: '\\p{Basic_Emoji}',
@@ -360,7 +360,7 @@ const unicodeSetFixtures = [
 	},
 	{
 		pattern: '[^\\p{Basic_Emoji}]',
-		throws: /Cannot negate set containing strings/
+		throws: /Negated character class may contain strings/
 	},
 	{
 		pattern: '\\p{RGI_Emoji}',
