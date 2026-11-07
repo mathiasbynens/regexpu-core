@@ -754,6 +754,12 @@ const processTerm = (item, regenerateOptions, groups) => {
 					item,
 					data.singleChars.toString(regenerateOptions)
 				);
+			} else if (item.negative && config.transform.unicodeSetsFlag && config.isIgnoreCaseMode) {
+				// With the `i` flag, `\P{...}` matches the code points whose simple
+				// case folding is not in the case folded property with the `v` flag,
+				// but all code points that are not in the property with the `u` flag.
+				// `[^\p{...}]` matches the former with both flags.
+				update(item, `[^\\p{${ item.value }}]`);
 			}
 			break;
 		case 'characterClassEscape':
