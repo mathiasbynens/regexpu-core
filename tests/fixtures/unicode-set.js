@@ -550,6 +550,31 @@ const unicodeSetFixtures = [
 		nonMatches: ['0', ',']
 	},
 	{
+		pattern: '[\\P{Lu}]',
+		flags: 'iv',
+		matches: ['0', '\u{0131}'],
+		nonMatches: ['a', 'A', '\u{0130}']
+	},
+	{
+		pattern: '[[^\\P{Lu}]]',
+		flags: 'iv',
+		matches: ['a', 'A', '\u{0130}'],
+		nonMatches: ['0', '\u{0131}']
+	},
+	{
+		pattern: '[^[^\\P{Lu}]]',
+		flags: 'iv',
+		matches: ['0', '\u{0131}'],
+		nonMatches: ['a', 'A', '\u{0130}']
+	},
+	{
+		pattern: '[[^\\u039C]&&\\P{Lu}&&x]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu',
+		nonMatches: ['x', 'X']
+	},
+	{
 		pattern: '[K&&k]',
 		flags: 'iv',
 		expected: 'k',

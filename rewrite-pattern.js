@@ -112,7 +112,7 @@ const getUnicodePropertyEscapeSet = (value, isNegative, isUnicodeSetIgnoreCase) 
 			throw new Error('Cannot negate Unicode property of strings');
 		}
 		return {
-			characters: (isUnicodeSetIgnoreCase ? UNICODE_IV_SET : UNICODE_SET).clone().remove(set.characters),
+			characters: getCharacterComplementSet(set.characters, isUnicodeSetIgnoreCase),
 			strings: new Map()
 		};
 	}
@@ -341,6 +341,17 @@ const simpleCaseFoldingSet = (set) => {
 	return set.clone().remove(candidates).add(candidates.map(simpleCaseFolding));
 };
 
+// Returns the complement of the given code points, i.e. of `[^...]` or
+// `\P{...}`. With the `v` and `i` flags, the complement only contains code
+// points that are their own simple case folding, and the given code points are
+// case folded before they are removed
+// (see https://tc39.es/ecma262/#sec-charactercomplement).
+const getCharacterComplementSet = (set, isUnicodeSetIgnoreCase) => {
+	return isUnicodeSetIgnoreCase
+		? UNICODE_IV_SET.clone().remove(simpleCaseFoldingSet(set))
+		: UNICODE_SET.clone().remove(set);
+};
+
 // How each kind of class combines its operands into its data. The first
 // operand of `&&` and `--` is added to the empty set with `union`, so only
 // `union` handles ranges, which cannot be operands of `&&` and `--`.
@@ -504,15 +515,13 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 
 // Returns the data of the complement of the given nested class data, i.e. of
 // `[^...]`, which never contains strings: negating a class that may contain
-// strings throws when its data is computed. With the `v` and `i` flags, the
-// complement only contains code points that are their own simple case folding,
-// and the code points of the nested class are case folded before they are
-// removed (see https://tc39.es/ecma262/#sec-charactercomplement).
+// strings throws when its data is computed.
 const getCharacterClassComplementData = (nestedData, caseEqFlags) => {
 	const data = getCharacterClassEmptyData();
-	data.singleChars = config.flags.unicodeSets && config.isIgnoreCaseMode
-		? UNICODE_IV_SET.clone().remove(simpleCaseFoldingSet(nestedData.singleChars))
-		: UNICODE_SET.clone().remove(nestedData.singleChars);
+	data.singleChars = getCharacterComplementSet(
+		nestedData.singleChars,
+		config.flags.unicodeSets && config.isIgnoreCaseMode
+	);
 	if (caseEqFlags) {
 		data.singleChars.add(getCaseEquivalentsOfSet(data.singleChars, caseEqFlags));
 	}
