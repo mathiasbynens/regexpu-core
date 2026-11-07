@@ -143,7 +143,7 @@ const getPropertyOfStringsEntries = (set, ignoreCase) => {
 		cache.set(set, entries);
 	}
 	// This is shared by all patterns, so it must not be modified: set operations
-	// copy the `longStrings` of their first operand before modifying them.
+	// add the `longStrings` of their operands to their own map.
 	return entries;
 };
 
@@ -341,132 +341,64 @@ const simpleCaseFoldingSet = (set) => {
 	return set.clone().remove(candidates).add(candidates.map(simpleCaseFolding));
 };
 
-const buildHandler = (action) => {
-	switch (action) {
-		case 'union':
-			return {
-				single: (data, cp) => {
-					data.singleChars.add(cp);
-				},
-				regSet: (data, set2) => {
-					data.singleChars.add(set2);
-				},
-				range: (data, start, end) => {
-					data.singleChars.addRange(start, end);
-				},
-				iuRange: (data, start, end, caseEqFlags) => {
-					data.singleChars.iuAddRange(start, end, caseEqFlags);
-				},
-				nested: (data, nestedData) => {
-					data.singleChars.add(nestedData.singleChars);
-					nestedData.longStrings.forEach((value, key) => data.longStrings.set(key, value));
-					if (nestedData.maybeIncludesStrings) data.maybeIncludesStrings = true;
-				}
-			};
-		case 'union-negative': {
-			const regSet = (data, set2) => {
-				data.singleChars = UNICODE_SET.clone().remove(set2).add(data.singleChars);
-			};
-			return {
-				single: (data, cp) => {
-					const unicode = UNICODE_SET.clone();
-					data.singleChars = data.singleChars.contains(cp) ? unicode : unicode.remove(cp);
-				},
-				regSet: regSet,
-				range: (data, start, end) => {
-					data.singleChars = UNICODE_SET.clone().removeRange(start, end).add(data.singleChars);
-				},
-				iuRange: (data, start, end, caseEqFlags) => {
-					data.singleChars = UNICODE_SET.clone().iuRemoveRange(start, end, caseEqFlags).add(data.singleChars);
-				},
-				nested: (data, nestedData) => {
-					regSet(data, nestedData.singleChars);
-					if (nestedData.maybeIncludesStrings) throw new Error('ASSERTION ERROR');
-				}
-			};
+// How each kind of class combines its operands into its data. The first
+// operand of `&&` and `--` is added to the empty set with `union`, so only
+// `union` handles ranges, which cannot be operands of `&&` and `--`.
+const SET_OPERATION_HANDLERS = {
+	union: {
+		regSet: (data, set) => {
+			data.singleChars.add(set);
+		},
+		range: (data, start, end) => {
+			data.singleChars.addRange(start, end);
+		},
+		iuRange: (data, start, end, caseEqFlags) => {
+			data.singleChars.iuAddRange(start, end, caseEqFlags);
+		},
+		nested: (data, nestedData) => {
+			data.singleChars.add(nestedData.singleChars);
+			nestedData.longStrings.forEach((value, key) => data.longStrings.set(key, value));
+			if (nestedData.maybeIncludesStrings) data.maybeIncludesStrings = true;
 		}
-		case 'intersection': {
-			const regSet = (data, set2) => {
-				if (data.first) data.singleChars = set2.clone();
-				else data.singleChars.intersection(set2);
-			};
-			return {
-				single: (data, cp) => {
-					data.singleChars = data.first || data.singleChars.contains(cp) ? regenerate(cp) : regenerate();
-					data.longStrings.clear();
-					data.maybeIncludesStrings = false;
-				},
-				regSet: (data, set) => {
-					regSet(data, set);
-					data.longStrings.clear();
-					data.maybeIncludesStrings = false;
-				},
-				range: (data, start, end) => {
-					if (data.first) data.singleChars.addRange(start, end);
-					else data.singleChars.intersection(regenerate().addRange(start, end));
-					data.longStrings.clear();
-					data.maybeIncludesStrings = false;
-				},
-				iuRange: (data, start, end, caseEqFlags) => {
-					if (data.first) data.singleChars.iuAddRange(start, end, caseEqFlags);
-					else data.singleChars.intersection(regenerate().iuAddRange(start, end, caseEqFlags));
-					data.longStrings.clear();
-					data.maybeIncludesStrings = false;
-				},
-				nested: (data, nestedData) => {
-					regSet(data, nestedData.singleChars);
-
-					if (data.first) {
-						data.longStrings = new Map(nestedData.longStrings);
-						data.maybeIncludesStrings = nestedData.maybeIncludesStrings;
-					} else {
-						for (const key of data.longStrings.keys()) {
-							if (!nestedData.longStrings.has(key)) data.longStrings.delete(key);
-						}
-						if (!nestedData.maybeIncludesStrings) data.maybeIncludesStrings = false;
-					}
-				}
-			};
+	},
+	intersection: {
+		regSet: (data, set) => {
+			data.singleChars.intersection(set);
+			data.longStrings.clear();
+			data.maybeIncludesStrings = false;
+		},
+		nested: (data, nestedData) => {
+			data.singleChars.intersection(nestedData.singleChars);
+			for (const key of data.longStrings.keys()) {
+				if (!nestedData.longStrings.has(key)) data.longStrings.delete(key);
+			}
+			if (!nestedData.maybeIncludesStrings) data.maybeIncludesStrings = false;
 		}
-		case 'subtraction': {
-			const regSet = (data, set2) => {
-				if (data.first) data.singleChars.add(set2);
-				else data.singleChars.remove(set2);
-			};
-			return {
-				single: (data, cp) => {
-					if (data.first) data.singleChars.add(cp);
-					else data.singleChars.remove(cp);
-				},
-				regSet: regSet,
-				range: (data, start, end) => {
-					if (data.first) data.singleChars.addRange(start, end);
-					else data.singleChars.removeRange(start, end);
-				},
-				iuRange: (data, start, end, caseEqFlags) => {
-					if (data.first) data.singleChars.iuAddRange(start, end, caseEqFlags);
-					else data.singleChars.iuRemoveRange(start, end, caseEqFlags);
-				},
-				nested: (data, nestedData) => {
-					regSet(data, nestedData.singleChars);
-
-					if (data.first) {
-						data.longStrings = new Map(nestedData.longStrings);
-						data.maybeIncludesStrings = nestedData.maybeIncludesStrings;
-					} else {
-						for (const key of data.longStrings.keys()) {
-							if (nestedData.longStrings.has(key)) data.longStrings.delete(key);
-						}
-					}
-				}
-			};
+	},
+	subtraction: {
+		regSet: (data, set) => {
+			data.singleChars.remove(set);
+		},
+		nested: (data, nestedData) => {
+			data.singleChars.remove(nestedData.singleChars);
+			for (const key of data.longStrings.keys()) {
+				if (nestedData.longStrings.has(key)) data.longStrings.delete(key);
+			}
 		}
-		// The `default` clause is only here as a safeguard; it should never be
-		// reached. Code coverage tools should ignore it.
-		/* node:coverage ignore next */
-		default:
-			throw new Error(`Unknown set action: ${ characterClassItem.kind }`);
 	}
+};
+
+// `[^B]` in a union adds the complement of `B`, while `A && [^B]` and
+// `A -- [^B]` are computed as `A -- B` and `A && B`.
+const NEGATED_SET_OPERATION_HANDLERS = {
+	union: {
+		nested: (data, nestedData) => {
+			if (nestedData.maybeIncludesStrings) throw new Error('ASSERTION ERROR');
+			data.singleChars = UNICODE_SET.clone().remove(nestedData.singleChars).add(data.singleChars);
+		}
+	},
+	intersection: SET_OPERATION_HANDLERS.subtraction,
+	subtraction: SET_OPERATION_HANDLERS.intersection
 };
 
 // Returns the key that identifies a class string by the code points it matches.
@@ -486,7 +418,6 @@ const getCharacterClassEmptyData = () => ({
 	// `\q{ab}` and `\q{\x61b}`, and under the `i` flag in different cases.
 	longStrings: new Map(),
 	hasEmptyString: false,
-	first: true,
 	maybeIncludesStrings: false
 });
 
@@ -573,27 +504,13 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 const computeCharacterClass = (characterClassItem, regenerateOptions, shouldApplySCF) => {
 	let data = getCharacterClassEmptyData();
 
-	let handlePositive;
-	let handleNegative;
-
 	let caseEqFlags = configGetCaseEqFlags();
 
 	switch (characterClassItem.kind) {
 		case 'union':
-			handlePositive = buildHandler('union');
-			handleNegative = buildHandler('union-negative');
 			break;
 		case 'intersection':
-			handlePositive = buildHandler('intersection');
-			handleNegative = buildHandler('subtraction');
-			if (config.transform.unicodeSetsFlag) data.transformed = true;
-			if (config.isIgnoreCaseMode) {
-				shouldApplySCF = true;
-			}
-			break;
 		case 'subtraction':
-			handlePositive = buildHandler('subtraction');
-			handleNegative = buildHandler('intersection');
 			if (config.transform.unicodeSetsFlag) data.transformed = true;
 			if (config.isIgnoreCaseMode) {
 				shouldApplySCF = true;
@@ -606,12 +523,13 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 			throw new Error(`Unknown character class kind: ${ characterClassItem.kind }`);
 	}
 
-	for (const item of characterClassItem.body) {
+	for (const [index, item] of characterClassItem.body.entries()) {
+		const handler = SET_OPERATION_HANDLERS[index === 0 ? 'union' : characterClassItem.kind];
 		switch (item.type) {
 			case 'value':
 				const codePoint = shouldApplySCF ? simpleCaseFolding(item.codePoint) : item.codePoint;
 				const list = concatCaseEquivalents(codePoint, caseEqFlags);
-				handlePositive.regSet(data, regenerate(list));
+				handler.regSet(data, regenerate(list));
 				if (list.length > 1) {
 					data.transformed = true;
 				}
@@ -620,19 +538,19 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 				const min = item.min.codePoint;
 				const max = item.max.codePoint;
 				if (shouldApplySCF) {
-					handlePositive.regSet(data, simpleCaseFoldingSet(regenerate().addRange(min, max)));
+					handler.regSet(data, simpleCaseFoldingSet(regenerate().addRange(min, max)));
 				} else {
-					handlePositive.range(data, min, max);
+					handler.range(data, min, max);
 				}
 				if (caseEqFlags) {
 					// If shouldApplySCF is true, it is still ok to call iuRange because
 					// the set [min, max] shares the same case equivalents with scf([min, max])
-					handlePositive.iuRange(data, min, max, caseEqFlags);
+					handler.iuRange(data, min, max, caseEqFlags);
 					data.transformed = true;
 				}
 				break;
 			case 'characterClassEscape':
-				handlePositive.regSet(data, getCharacterClassEscapeSet(
+				handler.regSet(data, getCharacterClassEscapeSet(
 					item.value,
 					config.flags.unicode || config.flags.unicodeSets,
 					config.flags.ignoreCase,
@@ -646,20 +564,20 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 					config.flags.unicodeSets && config.isIgnoreCaseMode,
 					shouldApplySCF
 				);
-				handlePositive.nested(data, nestedData);
+				handler.nested(data, nestedData);
 				data.transformed =
 					data.transformed ||
 					config.transform.unicodePropertyEscapes ||
 					(config.transform.unicodeSetsFlag && (nestedData.maybeIncludesStrings || characterClassItem.kind !== "union" || item.negative));
 				break;
 			case 'characterClass':
-				const handler = item.negative ? handleNegative : handlePositive;
 				const res = computeCharacterClass(item, regenerateOptions, shouldApplySCF);
-				handler.nested(data, res);
+				const isNegated = item.negative && (index > 0 || characterClassItem.kind === 'union');
+				(isNegated ? NEGATED_SET_OPERATION_HANDLERS[characterClassItem.kind] : handler).nested(data, res);
 				data.transformed = true;
 				break;
 			case 'classStrings':
-				handlePositive.nested(data, computeClassStrings(item, regenerateOptions, caseEqFlags, shouldApplySCF));
+				handler.nested(data, computeClassStrings(item, regenerateOptions, caseEqFlags, shouldApplySCF));
 				data.transformed = true;
 				break;
 			// The `default` clause is only here as a safeguard; it should never be
@@ -668,8 +586,6 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 			default:
 				throw new Error(`Unknown term type: ${ item.type }`);
 		}
-
-		data.first = false;
 	}
 
 	if (characterClassItem.negative && data.maybeIncludesStrings) {
