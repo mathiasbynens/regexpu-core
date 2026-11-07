@@ -510,6 +510,37 @@ const unicodeSetFixtures = [
 		options: { unicodeSetsFlag: "transform", unicodePropertyEscapes: "transform" }
 	},
 	{
+		pattern: '\\P{Lu}',
+		expected: '\\P{Lu}',
+		matches: ['a', '0'],
+		nonMatches: ['A']
+	},
+	{
+		pattern: '\\P{Lu}',
+		flags: 'iv',
+		expected: '[^\\p{Lu}]',
+		expectedFlags: 'iu',
+		matches: ['0', '\u{0131}'],
+		nonMatches: ['a', 'A', '\u{0130}']
+	},
+	{
+		pattern: 'a\\P{Script=Greek}+',
+		flags: 'iv',
+		expected: 'a[^\\p{Script=Greek}]+',
+		expectedFlags: 'iu',
+		matches: ['Ab', 'a0z'],
+		nonMatches: ['a\u{03C3}', 'a\u{03A3}', 'a\u{00B5}']
+	},
+	{
+		pattern: '(?i:\\P{Lu})',
+		expected: '(?i:[^\\p{Lu}])'
+	},
+	{
+		pattern: '(?-i:\\P{Lu})',
+		flags: 'iv',
+		expected: '(?-i:\\P{Lu})'
+	},
+	{
 		pattern: '[\\p{ASCII}\\p{Decimal_Number}]',
 		expected: '[\\p{ASCII}\\p{Decimal_Number}]'
 	},
