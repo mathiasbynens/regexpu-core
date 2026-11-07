@@ -388,17 +388,18 @@ const SET_OPERATION_HANDLERS = {
 	}
 };
 
-// `[^B]` in a union adds the complement of `B`, while `A && [^B]` and
-// `A -- [^B]` are computed as `A -- B` and `A && B`.
-const NEGATED_SET_OPERATION_HANDLERS = {
-	union: {
-		nested: (data, nestedData) => {
-			if (nestedData.maybeIncludesStrings) throw new Error('ASSERTION ERROR');
-			data.singleChars = UNICODE_SET.clone().remove(nestedData.singleChars).add(data.singleChars);
-		}
+// `A && [^B]` and `A -- [^B]` remove or keep the code points of `B`, which is
+// much faster than computing the complement of `B` first. Since `[^B]` never
+// contains strings, the strings of `A` are all removed or all kept.
+const NEGATED_OPERAND_HANDLERS = {
+	intersection: (data, nestedData) => {
+		data.singleChars.remove(nestedData.singleChars);
+		data.longStrings.clear();
+		data.maybeIncludesStrings = false;
 	},
-	intersection: SET_OPERATION_HANDLERS.subtraction,
-	subtraction: SET_OPERATION_HANDLERS.intersection
+	subtraction: (data, nestedData) => {
+		data.singleChars.intersection(nestedData.singleChars);
+	}
 };
 
 // Returns the key that identifies a class string by the code points it matches.
@@ -501,6 +502,23 @@ const computeClassStrings = (classStrings, regenerateOptions, caseEqFlags, shoul
 	return data;
 }
 
+// Returns the data of the complement of the given nested class data, i.e. of
+// `[^...]`, which never contains strings: negating a class that may contain
+// strings throws when its data is computed. With the `v` and `i` flags, the
+// complement only contains code points that are their own simple case folding,
+// and the code points of the nested class are case folded before they are
+// removed (see https://tc39.es/ecma262/#sec-charactercomplement).
+const getCharacterClassComplementData = (nestedData, caseEqFlags) => {
+	const data = getCharacterClassEmptyData();
+	data.singleChars = config.flags.unicodeSets && config.isIgnoreCaseMode
+		? UNICODE_IV_SET.clone().remove(simpleCaseFoldingSet(nestedData.singleChars))
+		: UNICODE_SET.clone().remove(nestedData.singleChars);
+	if (caseEqFlags) {
+		data.singleChars.add(getCaseEquivalentsOfSet(data.singleChars, caseEqFlags));
+	}
+	return data;
+};
+
 const computeCharacterClass = (characterClassItem, regenerateOptions, shouldApplySCF) => {
 	let data = getCharacterClassEmptyData();
 
@@ -572,8 +590,13 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 				break;
 			case 'characterClass':
 				const res = computeCharacterClass(item, regenerateOptions, shouldApplySCF);
-				const isNegated = item.negative && (index > 0 || characterClassItem.kind === 'union');
-				(isNegated ? NEGATED_SET_OPERATION_HANDLERS[characterClassItem.kind] : handler).nested(data, res);
+				if (!item.negative) {
+					handler.nested(data, res);
+				} else if (index === 0 || characterClassItem.kind === 'union') {
+					handler.nested(data, getCharacterClassComplementData(res, caseEqFlags));
+				} else {
+					NEGATED_OPERAND_HANDLERS[characterClassItem.kind](data, res);
+				}
 				data.transformed = true;
 				break;
 			case 'classStrings':

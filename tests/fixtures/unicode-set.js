@@ -111,6 +111,117 @@ const unicodeSetFixtures = [
 		expected: 'b'
 	},
 	{
+		pattern: '[[^a]--b]',
+		expected: '[\\0-`c-\\u{10FFFF}]'
+	},
+	{
+		pattern: '[[^a]&&\\w]',
+		expected: '[0-9A-Z_b-z]'
+	},
+	{
+		pattern: '[[^]&&b]',
+		expected: 'b'
+	},
+	{
+		pattern: '[[^\\d]--[a-z]]',
+		expected: '[\\0-\\/:-`\\{-\\u{10FFFF}]'
+	},
+	{
+		pattern: '[[^a]&&[^b]]',
+		expected: '[\\0-`c-\\u{10FFFF}]'
+	},
+	{
+		pattern: '[[^a]--[^b]]',
+		expected: 'b'
+	},
+	{
+		pattern: '[[^[^a]]--b]',
+		expected: 'a'
+	},
+	{
+		pattern: '[[^a]--b]',
+		flags: 'iv',
+		expectedFlags: 'iu',
+		matches: ['c', 'C', '\u{10400}'],
+		nonMatches: ['a', 'A', 'b', 'B']
+	},
+	{
+		pattern: '[[^a]&&\\w]',
+		flags: 'iv',
+		expected: '[0-9_b-z]',
+		expectedFlags: 'iu',
+		matches: ['b', 'B', '_', '\u{212A}'],
+		nonMatches: ['a', 'A', '-']
+	},
+	{
+		pattern: '[[^K]&&[k\\u212A]]',
+		flags: 'iv',
+		expected: '[]',
+		expectedFlags: 'iu'
+	},
+	{
+		pattern: '(?i:[[^a]--b])',
+		options: { unicodeSetsFlag: 'transform', modifiers: 'transform' },
+		expected: '(?:[\\0-@C-`c-\\u{10FFFF}])',
+		matches: ['c', 'C'],
+		nonMatches: ['a', 'A', 'b', 'B']
+	},
+	{
+		pattern: '[a[^b]]',
+		flags: 'iv',
+		expectedFlags: 'iu',
+		matches: ['a', 'A', 'c', 'C'],
+		nonMatches: ['b', 'B']
+	},
+	{
+		pattern: '[a[^B]]',
+		flags: 'iv',
+		expectedFlags: 'iu',
+		matches: ['a', 'A', 'c', 'C'],
+		nonMatches: ['b', 'B']
+	},
+	{
+		pattern: '[a[^\\u212A]]',
+		flags: 'iv',
+		expectedFlags: 'iu',
+		matches: ['a', 'A'],
+		nonMatches: ['k', 'K', '\u{212A}']
+	},
+	{
+		pattern: '[[a[^b]]--c]',
+		flags: 'iv',
+		expectedFlags: 'iu',
+		matches: ['a', 'A', 'd', 'D'],
+		nonMatches: ['b', 'B', 'c', 'C']
+	},
+	{
+		pattern: '[a[^b]]',
+		flags: 'iv',
+		options: TRANSFORM_U,
+		expectedFlags: 'i',
+		matches: ['a', 'A', 'c', '\u{10400}'],
+		nonMatches: ['b', 'B']
+	},
+	{
+		pattern: '(?i:[a[^B]])',
+		options: { unicodeSetsFlag: 'transform', modifiers: 'transform' },
+		expected: '(?:[\\0-AC-ac-\\u{10FFFF}])',
+		matches: ['a', 'A', 'c', 'C'],
+		nonMatches: ['b', 'B']
+	},
+	{
+		pattern: '(?i:[\\w--[^\\d]])',
+		expected: '(?i:[0-9])'
+	},
+	{
+		pattern: '(?i:[\\w--[^b]])',
+		expected: '(?i:b)'
+	},
+	{
+		pattern: '(?i:[\\w&&[^\\d]])',
+		expected: '(?i:[A-Z_a-z])'
+	},
+	{
 		pattern: '[[a-z][f-h]]',
 		expected: '[a-z]'
 	},
@@ -225,6 +336,24 @@ const unicodeSetFixtures = [
 	{
 		pattern: '[[ab]--[ab\\q{cd}]]',
 		expected: '[]'
+	},
+	{
+		pattern: '[[\\q{ab}c]&&[^d]]',
+		expected: 'c'
+	},
+	{
+		pattern: '[[\\q{ab}c]--[^d]]',
+		expected: '(?:ab)'
+	},
+	{
+		pattern: '[[\\q{ab}c]--[^c]]',
+		expected: '(?:ab|c)'
+	},
+	{
+		pattern: '[[\\q{AB}c]--[^C]]',
+		flags: 'iv',
+		expected: '(?:ab|c)',
+		expectedFlags: 'iu'
 	},
 	{
 		pattern: '[\\q{cd}--[ab\\q{cd}]]',
