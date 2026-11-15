@@ -201,6 +201,19 @@ function configGetCaseEqFlags() {
 	return flags;
 }
 
+function configWordCharactersChanged() {
+	if (!config.transform.modifiers || !config.useUnicodeFlag) {
+		return false;
+	}
+	return config.isIgnoreCaseMode !== config.outputIgnoreCase;
+}
+
+const getWordCharacterSet = () => getCharacterClassEscapeSet(
+	'w',
+	config.flags.unicode || config.flags.unicodeSets,
+	config.isIgnoreCaseMode
+);
+
 // Ranges with fewer code points than this, e.g. `a-z`, are visited code point
 // by code point, which is faster than intersecting them with the candidates.
 const SMALL_RANGE_SIZE = 32;
@@ -580,9 +593,12 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 				handler.regSet(data, getCharacterClassEscapeSet(
 					item.value,
 					config.flags.unicode || config.flags.unicodeSets,
-					config.flags.ignoreCase,
+					config.isIgnoreCaseMode,
 					shouldApplySCF
 				));
+				if ((item.value === 'w' || item.value === 'W') && configWordCharactersChanged()) {
+					data.transformed = true;
+				}
 				break;
 			case 'unicodePropertyEscape':
 				const nestedData = getUnicodePropertyEscapeCharacterClassData(
@@ -763,13 +779,16 @@ const processTerm = (item, regenerateOptions, groups) => {
 			}
 			break;
 		case 'characterClassEscape':
-			if (config.transform.unicodeFlag) {
+			if (
+				config.transform.unicodeFlag ||
+				((item.value === 'w' || item.value === 'W') && configWordCharactersChanged())
+			) {
 				update(
 					item,
 					getCharacterClassEscapeSet(
 						item.value,
-						/* config.transform.unicodeFlag implies config.flags.unicode */ true,
-						config.flags.ignoreCase
+						/* both conditions above imply config.flags.unicode or config.flags.unicodeSets */ true,
+						config.isIgnoreCaseMode
 					).toString(regenerateOptions)
 				);
 			}
@@ -884,6 +903,17 @@ const processTerm = (item, regenerateOptions, groups) => {
 					update(item, `(?:$|(?=${NEWLINE_SET.toString()}))`);
 				}
 			}
+			if (
+				(item.kind == 'boundary' || item.kind == 'not-boundary') &&
+				configWordCharactersChanged()
+			) {
+				const word = getWordCharacterSet().toString(regenerateOptions);
+				if (item.kind == 'boundary') {
+					update(item, `(?:(?<=${word})(?!${word})|(?<!${word})(?=${word}))`);
+				} else {
+					update(item, `(?:(?<=${word})(?=${word})|(?<!${word})(?!${word}))`);
+				}
+			}
 		case 'empty':
 			// Nothing to do here.
 			break;
@@ -917,6 +947,8 @@ const config = {
 		's': undefined,
 		'm': undefined,
 	},
+	// Whether the output regex has the `i` flag.
+	'outputIgnoreCase': false,
 	get useUnicodeFlag() {
 		return (this.flags.unicode || this.flags.unicodeSets) && !this.transform.unicodeFlag;
 	},
@@ -1046,6 +1078,10 @@ const rewritePattern = (pattern, flags, options) => {
 			}
 		}
 	}
+
+	// The `i` flag is removed from the output when the top-level case
+	// sensitivity is handled by the transform (see `onNewFlags` below).
+	config.outputIgnoreCase = config.flags.ignoreCase && !config.modifiersData.i;
 
 	// Note: `processTerm` mutates `tree` and `groups`.
 	processTerm(tree, regenerateOptions, groups);
