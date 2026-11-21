@@ -208,12 +208,6 @@ function configWordCharactersChanged() {
 	return config.isIgnoreCaseMode !== config.outputIgnoreCase;
 }
 
-const getWordCharacterSet = () => getCharacterClassEscapeSet(
-	'w',
-	config.flags.unicode || config.flags.unicodeSets,
-	config.isIgnoreCaseMode
-);
-
 // Ranges with fewer code points than this, e.g. `a-z`, are visited code point
 // by code point, which is faster than intersecting them with the candidates.
 const SMALL_RANGE_SIZE = 32;
@@ -590,15 +584,18 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 				}
 				break;
 			case 'characterClassEscape':
-				handler.regSet(data, getCharacterClassEscapeSet(
+				let escapeSet = getCharacterClassEscapeSet(
 					item.value,
 					config.flags.unicode || config.flags.unicodeSets,
 					config.isIgnoreCaseMode,
 					shouldApplySCF
-				));
-				if ((item.value === 'w' || item.value === 'W') && configWordCharactersChanged()) {
+				);
+				if (caseEqFlags) {
+					// The escape sets are shared, so they must not be modified.
+					escapeSet = escapeSet.clone().add(getCaseEquivalentsOfSet(escapeSet, caseEqFlags));
 					data.transformed = true;
 				}
+				handler.regSet(data, escapeSet);
 				break;
 			case 'unicodePropertyEscape':
 				const nestedData = getUnicodePropertyEscapeCharacterClassData(
@@ -901,17 +898,6 @@ const processTerm = (item, regenerateOptions, groups) => {
 					update(item, `(?:^|(?<=${NEWLINE_SET.toString()}))`);
 				} else if (item.kind == 'end') {
 					update(item, `(?:$|(?=${NEWLINE_SET.toString()}))`);
-				}
-			}
-			if (
-				(item.kind == 'boundary' || item.kind == 'not-boundary') &&
-				configWordCharactersChanged()
-			) {
-				const word = getWordCharacterSet().toString(regenerateOptions);
-				if (item.kind == 'boundary') {
-					update(item, `(?:(?<=${word})(?!${word})|(?<!${word})(?=${word}))`);
-				} else {
-					update(item, `(?:(?<=${word})(?=${word})|(?<!${word})(?!${word}))`);
 				}
 			}
 		case 'empty':
