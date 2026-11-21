@@ -411,7 +411,8 @@ const modifiersFixtures = [
 		'matches': ['a', 'A', '\u017F', '\u212A'],
 		'nonMatches': ['!'],
 	},
-	{
+	// Node.js 6 doesn't support the `v` flag.
+	!IS_NODE_6 && {
 		'pattern': '(?i:\\w)',
 		'flags': 'v',
 		'expected': '(?:[0-9A-Z_a-z\\u017F\\u212A])',
@@ -440,7 +441,8 @@ const modifiersFixtures = [
 		'matches': ['a', '\u017F', '\u212A'],
 		'nonMatches': ['!'],
 	},
-	{
+	// Node.js 6 doesn't support lookbehinds.
+	!IS_NODE_6 && {
 		'pattern': '(?i:\\b)',
 		'flags': 'u',
 		'expected': '(?:(?:(?<=[0-9A-Z_a-z\\u017F\\u212A])(?![0-9A-Z_a-z\\u017F\\u212A])|(?<![0-9A-Z_a-z\\u017F\\u212A])(?=[0-9A-Z_a-z\\u017F\\u212A])))',
@@ -448,7 +450,8 @@ const modifiersFixtures = [
 		'matches': ['\u017F', '\u212A', 'a'],
 		'nonMatches': ['', '!'],
 	},
-	{
+	// Node.js 6 doesn't support lookbehinds.
+	!IS_NODE_6 && {
 		'pattern': '^(?i:\\B)',
 		'flags': 'u',
 		'expectedFlags': 'u',
@@ -464,7 +467,8 @@ const modifiersFixtures = [
 		'matches': ['\u017Fa', '\u212Aa'],
 		'nonMatches': ['\u017FA'],
 	},
-	{
+	// Node.js 6 doesn't support lookbehinds.
+	!IS_NODE_6 && {
 		'pattern': '^\\b(?-i:a)',
 		'flags': 'iu',
 		'expectedFlags': 'u',
