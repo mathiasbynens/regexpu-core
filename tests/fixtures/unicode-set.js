@@ -219,7 +219,8 @@ const unicodeSetFixtures = [
 	},
 	{
 		pattern: '(?i:[\\w&&[^\\d]])',
-		expected: '(?i:[A-Z_a-z])'
+		// Same as `/[\w&&[^\d]]/iv`, whose operands are simple case folded.
+		expected: '(?i:[_a-z])'
 	},
 	{
 		pattern: '[[a-z][f-h]]',
