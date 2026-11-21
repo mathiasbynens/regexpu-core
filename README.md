@@ -188,6 +188,7 @@ Once these features become stable (when the proposals are accepted as part of EC
 ### Caveats
 
 - [Lookbehind assertions](https://github.com/tc39/proposal-regexp-lookbehind) cannot be transformed to older syntax.
+- With the `u` or `v` flag, case-insensitive `\b` and `\B` also treat U+017F (`ſ`) and U+212A (`K`) as word characters. Transforming this would need lookbehind assertions, so `\b` and `\B` are left as is when `unicodeFlag: 'transform'` removes the `u` flag, or when `modifiers: 'transform'` removes the `i` flag or an `i` modifier.
 - When using `namedGroups: 'transform'`, _regexpu-core_ only takes care of the _syntax_: you will still need a runtime wrapper around the regular expression to populate the `.groups` property of `RegExp.prototype.match()`'s result. If you are using _regexpu-core_ via Babel, it's handled automatically.
 
 ## For maintainers

@@ -201,6 +201,13 @@ function configGetCaseEqFlags() {
 	return flags;
 }
 
+function configWordCharactersChanged() {
+	if (!config.transform.modifiers || !config.useUnicodeFlag) {
+		return false;
+	}
+	return config.isIgnoreCaseMode !== config.outputIgnoreCase;
+}
+
 // Ranges with fewer code points than this, e.g. `a-z`, are visited code point
 // by code point, which is faster than intersecting them with the candidates.
 const SMALL_RANGE_SIZE = 32;
@@ -577,12 +584,18 @@ const computeCharacterClass = (characterClassItem, regenerateOptions, shouldAppl
 				}
 				break;
 			case 'characterClassEscape':
-				handler.regSet(data, getCharacterClassEscapeSet(
+				let escapeSet = getCharacterClassEscapeSet(
 					item.value,
 					config.flags.unicode || config.flags.unicodeSets,
-					config.flags.ignoreCase,
+					config.isIgnoreCaseMode,
 					shouldApplySCF
-				));
+				);
+				if (caseEqFlags) {
+					// The escape sets are shared, so they must not be modified.
+					escapeSet = escapeSet.clone().add(getCaseEquivalentsOfSet(escapeSet, caseEqFlags));
+					data.transformed = true;
+				}
+				handler.regSet(data, escapeSet);
 				break;
 			case 'unicodePropertyEscape':
 				const nestedData = getUnicodePropertyEscapeCharacterClassData(
@@ -763,13 +776,16 @@ const processTerm = (item, regenerateOptions, groups) => {
 			}
 			break;
 		case 'characterClassEscape':
-			if (config.transform.unicodeFlag) {
+			if (
+				config.transform.unicodeFlag ||
+				((item.value === 'w' || item.value === 'W') && configWordCharactersChanged())
+			) {
 				update(
 					item,
 					getCharacterClassEscapeSet(
 						item.value,
-						/* config.transform.unicodeFlag implies config.flags.unicode */ true,
-						config.flags.ignoreCase
+						/* both conditions above imply config.flags.unicode or config.flags.unicodeSets */ true,
+						config.isIgnoreCaseMode
 					).toString(regenerateOptions)
 				);
 			}
@@ -917,6 +933,8 @@ const config = {
 		's': undefined,
 		'm': undefined,
 	},
+	// Whether the output regex has the `i` flag.
+	'outputIgnoreCase': false,
 	get useUnicodeFlag() {
 		return (this.flags.unicode || this.flags.unicodeSets) && !this.transform.unicodeFlag;
 	},
@@ -1046,6 +1064,10 @@ const rewritePattern = (pattern, flags, options) => {
 			}
 		}
 	}
+
+	// The `i` flag is removed from the output when the top-level case
+	// sensitivity is handled by the transform (see `onNewFlags` below).
+	config.outputIgnoreCase = config.flags.ignoreCase && !config.modifiersData.i;
 
 	// Note: `processTerm` mutates `tree` and `groups`.
 	processTerm(tree, regenerateOptions, groups);

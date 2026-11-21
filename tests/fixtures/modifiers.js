@@ -401,6 +401,107 @@ const modifiersFixtures = [
 		'expectedFlags': '',
 		'options': { 'modifiers': false }
 	},
+	// `\w`, `\W`, `\b` and `\B` with `iu` also treat U+017F and U+212A as word
+	// characters.
+	{
+		'pattern': '(?i:\\w)',
+		'flags': 'u',
+		'expected': '(?:[0-9A-Z_a-z\\u017F\\u212A])',
+		'expectedFlags': 'u',
+		'matches': ['a', 'A', '\u017F', '\u212A'],
+		'nonMatches': ['!'],
+	},
+	// Node.js 6 doesn't support the `v` flag.
+	!IS_NODE_6 && {
+		'pattern': '(?i:\\w)',
+		'flags': 'v',
+		'expected': '(?:[0-9A-Z_a-z\\u017F\\u212A])',
+		'expectedFlags': 'v',
+		'matches': ['\u017F', '\u212A'],
+	},
+	{
+		'pattern': '(?i:\\W)',
+		'flags': 'u',
+		'expected': '(?:[\\0-\\/:-@\\[-\\^`\\{-\\u017E\\u0180-\\u2129\\u212B-\\u{10FFFF}])',
+		'expectedFlags': 'u',
+		'matches': ['!'],
+		'nonMatches': ['a', '\u017F', '\u212A'],
+	},
+	{
+		'pattern': '(?i:[\\w])',
+		'flags': 'u',
+		'expected': '(?:[0-9A-Z_a-z\\u017F\\u212A])',
+		'expectedFlags': 'u',
+		'matches': ['\u017F', '\u212A'],
+	},
+	{
+		'pattern': '(?i:[^\\W])',
+		'flags': 'u',
+		'expectedFlags': 'u',
+		'matches': ['a', '\u017F', '\u212A'],
+		'nonMatches': ['!'],
+	},
+	{
+		// Known limitation: `\b` and `\B` would need lookbehinds to also treat
+		// U+017F and U+212A as word characters, so they are left as is.
+		'pattern': '(?i:\\b\\B)',
+		'flags': 'u',
+		'expected': '(?:\\b\\B)',
+		'expectedFlags': 'u',
+	},
+	{
+		// The `i` flag is removed, so `\w` outside of the group is rewritten too.
+		'pattern': '^\\w(?-i:a)',
+		'flags': 'iu',
+		'expected': '^[0-9A-Z_a-z\\u017F\\u212A](?:a)',
+		'expectedFlags': 'u',
+		'matches': ['\u017Fa', '\u212Aa'],
+		'nonMatches': ['\u017FA'],
+	},
+	{
+		'pattern': '(?-i:\\w)',
+		'flags': 'iu',
+		'expected': '(?:\\w)',
+		'expectedFlags': 'u',
+		'nonMatches': ['\u017F', '\u212A'],
+	},
+	{
+		'pattern': '(?-i:\\w)',
+		'flags': 'iu',
+		'options': { unicodeFlag: 'transform', modifiers: 'transform' },
+		'expected': '(?:[0-9A-Z_a-z])',
+		'expectedFlags': '',
+		'nonMatches': ['\u017F', '\u212A'],
+	},
+	{
+		'pattern': '(?-i:\\W)',
+		'flags': 'iu',
+		'options': { unicodeFlag: 'transform', modifiers: 'transform' },
+		'expectedFlags': '',
+		'matches': ['\u017F', '\u212A'],
+		'nonMatches': ['a'],
+	},
+	{
+		'pattern': '(?i:\\w)',
+		'flags': 'u',
+		'options': { unicodeFlag: 'transform', modifiers: 'transform' },
+		'expected': '(?:[0-9A-Z_a-z\\u017F\\u212A])',
+		'expectedFlags': '',
+		'matches': ['\u017F', '\u212A'],
+	},
+	{
+		// The `i` flag is kept, so nothing needs to change.
+		'pattern': '(?i:\\w\\b)',
+		'flags': 'iu',
+		'expected': '(?:\\w\\b)',
+		'expectedFlags': 'iu',
+	},
+	{
+		'pattern': '(?i:\\d)',
+		'flags': 'u',
+		'expected': '(?:\\d)',
+		'expectedFlags': 'u',
+	},
 ].filter(Boolean);
 
 exports.modifiersFixtures = modifiersFixtures;

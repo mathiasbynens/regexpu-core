@@ -219,7 +219,22 @@ const unicodeSetFixtures = [
 	},
 	{
 		pattern: '(?i:[\\w&&[^\\d]])',
-		expected: '(?i:[A-Z_a-z])'
+		// Same as `/[\w&&[^\d]]/iv`, whose operands are simple case folded.
+		expected: '(?i:[_a-z])'
+	},
+	{
+		pattern: '(?i:[\\w&&[^\\d]])',
+		options: { unicodeSetsFlag: 'transform', modifiers: 'transform' },
+		expected: '(?:[A-Z_a-z\\u017F\\u212A])',
+		matches: ['a', 'A', '_', 'ſ', 'K'],
+		nonMatches: ['1', '!']
+	},
+	{
+		pattern: '(?i:[\\w&&\\w])',
+		options: { modifiers: 'transform' },
+		expected: '(?:[0-9A-Z_a-z\\u017F\\u212A])',
+		matches: ['a', 'A', '1', 'ſ', 'K'],
+		nonMatches: ['!']
 	},
 	{
 		pattern: '[[a-z][f-h]]',
